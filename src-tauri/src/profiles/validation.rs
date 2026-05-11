@@ -33,7 +33,7 @@ use serde::Serialize;
 use crate::{
     error::AppError,
     ids::ProfileId,
-    profiles::{keychain::Secret, Profile},
+    profiles::{keychain::Secret, Profile, ProfileSource},
     s3::ClientPool,
 };
 
@@ -233,6 +233,16 @@ async fn build_sts_client(profile: &Profile, secret: Option<&Secret>) -> aws_sdk
             "brows3r-manual",
         );
         loader = loader.credentials_provider(SharedCredentialsProvider::new(creds));
+    } else if matches!(
+        profile.source,
+        ProfileSource::AwsCredentials | ProfileSource::AwsConfig
+    ) {
+        // Pin the loader to the selected named profile so the SDK resolves the
+        // SSO / assume-role / credential-process provider that the profile
+        // declares. Without this the loader falls back to the default chain
+        // (env → `default` profile → IMDS) and validation tests the wrong
+        // identity.
+        loader = loader.profile_name(profile.display_name.as_str());
     }
 
     let sdk_config = loader.load().await;
@@ -284,6 +294,11 @@ async fn build_s3_client_for_compat(
             "brows3r-manual",
         );
         loader = loader.credentials_provider(SharedCredentialsProvider::new(creds));
+    } else if matches!(
+        profile.source,
+        ProfileSource::AwsCredentials | ProfileSource::AwsConfig
+    ) {
+        loader = loader.profile_name(profile.display_name.as_str());
     }
 
     let sdk_config = loader.load().await;
