@@ -82,7 +82,7 @@
     "typescript": "~5.8.3",
     "vite": "^7.0.4",
     "vitepress": "^1.6.4",
-    "vitest": "^3.0.0",
+    "vitest": "^4.1.6",
     "vitest-axe": "^0.1.0"
   }
 }
