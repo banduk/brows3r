@@ -44,3 +44,6 @@ target/
 
 
 /tmp.claude/
+
+# Claude Code local state (sessions, scheduled-task locks, etc.)
+.claude/
