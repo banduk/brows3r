@@ -14,6 +14,7 @@
  */
 
 import { useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
 import type { BucketInspectorReport, SectionResult } from "@/api/inspector";
 import { bucketInspect } from "@/api/inspector";
 import {
@@ -21,6 +22,7 @@ import {
   disabledForDenied,
   disabledForUnsupported,
 } from "@/lib/disabledCopy";
+import { isAppError, surfaceError } from "@/lib/errors";
 import { useValidatedProfile } from "@/query/hooks/useValidatedProfile";
 import { keys } from "@/query/keys";
 
@@ -302,6 +304,22 @@ export function BucketInspector({
     enabled: isValidated,
   });
 
+  // Surface AppError details to the notification panel so the failure
+  // reason is recoverable from the panel history even after the inspector
+  // unmounts. The inline render below still shows the message at the
+  // failure site for immediate context.
+  useEffect(() => {
+    if (!error) return;
+    if (isAppError(error)) {
+      void surfaceError(error, {
+        operation: "bucket_inspect",
+        resource: `${profileId}/${bucket}`,
+        context: "background",
+        title: "Failed to load bucket properties",
+      });
+    }
+  }, [error, profileId, bucket]);
+
   // -- Validation gate -------------------------------------------------------
   if (!isValidated) {
     return (
@@ -326,9 +344,19 @@ export function BucketInspector({
 
   // -- Error -----------------------------------------------------------------
   if (error || !data) {
+    const message = isAppError(error)
+      ? `${error.kind}: ${error.message}`
+      : error instanceof Error
+        ? error.message
+        : "Failed to load bucket properties.";
     return (
-      <div className="p-4 text-xs text-destructive">
-        Failed to load bucket properties.
+      <div
+        className="space-y-1 p-4 text-xs text-destructive"
+        role="alert"
+        data-testid="bucket-inspector-error"
+      >
+        <p className="font-medium">Failed to load bucket properties</p>
+        <p className="text-destructive/80">{message}</p>
       </div>
     );
   }

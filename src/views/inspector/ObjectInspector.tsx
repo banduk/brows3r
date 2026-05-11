@@ -19,6 +19,7 @@
  */
 
 import { useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
 import type { ObjectInspectorReport, SectionResult } from "@/api/inspector";
 import { objectInspect } from "@/api/inspector";
 import {
@@ -27,6 +28,7 @@ import {
   disabledForStorageClass,
   disabledForUnsupported,
 } from "@/lib/disabledCopy";
+import { isAppError, surfaceError } from "@/lib/errors";
 import { formatBytes, formatDate } from "@/lib/format";
 import { useValidatedProfile } from "@/query/hooks/useValidatedProfile";
 import { keys } from "@/query/keys";
@@ -276,6 +278,21 @@ export function ObjectInspector({
     enabled: isValidated,
   });
 
+  // Surface AppError details to the notification panel so failure reasons
+  // are recoverable after the inspector unmounts. The inline error below
+  // shows the message at the failure site for immediate context.
+  useEffect(() => {
+    if (!error) return;
+    if (isAppError(error)) {
+      void surfaceError(error, {
+        operation: "object_inspect",
+        resource: `${profileId}/${bucket}/${objectKey}`,
+        context: "background",
+        title: "Failed to load object properties",
+      });
+    }
+  }, [error, profileId, bucket, objectKey]);
+
   // -- Validation gate -------------------------------------------------------
   if (!isValidated) {
     return (
@@ -300,9 +317,19 @@ export function ObjectInspector({
 
   // -- Error -----------------------------------------------------------------
   if (error || !data) {
+    const message = isAppError(error)
+      ? `${error.kind}: ${error.message}`
+      : error instanceof Error
+        ? error.message
+        : "Failed to load object properties.";
     return (
-      <div className="p-4 text-xs text-destructive">
-        Failed to load object properties.
+      <div
+        className="space-y-1 p-4 text-xs text-destructive"
+        role="alert"
+        data-testid="object-inspector-error"
+      >
+        <p className="font-medium">Failed to load object properties</p>
+        <p className="text-destructive/80">{message}</p>
       </div>
     );
   }

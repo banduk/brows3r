@@ -38,6 +38,7 @@ import {
 } from "react";
 import type { EntryRef, SearchPage } from "@/api/search";
 import { searchCancel, searchLocalFilter, searchPrefix } from "@/api/search";
+import { surfaceUnknownError } from "@/lib/errors";
 import { listen, type UnlistenFn } from "@/lib/tauri";
 
 // ---------------------------------------------------------------------------
@@ -178,8 +179,16 @@ export function SearchBox({
       });
       unlistenRef.current = unlisten;
 
-      searchPrefix(profileId, bucket, prefix, q, rid).catch(() => {
+      searchPrefix(profileId, bucket, prefix, q, rid).catch((err) => {
+        // Search failures (auth expired, region wrong, permission denied)
+        // used to silently set running=false — indistinguishable from
+        // "no matches found". Surface the real reason instead.
         setRunning(false);
+        void surfaceUnknownError(err, {
+          operation: "search_prefix",
+          resource: `${profileId}/${bucket}/${prefix}`,
+          title: "Search failed",
+        });
       });
     },
     [cancelRunningSearch, profileId, bucket, prefix],

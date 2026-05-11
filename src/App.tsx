@@ -41,6 +41,7 @@ import "@/commands/definitions/profile";
 import "@/commands/definitions/search";
 import "@/commands/definitions/settings";
 import { installMenuBridge } from "@/commands/menuBridge";
+import { surfaceUnknownError } from "@/lib/errors";
 import { installEventBridge, queryClient } from "@/query/client";
 import {
   back as historyBack,
@@ -272,23 +273,43 @@ function AppContent() {
       window.removeEventListener("file:open-create-folder", onOpenCreateFolder);
   }, []);
 
-  // Install the Tauri event bridge on mount.
+  // Install the Tauri event bridge on mount. If this fails the app keeps
+  // running but never receives backend events — transfers freeze, locks
+  // never release in the UI, notifications stop streaming. Surface the
+  // failure once so the user sees *something* instead of a silently dead
+  // app.
   useEffect(() => {
     let cleanup: (() => void) | undefined;
-    installEventBridge().then((fn) => {
-      cleanup = fn;
-    });
+    installEventBridge()
+      .then((fn) => {
+        cleanup = fn;
+      })
+      .catch((err) =>
+        surfaceUnknownError(err, {
+          operation: "install_event_bridge",
+          title: "Event bridge failed to install",
+        }),
+      );
     return () => {
       cleanup?.();
     };
   }, []);
 
-  // Install the native menu event bridge on mount.
+  // Install the native menu event bridge on mount. Same failure mode as
+  // the Tauri event bridge above — surface so the user knows menu items
+  // will not respond instead of silently failing.
   useEffect(() => {
     let cleanup: (() => void) | undefined;
-    installMenuBridge().then((fn) => {
-      cleanup = fn;
-    });
+    installMenuBridge()
+      .then((fn) => {
+        cleanup = fn;
+      })
+      .catch((err) =>
+        surfaceUnknownError(err, {
+          operation: "install_menu_bridge",
+          title: "Menu bridge failed to install",
+        }),
+      );
     return () => {
       cleanup?.();
     };
