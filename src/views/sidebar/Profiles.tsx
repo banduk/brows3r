@@ -24,10 +24,47 @@ import {
 } from "@/api/profiles";
 import { PopoverMenu } from "@/components/PopoverMenu";
 import { Button } from "@/components/ui/button";
+import { type AppError, dispatch, isAppError, present } from "@/lib/errors";
 import { cn } from "@/lib/utils";
 import { keys } from "@/query/keys";
 import { usePanesStore } from "@/store/panes";
 import { ProfileEditor } from "@/views/settings/ProfileEditor";
+
+// ---------------------------------------------------------------------------
+// Validation error surfacing
+// ---------------------------------------------------------------------------
+
+/**
+ * Push a profile-validation failure into the notification system.
+ *
+ * `profile_validate` returns a `ValidationReport` with `ok: false` instead of
+ * throwing on AWS-side failures (expired SSO token, wrong region, etc.). The
+ * sidebar mutation used to discard that report entirely — the user only saw
+ * the validation dot stay unvalidated, with no explanation. This funnels the
+ * error through the standard `present()` + `dispatch()` pipeline so the same
+ * placement rules other errors follow apply here.
+ */
+async function surfaceValidationError(
+  profileId: string | null,
+  error: AppError,
+): Promise<void> {
+  const policy = present(error, "userInitiated");
+  if (policy.placement === "silent") return;
+  await dispatch(
+    {
+      id: `profile-validate:${profileId ?? "unknown"}:${Date.now()}`,
+      severity: policy.severity === "info" ? "info" : policy.severity,
+      category: "userInitiated",
+      title: `Profile validation failed (${error.kind})`,
+      message: error.message,
+      resource: profileId,
+      operation: "profile_validate",
+      timestamp: Date.now(),
+      details: "details" in error ? error.details : null,
+    },
+    policy.placement,
+  );
+}
 
 // ---------------------------------------------------------------------------
 // Source badge
@@ -173,8 +210,24 @@ export function Profiles() {
 
   const validateMutation = useMutation({
     mutationFn: (profileId: string) => profileValidate(profileId),
-    onSuccess: () => {
+    onSuccess: async (report) => {
       void queryClient.invalidateQueries({ queryKey: keys.profiles() });
+
+      // The backend's `profile_validate` command always returns Ok(report)
+      // even when the AWS probe fails — the failure lives in `report.error`.
+      // Without surfacing it here the user sees the validation dot stay
+      // grey/red with no clue about *why* (SSO token expired, region wrong,
+      // credentials missing, etc.).
+      if (!report.ok && report.error) {
+        await surfaceValidationError(report.profileId, report.error);
+      }
+    },
+    onError: async (err) => {
+      // Hard IPC failure path (rare for validate, but possible if the
+      // command itself panics or returns Err).
+      if (isAppError(err)) {
+        await surfaceValidationError(null, err);
+      }
     },
   });
 
