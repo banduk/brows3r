@@ -66,8 +66,10 @@ export interface Transfer {
   startedAt: number;
   /** Unix timestamp (milliseconds) when the transfer reached a terminal state. */
   finishedAt?: number;
-  /** Error details when `state` is `"failed"`. */
-  error?: unknown;
+  /** AppError details when `state` is `"failed"`. Hydrated from the
+   *  `transfer:state` event payload (or `transfer_list` snapshot) and used
+   *  by TransferRow to render the failure reason. */
+  error?: import("@/lib/errors").AppError;
 }
 
 /**

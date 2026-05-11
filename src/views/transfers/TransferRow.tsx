@@ -15,6 +15,7 @@
 
 import type { Transfer } from "@/api/transfers";
 import { transferCancel, transferRetry } from "@/api/transfers";
+import { surfaceUnknownError } from "@/lib/errors";
 import { computeBytesPerSec, computeEtaSec } from "@/store/transfers";
 
 // ---------------------------------------------------------------------------
@@ -82,13 +83,29 @@ export function TransferRow({
   const kindIcon = transfer.kind === "upload" ? "↑" : "↓";
 
   async function handleCancel() {
-    await transferCancel(transfer.id);
-    onCanceled?.(transfer.id);
+    try {
+      await transferCancel(transfer.id);
+      onCanceled?.(transfer.id);
+    } catch (err) {
+      await surfaceUnknownError(err, {
+        operation: "transfer_cancel",
+        resource: transfer.id,
+        title: "Failed to cancel transfer",
+      });
+    }
   }
 
   async function handleRetry() {
-    const newId = await transferRetry(transfer.id);
-    onRetried?.(transfer.id, newId);
+    try {
+      const newId = await transferRetry(transfer.id);
+      onRetried?.(transfer.id, newId);
+    } catch (err) {
+      await surfaceUnknownError(err, {
+        operation: "transfer_retry",
+        resource: transfer.id,
+        title: "Failed to retry transfer",
+      });
+    }
   }
 
   return (
@@ -181,6 +198,19 @@ export function TransferRow({
           )}
         </div>
       </div>
+
+      {/* Failure reason — hydrated from the transfer:state event payload
+          (or transfer_list snapshot). Without this the user only saw a
+          red "Failed" badge with no clue about *why* the transfer broke. */}
+      {transfer.state === "failed" && transfer.error && (
+        <p
+          className="text-xs text-destructive/80"
+          role="alert"
+          data-testid="transfer-row-error"
+        >
+          {transfer.error.kind}: {transfer.error.message}
+        </p>
+      )}
     </li>
   );
 }
