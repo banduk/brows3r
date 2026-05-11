@@ -63,7 +63,7 @@ aes-gcm = "0.10"
 argon2 = "0.5"
 
 # Embedded key-value database — used by the authoritative SWR cache (task 19).
-redb = "2"
+redb = "4"
 
 # URL percent-encoding — used by the path::encode module (task 25).
 percent-encoding = "2"
