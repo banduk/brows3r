@@ -14,6 +14,14 @@ export default defineConfig(async () => ({
     environment: "jsdom",
     setupFiles: ["./src/test/setup.ts"],
     globals: true,
+    // The first test in each `describe` block pays the cold-start cost of
+    // jsdom plus the entire dependency graph (Monaco, Radix, TanStack…).
+    // On the Windows GitHub Actions runner this regularly tips past Vitest's
+    // 5-second default — we observed 6.6s on a single `ObjectInspector`
+    // test that completes in <80ms after warm-up. Bump to 15s so cold-start
+    // never trips the timeout; warm tests still finish in tens of ms.
+    testTimeout: 15_000,
+    hookTimeout: 15_000,
   },
 
   resolve: {
