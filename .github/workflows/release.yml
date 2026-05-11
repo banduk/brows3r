@@ -1,9 +1,31 @@
-name: Release
+name: Release (signed)
+
+# ---------------------------------------------------------------------------
+# Signed release pipeline. Requires the eight signing secrets documented in
+# docs/contributing/release.md (Apple Developer ID certificate +
+# notarisation, Windows Authenticode certificate, Tauri updater key).
+#
+# Tag-push trigger is intentionally DISABLED right now because the secrets
+# aren't configured yet — re-enabling it without them would leave a red CI
+# badge on every release. The flow today is:
+#
+#   release-please tags vX.Y.Z
+#     → release-build.yml (unsigned) attaches artefacts to the Release
+#
+# Once the secrets land, uncomment the `push.tags` trigger below and decide
+# whether to keep release-build.yml around for unsigned fallbacks.
+# ---------------------------------------------------------------------------
 
 on:
-  push:
-    tags:
-      - "v*.*.*"
+  # push:
+  #   tags:
+  #     - "v*.*.*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing release tag to (re-)sign and publish."
+        required: true
+        type: string
 
 env:
   CARGO_TERM_COLOR: always

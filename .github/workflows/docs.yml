@@ -111,7 +111,7 @@ jobs:
           # rustdoc emits a redirect from /api/rust/ to the crate index.
           # Ensure there's a landing page so the navbar link resolves.
           if [ ! -f dist-docs/api/rust/index.html ]; then
-            echo '<meta http-equiv="refresh" content="0; url=brows3r/">' > dist-docs/api/rust/index.html
+            echo '<meta http-equiv="refresh" content="0; url=brows3r_lib/">' > dist-docs/api/rust/index.html
           fi
 
       - name: Upload artifact

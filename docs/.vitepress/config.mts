@@ -47,7 +47,7 @@ export default defineConfig({
         text: "API",
         items: [
           { text: "TypeScript / JS", link: "/api/ts/" },
-          { text: "Rust (Tauri)", link: "/api/rust/brows3r/" },
+          { text: "Rust (Tauri)", link: "/api/rust/brows3r_lib/" },
         ],
       },
       { text: "Releases", link: "https://github.com/banduk/brows3r/releases" },

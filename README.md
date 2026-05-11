@@ -11,7 +11,7 @@
 <p align="center">
   <a href="https://github.com/banduk/brows3r/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/banduk/brows3r/ci.yml?branch=main&label=CI&style=flat-square" /></a>
   <a href="https://github.com/banduk/brows3r/actions/workflows/docs.yml"><img alt="Docs" src="https://img.shields.io/github/actions/workflow/status/banduk/brows3r/docs.yml?branch=main&label=docs&style=flat-square" /></a>
-  <a href="https://your-org.github.io/brows3r/"><img alt="Docs site" src="https://img.shields.io/badge/docs-brows3r.dev-24c8db?style=flat-square" /></a>
+  <a href="https://banduk.github.io/brows3r/"><img alt="Docs site" src="https://img.shields.io/badge/docs-brows3r.dev-24c8db?style=flat-square" /></a>
   <a href="https://github.com/banduk/brows3r/releases/latest"><img alt="Release" src="https://img.shields.io/github/v/release/banduk/brows3r?style=flat-square" /></a>
   <a href="LICENSE"><img alt="License" src="https://img.shields.io/github/license/banduk/brows3r?style=flat-square" /></a>
   <img alt="Tauri 2" src="https://img.shields.io/badge/Tauri-2.x-24c8db?style=flat-square" />
@@ -21,9 +21,9 @@
 
 <p align="center">
   <strong>
-    <a href="https://your-org.github.io/brows3r/">Documentation</a> ·
-    <a href="https://your-org.github.io/brows3r/guide/getting-started">Get started</a> ·
-    <a href="https://your-org.github.io/brows3r/concepts/architecture">Architecture</a> ·
+    <a href="https://banduk.github.io/brows3r/">Documentation</a> ·
+    <a href="https://banduk.github.io/brows3r/guide/getting-started">Get started</a> ·
+    <a href="https://banduk.github.io/brows3r/concepts/architecture">Architecture</a> ·
     <a href="https://github.com/banduk/brows3r/releases">Releases</a> ·
     <a href="CONTRIBUTING.md">Contribute</a>
   </strong>
@@ -116,7 +116,7 @@ Three load-bearing constraints drive every decision:
    surfaced as disabled controls with subtle reasons.
 
 Full architecture deep-dive:
-[Concepts → Architecture](https://your-org.github.io/brows3r/concepts/architecture).
+[Concepts → Architecture](https://banduk.github.io/brows3r/concepts/architecture).
 
 ## Install
 
@@ -184,26 +184,26 @@ full signing runbook.
 ## Documentation
 
 The full documentation site lives at
-**[your-org.github.io/brows3r](https://your-org.github.io/brows3r/)** and
+**[banduk.github.io/brows3r](https://banduk.github.io/brows3r/)** and
 is rebuilt from this repo on every push to `main`:
 
-- [Guide](https://your-org.github.io/brows3r/guide/getting-started) —
+- [Guide](https://banduk.github.io/brows3r/guide/getting-started) —
   install, profile setup, view modes, preview, bulk ops, bookmarks,
   inspector, multipart cleanup.
-- [Concepts](https://your-org.github.io/brows3r/concepts/architecture) —
+- [Concepts](https://banduk.github.io/brows3r/concepts/architecture) —
   architecture, credential boundary, cache and SWR, media loopback server,
   capability cache, performance budgets, accessibility.
-- [Contributing](https://your-org.github.io/brows3r/contributing/) — dev
+- [Contributing](https://banduk.github.io/brows3r/contributing/) — dev
   environment, release process, security policy, release checklist.
-- [API reference (TypeScript)](https://your-org.github.io/brows3r/api/ts/) —
+- [API reference (TypeScript)](https://banduk.github.io/brows3r/api/ts/) —
   TypeDoc-generated from JSDoc/TSDoc comments.
-- [API reference (Rust)](https://your-org.github.io/brows3r/api/rust/brows3r/) —
+- [API reference (Rust)](https://banduk.github.io/brows3r/api/rust/brows3r_lib/) —
   rustdoc-generated.
 
 ## Contributing
 
 PRs and issues welcome. Start with [CONTRIBUTING.md](CONTRIBUTING.md), then
-the [Contributing guide on the docs site](https://your-org.github.io/brows3r/contributing/).
+the [Contributing guide on the docs site](https://banduk.github.io/brows3r/contributing/).
 
 Quick rules:
 

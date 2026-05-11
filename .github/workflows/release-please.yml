@@ -1,0 +1,56 @@
+name: release-please
+
+# ---------------------------------------------------------------------------
+# release-please opens (and keeps up-to-date) a "release PR" against `main`
+# whenever there are unreleased conventional-commits on the branch. The PR
+# body lists the changes, bumps the version across package.json,
+# src-tauri/Cargo.toml and src-tauri/tauri.conf.json, and updates
+# CHANGELOG.md.
+#
+# When a maintainer merges the release PR:
+#   1. release-please creates the git tag `vX.Y.Z`.
+#   2. The tag push triggers `release.yml` (signed builds) and
+#      `release-dev.yml` (unsigned builds) — both attach their artefacts to
+#      the GitHub Release that release-please created.
+#
+# In other words: the only manual step to ship is "merge the release PR".
+# Everything else is automated.
+#
+# Conventional-commit conventions used to determine the bump kind:
+#   feat:       → minor
+#   fix:        → patch
+#   perf:       → patch
+#   refactor:   → patch
+#   feat!:      → major (breaking change)
+#   *! / BREAKING CHANGE: → major
+#   chore/docs/test/ci: → no version bump, no changelog entry
+# ---------------------------------------------------------------------------
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: googleapis/release-please-action@v4
+        with:
+          # release-type and version source live in release-please-config.json
+          # and .release-please-manifest.json at the repo root.
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+          # Use a PAT if you want subsequent workflows (release.yml,
+          # release-dev.yml) to fire from the release-please tag push.
+          # GITHUB_TOKEN cannot trigger downstream workflows by design;
+          # set RELEASE_PLEASE_TOKEN if/when you create a fine-grained PAT
+          # with `contents:write` and `actions:write` on this repo. Until
+          # then the default token works but you'll need to re-run the
+          # release pipelines manually (or push an empty commit to the tag).
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN || secrets.GITHUB_TOKEN }}

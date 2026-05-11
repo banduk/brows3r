@@ -1,7 +1,7 @@
 # Contributing to brows3r
 
 Thanks for considering a contribution. This file is the short version; the
-full guide lives at [your-org.github.io/brows3r/contributing/](https://your-org.github.io/brows3r/contributing/).
+full guide lives at [banduk.github.io/brows3r/contributing/](https://banduk.github.io/brows3r/contributing/).
 
 ## Quick path
 
