@@ -1,9 +1,8 @@
 {
   "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
-  "release-type": "rust",
   "packages": {
     ".": {
-      "release-type": "rust",
+      "release-type": "node",
       "package-name": "brows3r",
       "include-component-in-tag": false,
       "include-v-in-tag": true,
@@ -11,23 +10,19 @@
       "bump-patch-for-minor-pre-major": false,
       "changelog-path": "CHANGELOG.md",
       "extra-files": [
-        "package.json",
-        "src-tauri/tauri.conf.json",
         {
           "type": "toml",
           "path": "src-tauri/Cargo.toml",
           "jsonpath": "$.package.version"
+        },
+        {
+          "type": "json",
+          "path": "src-tauri/tauri.conf.json",
+          "jsonpath": "$.version"
         }
       ]
     }
   },
-  "plugins": [
-    {
-      "type": "cargo-workspace",
-      "merge": false,
-      "updateAllPackages": false
-    }
-  ],
   "changelog-sections": [
     { "type": "feat", "section": "Features" },
     { "type": "fix", "section": "Bug Fixes" },
