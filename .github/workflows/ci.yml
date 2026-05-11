@@ -134,6 +134,20 @@ jobs:
 
     env:
       LOCALSTACK_URL: http://localhost:4566
+      # The integration tests use a ClientPool helper that does NOT register
+      # explicit credentials, so the AWS SDK would otherwise fall through to
+      # the default provider chain (env → profile → IMDS). On GitHub Actions
+      # runners (Azure VMs) the IMDS lookup hits Azure's metadata endpoint and
+      # returns HTTP 411 (IIS "Length Required") which surfaces as
+      # `FailedToLoadToken { kind: InvalidToken }` at test time. Provide dummy
+      # credentials so the chain stops at the first step. LocalStack accepts
+      # any value here — it does not verify signatures.
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+      AWS_REGION: us-east-1
+      # Belt-and-suspenders: hard-disable the IMDS probe in case the SDK
+      # default chain ever changes ordering.
+      AWS_EC2_METADATA_DISABLED: "true"
 
     steps:
       - name: Checkout
