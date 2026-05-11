@@ -14,7 +14,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { MoreHorizontalIcon, PlusIcon } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   type ProfileSource,
   type ProfileSummary,
@@ -160,10 +160,27 @@ export function Profiles() {
     | { kind: "edit"; profileId: string }
   >({ kind: "closed" });
 
-  const { data: profiles = [], isLoading } = useQuery({
+  const {
+    data: profiles = [],
+    isLoading,
+    error: profilesError,
+  } = useQuery({
     queryKey: keys.profiles(),
     queryFn: profilesList,
   });
+
+  // Surface a persistent fetch failure to the notifications panel.
+  // Without this the sidebar shows "Loading profiles…" forever when
+  // `profiles_list` keeps failing (corrupt store file, disk error)
+  // and the user has no idea why no profiles appear.
+  useEffect(() => {
+    if (!profilesError) return;
+    void surfaceUnknownError(profilesError, {
+      operation: "profiles_list",
+      context: "background",
+      title: "Failed to load profiles",
+    });
+  }, [profilesError]);
 
   const deleteMutation = useMutation({
     mutationFn: (profileId: string) => profileDelete(profileId),
@@ -250,13 +267,26 @@ export function Profiles() {
 
       {/* Scrollable list */}
       <div className="min-h-0 flex-1 overflow-y-auto">
-        {isLoading && (
+        {isLoading && !profilesError && (
           <p className="px-3 py-4 text-sm text-muted-foreground">
             Loading profiles…
           </p>
         )}
 
-        {!isLoading && profiles.length === 0 && (
+        {profilesError && (
+          <p
+            className="px-3 py-4 text-sm text-destructive"
+            role="alert"
+            data-testid="profiles-load-error"
+          >
+            Failed to load profiles.{" "}
+            {profilesError instanceof Error
+              ? profilesError.message
+              : "Check the notifications panel for details."}
+          </p>
+        )}
+
+        {!isLoading && !profilesError && profiles.length === 0 && (
           <p className="px-3 py-4 text-sm text-muted-foreground">
             No profiles found. Click "Add profile" to get started.
           </p>

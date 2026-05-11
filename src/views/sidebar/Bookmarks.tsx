@@ -15,6 +15,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { BookmarkIcon, FileIcon, MoreHorizontalIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+// `useEffect` is also used below to surface the bookmarks-list fetch error.
 import type { Bookmark } from "@/api/bookmarks";
 import {
   bookmarkAdd,
@@ -286,10 +287,26 @@ export function Bookmarks() {
 
   const [editTarget, setEditTarget] = useState<Bookmark | null>(null);
 
-  const { data: bookmarks = [], isLoading } = useQuery({
+  const {
+    data: bookmarks = [],
+    isLoading,
+    error: bookmarksError,
+  } = useQuery({
     queryKey: keys.bookmarks(),
     queryFn: bookmarksList,
   });
+
+  // Surface persistent fetch failures to the notifications panel so the
+  // sidebar does not silently stick on "Loading bookmarks…" when the
+  // backend command keeps failing.
+  useEffect(() => {
+    if (!bookmarksError) return;
+    void surfaceUnknownError(bookmarksError, {
+      operation: "bookmarks_list",
+      context: "background",
+      title: "Failed to load bookmarks",
+    });
+  }, [bookmarksError]);
 
   // Track orphan IDs that have already failed a removal attempt so the
   // auto-prune loop below does not retry them on every render. Without this
@@ -391,13 +408,26 @@ export function Bookmarks() {
 
   return (
     <section aria-label="Bookmarks">
-      {isLoading && (
+      {isLoading && !bookmarksError && (
         <p className="px-3 py-2 text-xs text-muted-foreground">
           Loading bookmarks…
         </p>
       )}
 
-      {!isLoading && bookmarks.length === 0 && (
+      {bookmarksError && (
+        <p
+          className="px-3 py-2 text-xs text-destructive"
+          role="alert"
+          data-testid="bookmarks-load-error"
+        >
+          Failed to load bookmarks.{" "}
+          {bookmarksError instanceof Error
+            ? bookmarksError.message
+            : "Check the notifications panel for details."}
+        </p>
+      )}
+
+      {!isLoading && !bookmarksError && bookmarks.length === 0 && (
         <p className="px-3 py-2 text-xs text-muted-foreground">
           No bookmarks yet.
         </p>
