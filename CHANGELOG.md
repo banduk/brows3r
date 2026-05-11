@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0](https://github.com/banduk/brows3r/compare/v0.1.0...v0.2.0) (2026-05-11)
+
+
+### Features
+
+* native s3 browser (v1) ([9c4c0ff](https://github.com/banduk/brows3r/commit/9c4c0ff3d2a15d3450e95a00458e1f1857d35639))
+
+
+### Bug Fixes
+
+* **ci:** release-please uses node release-type with extra-files ([9ffd928](https://github.com/banduk/brows3r/commit/9ffd9282e2045f3bc0cdc1b9c5ead0d282c586a9))
+* **diagnostics:** redactor home_dir works on windows via USERPROFILE ([ff91d15](https://github.com/banduk/brows3r/commit/ff91d1518a476f846d3874d8e60679e7562fe011))
+
 ## [Unreleased]
 
 ### Added
