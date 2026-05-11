@@ -499,10 +499,9 @@ mod tests {
     use super::*;
     use crate::{
         ids::{BucketId, ObjectKey, ProfileId},
-        locks::{LockRegistry, LockScope},
+        locks::LockRegistry,
         transfers::{Transfer, TransferKind, TransferState},
     };
-    use std::path::PathBuf;
     use tempfile::tempdir;
 
     fn make_registry_handle() -> TransferRegistryHandle {
@@ -521,7 +520,7 @@ mod tests {
         BucketId::new("test-bucket")
     }
 
-    fn make_transfer(id: &str, dest: &PathBuf) -> Transfer {
+    fn make_transfer(id: &str, dest: &std::path::Path) -> Transfer {
         Transfer {
             id: id.to_owned(),
             kind: TransferKind::Download,
@@ -529,7 +528,7 @@ mod tests {
             bucket: bucket(),
             key: "file.bin".to_string(),
             source_path: None,
-            dest_path: Some(dest.clone()),
+            dest_path: Some(dest.to_path_buf()),
             total_bytes: None,
             transferred_bytes: 0,
             parts_done: 0,

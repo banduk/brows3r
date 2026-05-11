@@ -307,6 +307,44 @@ impl From<ProxyMode> for crate::s3::client::ProxyConfig {
 }
 
 // ---------------------------------------------------------------------------
+// Patch validation — also used by settings_cmd
+// ---------------------------------------------------------------------------
+
+/// Validate a JSON patch object before applying it to `Settings`.
+///
+/// Returns `AppError::Validation` if the patch violates any constraint.
+/// This is the single validation gate; `settings_update` calls it before
+/// merging and persisting.
+pub fn validate_patch(patch: &Value) -> Result<(), AppError> {
+    if let Some(tc) = patch.get("transferConcurrency") {
+        let v = tc.as_u64().unwrap_or(0);
+        if v == 0 {
+            return Err(AppError::Validation {
+                field: "transferConcurrency".to_string(),
+                hint: "must be at least 1".to_string(),
+            });
+        }
+    }
+    if let Some(ttl) = patch.get("cacheTtlSecs") {
+        if ttl.as_u64().is_none() {
+            return Err(AppError::Validation {
+                field: "cacheTtlSecs".to_string(),
+                hint: "must be a non-negative integer".to_string(),
+            });
+        }
+    }
+    if let Some(lim) = patch.get("previewSizeLimitMb") {
+        if lim.as_u64().is_none() {
+            return Err(AppError::Validation {
+                field: "previewSizeLimitMb".to_string(),
+                hint: "must be a non-negative integer".to_string(),
+            });
+        }
+    }
+    Ok(())
+}
+
+// ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
 
@@ -460,42 +498,4 @@ mod tests {
         let patch = json!({ "transferConcurrency": 8 });
         assert!(validate_patch(&patch).is_ok());
     }
-}
-
-// ---------------------------------------------------------------------------
-// Patch validation — also used by settings_cmd
-// ---------------------------------------------------------------------------
-
-/// Validate a JSON patch object before applying it to `Settings`.
-///
-/// Returns `AppError::Validation` if the patch violates any constraint.
-/// This is the single validation gate; `settings_update` calls it before
-/// merging and persisting.
-pub fn validate_patch(patch: &Value) -> Result<(), AppError> {
-    if let Some(tc) = patch.get("transferConcurrency") {
-        let v = tc.as_u64().unwrap_or(0);
-        if v == 0 {
-            return Err(AppError::Validation {
-                field: "transferConcurrency".to_string(),
-                hint: "must be at least 1".to_string(),
-            });
-        }
-    }
-    if let Some(ttl) = patch.get("cacheTtlSecs") {
-        if ttl.as_u64().is_none() {
-            return Err(AppError::Validation {
-                field: "cacheTtlSecs".to_string(),
-                hint: "must be a non-negative integer".to_string(),
-            });
-        }
-    }
-    if let Some(lim) = patch.get("previewSizeLimitMb") {
-        if lim.as_u64().is_none() {
-            return Err(AppError::Validation {
-                field: "previewSizeLimitMb".to_string(),
-                hint: "must be a non-negative integer".to_string(),
-            });
-        }
-    }
-    Ok(())
 }

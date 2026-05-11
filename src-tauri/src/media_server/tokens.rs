@@ -12,7 +12,7 @@
 //! - The registry is decoupled from the HTTP server so it can be swapped for a
 //!   more durable store (e.g. `redb`) if cross-restart tokens ever become
 //!   necessary.  In v1 tokens are session-scoped and in-memory is sufficient.
-//! - [`revoke_session`] is the single sweep point for session-end cleanup.
+//! - `revoke_session` is the single sweep point for session-end cleanup.
 
 use std::{
     collections::HashMap,
@@ -99,7 +99,7 @@ impl TokenRegistry {
         session_id: String,
     ) -> (String, i64) {
         let mut bytes = [0u8; 48];
-        rand::thread_rng().fill_bytes(&mut bytes);
+        rand::rng().fill_bytes(&mut bytes);
         let token = URL_SAFE_NO_PAD.encode(bytes);
 
         let expires_at = SystemTime::now()
@@ -135,7 +135,7 @@ impl TokenRegistry {
         Some(record.clone())
     }
 
-    /// Variant of [`lookup`] that distinguishes "token unknown" from "token expired".
+    /// Variant of `lookup` that distinguishes "token unknown" from "token expired".
     ///
     /// - `Ok(Some(record))` — token is known and live.
     /// - `Ok(None)` — token is known but expired → 403.

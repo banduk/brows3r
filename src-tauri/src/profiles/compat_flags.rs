@@ -417,10 +417,12 @@ mod tests {
 
     #[test]
     fn serializes_and_deserializes_round_trip() {
-        let mut f = CompatFlags::default();
-        f.endpoint_url = Some("http://localhost:9000".to_string());
-        f.addressing_style = AddressingStyle::Path;
-        f.accept_invalid_tls = true;
+        let f = CompatFlags {
+            endpoint_url: Some("http://localhost:9000".to_string()),
+            addressing_style: AddressingStyle::Path,
+            accept_invalid_tls: true,
+            ..Default::default()
+        };
 
         let json = serde_json::to_string(&f).unwrap();
         let back: CompatFlags = serde_json::from_str(&json).unwrap();
@@ -621,8 +623,6 @@ mod tests {
 
     #[test]
     fn checksum_mode_disabled_sets_when_required() {
-        use aws_sdk_s3::config::RequestChecksumCalculation;
-
         let flags = CompatFlags {
             checksum_mode: ChecksumMode::Disabled,
             ..Default::default()

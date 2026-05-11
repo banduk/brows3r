@@ -58,8 +58,7 @@ async fn localstack_search_prefix_returns_matching_results() {
     // ------------------------------------------------------------------
 
     let _ = url; // suppress unused warning in the stub
-                 // Placeholder: always passes so the stub does not block CI.
-    assert!(true, "stub: wired but not yet fully implemented");
+                 // Placeholder: wired but not yet fully implemented.
 }
 
 // ---------------------------------------------------------------------------
@@ -70,7 +69,7 @@ async fn localstack_search_prefix_returns_matching_results() {
 async fn search_local_filter_integration_filter_works() {
     use brows3r_lib::search::EntryRef;
 
-    let entries = vec![
+    let entries = [
         EntryRef {
             key: "match-me/file.txt".to_string(),
             size: 10,

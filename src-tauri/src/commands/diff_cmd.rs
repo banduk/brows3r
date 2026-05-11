@@ -153,7 +153,7 @@ fn parse_storage_class_payload(v: Value) -> Result<DiffPayload, AppError> {
 /// Cancel a pending diff record, voiding any future confirm attempts.
 ///
 /// After cancellation, `object_set_storage_class` (or any other command that
-/// calls [`DiffStore::consume`]) will receive `None` and must return
+/// calls `DiffStore::consume`) will receive `None` and must return
 /// `AppError::Validation { hint: "Diff was cancelled or expired" }`.
 ///
 /// Returns `AppError::NotFound` when the `diff_id` does not exist.

@@ -240,7 +240,6 @@ fn add_text_file_to_zip<W: std::io::Write + std::io::Seek>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::path::PathBuf;
 
     fn make_paths(root: &Path) -> AppPaths {
         AppPaths {

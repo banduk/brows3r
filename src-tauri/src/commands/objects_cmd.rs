@@ -2074,7 +2074,7 @@ mod tests {
 
         // Simulate what object_delete_batch does: collect unique parent prefixes
         // from successfully deleted keys and emit one event per prefix.
-        let deleted_keys = vec![
+        let deleted_keys = [
             "photos/img1.jpg",
             "photos/img2.jpg",
             "docs/report.pdf",
@@ -2114,7 +2114,7 @@ mod tests {
         let bid = BucketId::new("root-bucket");
 
         // Root-level keys: parent_prefix("file.txt") == ""
-        let deleted_keys = vec!["file1.txt", "file2.txt"];
+        let deleted_keys = ["file1.txt", "file2.txt"];
         let affected_prefixes: BTreeSet<String> = deleted_keys
             .iter()
             .map(|k| crate::s3::object::parent_prefix(k))

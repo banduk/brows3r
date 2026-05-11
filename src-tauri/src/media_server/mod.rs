@@ -21,7 +21,7 @@
 //!
 //! # OCP
 //!
-//! - Adding a new route is one `.route(...)` call in [`build_router`].
+//! - Adding a new route is one `.route(...)` call in `build_router`.
 //! - The range parser ([`parse_range`]) is a pure function, independently
 //!   testable, and reusable by other routes.
 //! - [`TokenRegistry`] is decoupled from the server; swapping the storage

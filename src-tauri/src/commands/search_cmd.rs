@@ -256,9 +256,7 @@ pub async fn search_cancel(
 mod tests {
     use super::*;
     use crate::events::{EventKind, MockChannel};
-    use crate::search::{EntryRef, SearchPage, SearchRegistry, SearchRegistryHandle};
-    use std::sync::Arc;
-    use tokio::sync::RwLock;
+    use crate::search::{EntryRef, SearchPage, SearchRegistry};
 
     // -----------------------------------------------------------------------
     // search_local_filter

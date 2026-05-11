@@ -104,8 +104,8 @@ function makeWrapper() {
 
 interface RenderTreeOptions {
   expanded?: Set<string>;
-  onExpand?: ReturnType<typeof vi.fn>;
-  onCollapse?: ReturnType<typeof vi.fn>;
+  onExpand?: ReturnType<typeof vi.fn<(key: string) => void>>;
+  onCollapse?: ReturnType<typeof vi.fn<(key: string) => void>>;
 }
 
 async function renderTree(
@@ -125,8 +125,8 @@ async function renderTree(
   const { TreeView } = await import("../TreeView");
 
   const expanded = opts.expanded ?? new Set<string>();
-  const onExpand = opts.onExpand ?? vi.fn();
-  const onCollapse = opts.onCollapse ?? vi.fn();
+  const onExpand = opts.onExpand ?? vi.fn<(key: string) => void>();
+  const onCollapse = opts.onCollapse ?? vi.fn<(key: string) => void>();
 
   const result = render(
     <Wrapper>

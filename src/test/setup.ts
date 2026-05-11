@@ -27,6 +27,22 @@ import {
 // imported transitively by react-pdf, but not available in jsdom.
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// Polyfill ResizeObserver — react-resizable-panels and TanStack Virtual use
+// it. jsdom does not ship one, and Vitest 4 requires real `class`/`function`
+// constructors when something is invoked via `new` (`vi.fn(() => ({…}))` no
+// longer satisfies new-call semantics).
+// ---------------------------------------------------------------------------
+
+if (typeof globalThis.ResizeObserver === "undefined") {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (globalThis as any).ResizeObserver = class ResizeObserver {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  };
+}
+
 if (typeof globalThis.DOMMatrix === "undefined") {
   // Minimal stub that satisfies the PDF.js module load path.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

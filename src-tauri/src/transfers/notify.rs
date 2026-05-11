@@ -184,11 +184,13 @@ mod tests {
     use tokio::sync::Mutex;
 
     fn make_settings(os_enabled: bool) -> SettingsHandle {
-        let mut settings = Settings::default();
-        settings.notifications = NotificationSettings {
-            in_app: true,
-            os_enabled,
-            sound: false,
+        let settings = Settings {
+            notifications: NotificationSettings {
+                in_app: true,
+                os_enabled,
+                sound: false,
+            },
+            ..Settings::default()
         };
         SettingsHandle {
             inner: Arc::new(Mutex::new(settings)),

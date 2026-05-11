@@ -214,7 +214,7 @@ async fn localstack_bucket_inspect_denied_section_recorded_in_cache() {
         s3::{
             client::ClientBuilder,
             inspector::{inspect_bucket, SectionResult},
-            ClientPool, ProxyConfig,
+            ProxyConfig,
         },
     };
 

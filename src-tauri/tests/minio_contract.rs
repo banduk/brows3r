@@ -49,7 +49,7 @@ async fn minio_upload_and_list_with_path_style_and_checksum_disabled() {
     let access_key = std::env::var("MINIO_ACCESS_KEY").unwrap_or_else(|_| "minioadmin".to_string());
     let secret_key = std::env::var("MINIO_SECRET_KEY").unwrap_or_else(|_| "minioadmin".to_string());
 
-    let creds = SharedCredentialsProvider::new(Credentials::new(
+    let _creds = SharedCredentialsProvider::new(Credentials::new(
         &access_key,
         &secret_key,
         None,
