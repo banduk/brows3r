@@ -1,0 +1,98 @@
+---
+layout: home
+
+hero:
+  name: "brows3r"
+  text: "A native S3 file browser for engineers"
+  tagline: Multi-profile · keyboard-first · rich preview · local-first.
+  image:
+    src: /brows3r-icon.png
+    alt: brows3r icon
+  actions:
+    - theme: brand
+      text: Get started
+      link: /guide/getting-started
+    - theme: alt
+      text: View on GitHub
+      link: https://github.com/banduk/brows3r
+
+features:
+  - icon: 🪪
+    title: Multi-profile, never leaks
+    details: AWS credentials, S3-compatible endpoints (MinIO, R2, Wasabi, B2). Credentials live in the OS keychain; the WebView never sees them.
+  - icon: ⌨️
+    title: Keyboard-first
+    details: Cmd+K palette, Cmd+F search, Cmd+I inspector, Cmd+L breadcrumb-edit, back/forward history. Seven view modes, all fully navigable from the keyboard.
+  - icon: 🖼️
+    title: Rich preview
+    details: Images, video, audio, PDF, Markdown, HTML, archives, CSV/JSON/Parquet tables. Plus a Monaco editor for in-place text edits.
+  - icon: ⚡
+    title: Fast on huge buckets
+    details: Virtualized rows, infinite scroll, off-thread fuzzy filter via Web Worker, capability cache that mutes unsupported operations instead of failing them.
+  - icon: 🔍
+    title: Inspector
+    details: Bucket metadata (versioning, encryption, lifecycle, policy) and object metadata (ACL, tags, locks, storage class transitions) at one keystroke.
+  - icon: 🔐
+    title: Auditable boundary
+    details: Per-request signed loopback URLs for media. No bytes cross the IPC boundary. Background multipart-cleanup scanner.
+---
+
+<style>
+.VPHero .image-bg {
+  background: radial-gradient(circle, rgba(36, 200, 219, 0.25) 0%, rgba(36, 200, 219, 0) 70%);
+}
+</style>
+
+## At a glance
+
+```sh
+# 1. Clone, install, run.
+git clone https://github.com/banduk/brows3r
+cd brows3r
+pnpm install
+pnpm tauri dev
+```
+
+brows3r is a Tauri 2.x desktop app (macOS / Linux / Windows). The frontend is
+React 19 + Vite + TypeScript with shadcn/ui and Tailwind v4. The backend is
+Rust, using the official AWS SDK for S3. Everything that touches credentials
+or S3 bytes runs server-side; the WebView only sees opaque listings, signed
+loopback URLs, and progress events.
+
+See [Get started](/guide/getting-started) for the full tour.
+
+## Architecture in one diagram
+
+```
+┌──────────────── Tauri process ────────────────┐
+│  WebView (React 19 + Vite + TS)               │
+│   - Zustand UI state                          │
+│   - TanStack Query (short-lived render cache) │
+│   - Monaco · Shiki · PDF.js (all lazy)        │
+│        │  invoke / listen                     │
+│        ▼                                      │
+│  Rust core                                    │
+│   - profile_manager   - cache (SWR)           │
+│   - s3_client_pool    - transfer_queue        │
+│   - capability_cache  - resource_locks        │
+│   - keychain          - settings              │
+│   - media_server (loopback, signed tokens)    │
+│        │                                      │
+│        ▼                                      │
+│  aws-sdk-s3 (per-profile, per-region clients) │
+└────────────────────────────────────────────────┘
+                       │
+                       ▼
+         AWS S3 / MinIO / R2 / Wasabi / …
+```
+
+Three load-bearing constraints drive every decision:
+
+1. **AWS credentials never cross the IPC boundary** — the WebView only sees
+   opaque request IDs and signed loopback URLs.
+2. **Rust is the authoritative cache** — TanStack Query is a short-lived
+   render adapter, never the source of truth.
+3. **Capability gaps feel intentional** — unsupported S3 operations are
+   classified once, cached, and surfaced as disabled controls. No red banners.
+
+Read more in [Concepts → Architecture](/concepts/architecture).

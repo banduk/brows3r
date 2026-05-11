@@ -1,0 +1,39 @@
+pre-commit:
+  parallel: true
+  commands:
+    biome:
+      glob: "*.{ts,tsx,js,jsx,json,jsonc}"
+      run: pnpm exec biome check --no-errors-on-unmatched {staged_files}
+    cargo-fmt:
+      glob: "*.rs"
+      run: |
+        # Resolve cargo from PATH or rustup's default install location.
+        CARGO_BIN="$(command -v cargo 2>/dev/null || true)"
+        if [ -z "$CARGO_BIN" ] && [ -x "$HOME/.cargo/bin/cargo" ]; then
+          CARGO_BIN="$HOME/.cargo/bin/cargo"
+        fi
+        if [ -z "$CARGO_BIN" ]; then
+          echo "[lefthook] cargo not installed locally; skipping fmt check (CI gates this)"
+          exit 0
+        fi
+        "$CARGO_BIN" fmt --manifest-path src-tauri/Cargo.toml -- --check
+    cargo-clippy:
+      glob: "*.rs"
+      run: |
+        CARGO_BIN="$(command -v cargo 2>/dev/null || true)"
+        if [ -z "$CARGO_BIN" ] && [ -x "$HOME/.cargo/bin/cargo" ]; then
+          CARGO_BIN="$HOME/.cargo/bin/cargo"
+        fi
+        if [ -z "$CARGO_BIN" ]; then
+          echo "[lefthook] cargo not installed locally; skipping clippy check (CI gates this)"
+          exit 0
+        fi
+        # Local hook: warn only. CI runs the same command with -D warnings as
+        # the authoritative gate; locally we want fast iteration without
+        # blocking commits on style nits.
+        "$CARGO_BIN" clippy --manifest-path src-tauri/Cargo.toml
+
+commit-msg:
+  commands:
+    commitlint:
+      run: pnpm exec commitlint --edit {1}

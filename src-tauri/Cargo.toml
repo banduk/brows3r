@@ -1,0 +1,126 @@
+[package]
+name = "brows3r"
+version = "0.1.0"
+description = "A Tauri App"
+authors = ["you"]
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+# The `_lib` suffix may seem redundant but it is necessary
+# to make the lib name unique and wouldn't conflict with the bin name.
+# This seems to be only an issue on Windows, see https://github.com/rust-lang/cargo/issues/8519
+name = "brows3r_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-opener = "2"
+tauri-plugin-fs = "2"
+tauri-plugin-dialog = "2"
+tauri-plugin-shell = "2"
+tauri-plugin-notification = "2"
+tauri-plugin-updater = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+uuid = { version = "1", features = ["v4", "serde"] }
+
+# AWS SDK — pin to the 1.x line; all three crates must share the same BOM.
+aws-config = { version = "1", features = ["behavior-version-latest"] }
+aws-sdk-s3 = "1"
+aws-sdk-sts = "1"
+aws-credential-types = { version = "1", features = ["hardcoded-credentials"] }
+
+# Smithy HTTP client with hyper-based proxy + rustls-ring TLS.
+# rustls-ring is chosen over native-tls for cross-platform consistency
+# (no OpenSSL / SecureTransport dep at compile time).
+aws-smithy-http-client = { version = "1", features = ["default-client", "rustls-ring"] }
+# Smithy runtime API — used to name SharedHttpClient in the http-client builder helper.
+aws-smithy-runtime-api = { version = "1", features = ["client"] }
+
+# Async runtime — tokio::sync::{RwLock, Mutex} used by the client pool.
+tokio = { version = "1", features = ["full"] }
+
+# INI parser — used by the manual AWS config/credentials file parser.
+rust-ini = "0.21"
+
+# OS keychain integration — maps to Keychain (macOS), Credential Manager
+# (Windows), and Secret Service / libsecret (Linux).
+keyring = "3"
+
+# Memory-safe credential zeroing — ensures secret bytes are scrubbed when
+# dropped. The `derive` feature adds ZeroizeOnDrop derive macro.
+zeroize = { version = "1", features = ["derive"] }
+
+# AES-256-GCM — used by FileBackend to encrypt the secrets.enc sidecar.
+aes-gcm = "0.10"
+
+# Argon2 — passphrase-based key derivation for FileBackend encryption.
+argon2 = "0.5"
+
+# Embedded key-value database — used by the authoritative SWR cache (task 19).
+redb = "2"
+
+# URL percent-encoding — used by the path::encode module (task 25).
+percent-encoding = "2"
+
+# Loopback media server — axum HTTP server for signed token streaming (task 47).
+axum = { version = "0.8", default-features = false, features = ["http1", "tokio"] }
+tower = { version = "0.5", features = ["util"] }
+tokio-util = { version = "0.7", features = ["io"] }
+
+# CSPRNG for token minting — rand is already an indirect dep via many crates.
+rand = "0.8"
+
+# Base64 URL-safe encoding for token strings (task 47).
+base64 = "0.22"
+
+# Regex engine — used by the diagnostics redaction module (task 59).
+regex = "1"
+
+# ZIP archive writer — used by the diagnostics bundle module (task 60).
+zip = "2"
+
+[dev-dependencies]
+# Temporary directory helper — used by FileBackend round-trip tests and redb
+# round-trip cache tests.
+tempfile = "3"
+# HTTP client — used by object_presign_integration to fetch a presigned URL
+# and verify the object body is returned (integration feature gate only).
+reqwest = { version = "0.12", features = ["rustls-tls"], default-features = false }
+# Property-based fuzzer — used by diagnostics/redact.rs to fuzz AWS key ID
+# patterns (task 59).
+proptest = "1"
+# Benchmark harness — used by benches/transfers.rs (task 66).
+criterion = { version = "0.5", default-features = false }
+
+[[bench]]
+name = "transfers"
+harness = false
+
+[features]
+# Off by default. Enables the passphrase-encrypted file fallback for
+# environments where the OS keychain is unavailable (e.g. headless Linux).
+keyring-fallback-file = []
+
+# Off by default. Replaces KeyringBackend with an in-memory HashMap so
+# unit tests run without a real OS keychain.
+test-keyring-stub = []
+
+# Off by default. Enables integration tests that require a running LocalStack
+# or other real S3-compatible endpoint (set LOCALSTACK_URL env var).
+integration = []
+
+# Off by default. Enables the MinIO contract tests (gated by MINIO_URL env var).
+# Run with: MINIO_URL=http://localhost:9000 cargo test --features minio_contract \
+#            --test minio_contract
+minio_contract = []
+
+# Off by default. Enables the unsafe TLS bypass connector for providers that use
+# self-signed certificates. Only for development / private networks.
+compat_invalid_tls = []
+

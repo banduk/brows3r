@@ -1,0 +1,1 @@
+https://mybucket.s3.amazonaws.com/key.txt?prefix=foo&delimiter=%2F

@@ -1,0 +1,22 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "entryPoints": ["src/api", "src/lib", "src/store", "src/query/hooks"],
+  "entryPointStrategy": "expand",
+  "out": "dist-docs/api/ts",
+  "name": "brows3r — TypeScript API",
+  "readme": "none",
+  "exclude": [
+    "**/__tests__/**",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/__perf__/**"
+  ],
+  "excludePrivate": true,
+  "excludeProtected": false,
+  "excludeInternal": true,
+  "githubPages": false,
+  "skipErrorChecking": true,
+  "hideGenerator": true,
+  "treatWarningsAsErrors": false,
+  "logLevel": "Warn"
+}

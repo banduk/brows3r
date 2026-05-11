@@ -1,0 +1,136 @@
+name: docs
+
+# ---------------------------------------------------------------------------
+# Build the VitePress docs site, plus auto-generated TypeDoc and rustdoc
+# API references, and deploy the combined result to GitHub Pages.
+#
+# Triggers:
+#   - Push to `main` (production deploy)
+#   - Manual via "Run workflow"
+#   - Pull requests touching docs/, .github/workflows/docs.yml, src/, or
+#     src-tauri/ (build-only — no deploy)
+#
+# Permissions follow the GitHub Pages template: id-token + pages: write,
+# scoped to this workflow.
+# ---------------------------------------------------------------------------
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "docs/**"
+      - ".github/workflows/docs.yml"
+      - "typedoc.json"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "src/**"
+      - "src-tauri/**"
+  pull_request:
+    paths:
+      - "docs/**"
+      - ".github/workflows/docs.yml"
+      - "typedoc.json"
+      - "package.json"
+      - "src/**"
+      - "src-tauri/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rust-docs
+
+      - name: Linux deps for Tauri docs (rustdoc parses Tauri features)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            libssl-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev \
+            libgtk-3-dev
+
+      - name: Install JS deps
+        run: pnpm install --frozen-lockfile
+
+      # ------------------------------------------------------------------
+      # 1. Build the VitePress site to dist-docs/
+      # ------------------------------------------------------------------
+      - name: Build VitePress
+        env:
+          # When deploying to a project Pages site the URL is
+          #   https://<org>.github.io/brows3r/
+          # so base must be `/brows3r/`. For a user/org Pages site (no
+          # repo segment) set DOCS_BASE=/ instead.
+          DOCS_BASE: "/brows3r/"
+        run: pnpm docs:build
+
+      # ------------------------------------------------------------------
+      # 2. Generate TypeDoc into dist-docs/api/ts/
+      # ------------------------------------------------------------------
+      - name: Generate TypeScript API docs
+        run: pnpm docs:api:ts
+
+      # ------------------------------------------------------------------
+      # 3. Generate rustdoc and copy it into dist-docs/api/rust/
+      # ------------------------------------------------------------------
+      - name: Generate Rust API docs
+        working-directory: src-tauri
+        run: cargo doc --no-deps --document-private-items
+
+      - name: Stage rustdoc into the site
+        run: |
+          mkdir -p dist-docs/api/rust
+          cp -R src-tauri/target/doc/* dist-docs/api/rust/
+          # rustdoc emits a redirect from /api/rust/ to the crate index.
+          # Ensure there's a landing page so the navbar link resolves.
+          if [ ! -f dist-docs/api/rust/index.html ]; then
+            echo '<meta http-equiv="refresh" content="0; url=brows3r/">' > dist-docs/api/rust/index.html
+          fi
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist-docs
+
+  deploy:
+    name: deploy
+    # Only deploy on push to main; PR builds stop at the artifact step.
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

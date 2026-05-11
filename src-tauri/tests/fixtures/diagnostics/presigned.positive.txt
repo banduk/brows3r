@@ -1,0 +1,1 @@
+https://mybucket.s3.amazonaws.com/key.txt?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAIOSFODNN7EXAMPLE%2F20230101%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20230101T000000Z&X-Amz-Expires=3600&X-Amz-Signature=abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890

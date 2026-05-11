@@ -1,0 +1,99 @@
+{
+  "_source": "proposal.md lines 175-176",
+  "_purpose": "round-2 finding #1: cross-layer shortcut snapshot — task 16 ships, task 56 imports",
+  "shortcuts": {
+    "view.cursor.up": {
+      "mac": { "key": "ArrowUp" },
+      "default": { "key": "ArrowUp" }
+    },
+    "view.cursor.down": {
+      "mac": { "key": "ArrowDown" },
+      "default": { "key": "ArrowDown" }
+    },
+    "view.cursor.left": {
+      "mac": { "key": "ArrowLeft" },
+      "default": { "key": "ArrowLeft" }
+    },
+    "view.cursor.right": {
+      "mac": { "key": "ArrowRight" },
+      "default": { "key": "ArrowRight" }
+    },
+    "file.open": { "mac": { "key": "Enter" }, "default": { "key": "Enter" } },
+    "preview.toggle": {
+      "mac": { "key": "Space" },
+      "default": { "key": "Space" }
+    },
+    "view.navigate.up": {
+      "mac": { "key": "Backspace" },
+      "default": { "key": "Backspace" }
+    },
+    "file.delete": {
+      "mac": { "key": "Delete" },
+      "default": { "key": "Delete" }
+    },
+    "clipboard.copy": {
+      "mac": { "mod": ["cmd"], "key": "c" },
+      "default": { "mod": ["ctrl"], "key": "c" }
+    },
+    "clipboard.cut": {
+      "mac": { "mod": ["cmd"], "key": "x" },
+      "default": { "mod": ["ctrl"], "key": "x" }
+    },
+    "clipboard.paste": {
+      "mac": { "mod": ["cmd"], "key": "v" },
+      "default": { "mod": ["ctrl"], "key": "v" }
+    },
+    "selection.all": {
+      "mac": { "mod": ["cmd"], "key": "a" },
+      "default": { "mod": ["ctrl"], "key": "a" }
+    },
+    "search.local": {
+      "mac": { "mod": ["cmd"], "key": "f" },
+      "default": { "mod": ["ctrl"], "key": "f" }
+    },
+    "view.refresh": {
+      "mac": { "mod": ["cmd"], "key": "r" },
+      "default": { "mod": ["ctrl"], "key": "r" }
+    },
+    "palette.open": {
+      "mac": { "mod": ["cmd", "shift"], "key": "p" },
+      "default": { "mod": ["ctrl", "shift"], "key": "p" }
+    },
+    "view.mode.details": {
+      "mac": { "mod": ["cmd"], "key": "1" },
+      "default": { "mod": ["ctrl"], "key": "1" }
+    },
+    "view.mode.icon": {
+      "mac": { "mod": ["cmd"], "key": "2" },
+      "default": { "mod": ["ctrl"], "key": "2" }
+    },
+    "view.mode.gallery": {
+      "mac": { "mod": ["cmd"], "key": "3" },
+      "default": { "mod": ["ctrl"], "key": "3" }
+    },
+    "view.mode.column": {
+      "mac": { "mod": ["cmd"], "key": "4" },
+      "default": { "mod": ["ctrl"], "key": "4" }
+    },
+    "view.mode.tree": {
+      "mac": { "mod": ["cmd"], "key": "5" },
+      "default": { "mod": ["ctrl"], "key": "5" }
+    },
+    "view.mode.flat": {
+      "mac": { "mod": ["cmd"], "key": "6" },
+      "default": { "mod": ["ctrl"], "key": "6" }
+    },
+    "view.mode.dual": {
+      "mac": { "mod": ["cmd"], "key": "7" },
+      "default": { "mod": ["ctrl"], "key": "7" }
+    },
+    "nav.back": {
+      "mac": { "mod": ["cmd", "alt"], "key": "ArrowLeft" },
+      "default": { "mod": ["ctrl", "alt"], "key": "ArrowLeft" }
+    },
+    "nav.forward": {
+      "mac": { "mod": ["cmd", "alt"], "key": "ArrowRight" },
+      "default": { "mod": ["ctrl", "alt"], "key": "ArrowRight" }
+    }
+  }
+}

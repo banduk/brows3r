@@ -1,0 +1,16 @@
+version: 2
+
+updates:
+  # npm / pnpm (frontend)
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 10
+
+  # Cargo (Rust backend)
+  - package-ecosystem: cargo
+    directory: /src-tauri
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 10

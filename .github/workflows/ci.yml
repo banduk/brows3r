@@ -1,0 +1,173 @@
+name: CI
+
+on:
+  push:
+    branches: [main, "feature/**"]
+  pull_request:
+    branches: [main]
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Job 1: unit — runs on all three platforms
+#
+# Integration tests are skipped automatically here: they are annotated with
+#   #[cfg_attr(not(feature = "integration"), ignore)]
+# so `cargo test --workspace --all-targets` runs them as ignored unless the
+# caller explicitly passes --features integration (which this job does not).
+# ─────────────────────────────────────────────────────────────────────────────
+jobs:
+  unit:
+    name: unit (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ── Linux system deps required by Tauri/WebKit ──────────────────────
+      - name: Install Linux dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            libgtk-3-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev
+
+      # ── pnpm ─────────────────────────────────────────────────────────────
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      # ── Node.js LTS ───────────────────────────────────────────────────────
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: pnpm
+
+      # ── Rust stable ───────────────────────────────────────────────────────
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Cache Rust build artifacts
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      # ── Frontend ─────────────────────────────────────────────────────────
+      - name: Install frontend dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint (Biome)
+        run: pnpm lint
+
+      - name: Type-check
+        run: pnpm typecheck
+
+      - name: Frontend tests
+        run: pnpm test --run
+
+      # ── Rust ─────────────────────────────────────────────────────────────
+      - name: cargo fmt --check
+        run: cargo fmt --check --manifest-path src-tauri/Cargo.toml
+
+      - name: cargo clippy
+        run: >
+          cargo clippy
+          --manifest-path src-tauri/Cargo.toml
+          -- -D warnings
+
+      - name: cargo test (unit + ignored integration tests skipped)
+        run: >
+          cargo test
+          --workspace
+          --all-targets
+          --manifest-path src-tauri/Cargo.toml
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # Job 2: integration — Linux only
+  #
+  # GitHub Actions `services:` is only supported on Linux runners.
+  # macOS and Windows integration coverage is deferred to a future
+  # nightly/manual sandbox workflow against real AWS (beyond v1).
+  # ───────────────────────────────────────────────────────────────────────────
+  integration:
+    name: integration (ubuntu-latest + LocalStack)
+    runs-on: ubuntu-latest
+
+    # TODO: pin to a specific digest once a stable digest is identified, e.g.:
+    #   image: localstack/localstack@sha256:<digest>
+    # Using the :stable tag for now; track in a follow-up task.
+    services:
+      localstack:
+        image: localstack/localstack:stable
+        ports:
+          - 4566:4566
+        env:
+          SERVICES: s3
+        options: >-
+          --health-cmd "curl --silent --fail http://localhost:4566/_localstack/health || exit 1"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 15
+
+    env:
+      LOCALSTACK_URL: http://localhost:4566
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Linux dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            libgtk-3-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust build artifacts
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - name: Wait for LocalStack to be healthy
+        run: |
+          echo "Waiting for LocalStack..."
+          for i in $(seq 1 30); do
+            if curl --silent --fail http://localhost:4566/_localstack/health; then
+              echo ""
+              echo "LocalStack is ready."
+              break
+            fi
+            if [ "$i" -eq 30 ]; then
+              echo "LocalStack did not become healthy in time."
+              exit 1
+            fi
+            echo "Attempt $i/30 — retrying in 2s..."
+            sleep 2
+          done
+
+      - name: cargo test (integration, --features integration)
+        run: >
+          cargo test
+          --workspace
+          --features integration
+          --manifest-path src-tauri/Cargo.toml
+          -- --include-ignored

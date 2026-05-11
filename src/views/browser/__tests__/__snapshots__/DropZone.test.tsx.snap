@@ -1,0 +1,53 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`DropZone — snapshot > matches snapshot in drag-over state 1`] = `
+<div
+  aria-label="File drop target"
+  class="relative h-full"
+  data-drop-state="over"
+  data-testid="drop-zone"
+  role="region"
+>
+  <div>
+    content
+  </div>
+  <div
+    aria-label="Drop files to upload"
+    class="pointer-events-none absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 rounded border-2 border-dashed border-primary bg-primary/10"
+    data-testid="drop-zone-overlay"
+    role="status"
+  >
+    <span
+      class="text-sm font-medium text-primary"
+    >
+      Drop to upload
+    </span>
+  </div>
+  <div
+    aria-atomic="true"
+    aria-live="polite"
+    class="sr-only"
+    data-testid="drop-zone-announcement"
+  />
+</div>
+`;
+
+exports[`DropZone — snapshot > matches snapshot in idle state 1`] = `
+<div
+  aria-label="File drop target"
+  class="relative h-full"
+  data-drop-state="idle"
+  data-testid="drop-zone"
+  role="region"
+>
+  <div>
+    idle content
+  </div>
+  <div
+    aria-atomic="true"
+    aria-live="polite"
+    class="sr-only"
+    data-testid="drop-zone-announcement"
+  />
+</div>
+`;
