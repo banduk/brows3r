@@ -44,6 +44,7 @@ async fn make_client(url: &str) -> aws_sdk_s3::Client {
         profiles::compat_flags::{AddressingStyle, CompatFlags},
         s3::{ClientPool, ProxyConfig},
     };
+    use std::sync::Arc;
 
     let profile_id = ProfileId::new_v4();
     let compat = CompatFlags {
@@ -54,9 +55,11 @@ async fn make_client(url: &str) -> aws_sdk_s3::Client {
 
     let pool = ClientPool::new(ProxyConfig::None);
     pool.register_profile(profile_id.clone(), compat).await;
-    pool.get_or_build(&profile_id, "us-east-1")
+    let arc = pool
+        .get_or_build(&profile_id, "us-east-1")
         .await
-        .expect("client must be built for registered profile")
+        .expect("client must be built for registered profile");
+    Arc::unwrap_or_clone(arc)
 }
 
 // ---------------------------------------------------------------------------
@@ -70,12 +73,7 @@ async fn setup_bucket_with_bytes(
     key: &str,
     data: &[u8],
 ) {
-    client
-        .create_bucket()
-        .bucket(bucket)
-        .send()
-        .await
-        .unwrap_or_default(); // ignore BucketAlreadyExists
+    let _ = client.create_bucket().bucket(bucket).send().await;
 
     client
         .put_object()
@@ -142,12 +140,7 @@ async fn small_file_server_side_copy_succeeds_with_default_threshold() {
     let data = b"hello cross-account world";
 
     setup_bucket_with_bytes(&client, src_bucket, src_key, data).await;
-    client
-        .create_bucket()
-        .bucket(dst_bucket)
-        .send()
-        .await
-        .unwrap_or_default();
+    let _ = client.create_bucket().bucket(dst_bucket).send().await;
 
     let cache = ConfirmationCache::default();
     let outcome = copy_object_with_fallback(

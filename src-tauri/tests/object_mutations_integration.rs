@@ -64,6 +64,7 @@ async fn make_client(url: &str) -> aws_sdk_s3::Client {
         profiles::compat_flags::{AddressingStyle, CompatFlags},
         s3::{ClientPool, ProxyConfig},
     };
+    use std::sync::Arc;
 
     let profile_id = ProfileId::new_v4();
     let compat = CompatFlags {
@@ -74,9 +75,11 @@ async fn make_client(url: &str) -> aws_sdk_s3::Client {
 
     let pool = ClientPool::new(ProxyConfig::None);
     pool.register_profile(profile_id.clone(), compat).await;
-    pool.get_or_build(&profile_id, "us-east-1")
+    let arc = pool
+        .get_or_build(&profile_id, "us-east-1")
         .await
-        .expect("client must be built for registered profile")
+        .expect("client must be built for registered profile");
+    Arc::unwrap_or_clone(arc)
 }
 
 // ---------------------------------------------------------------------------
@@ -90,19 +93,14 @@ async fn setup_bucket_with_object(
     key: &str,
     body: &str,
 ) {
-    client
-        .create_bucket()
-        .bucket(bucket)
-        .send()
-        .await
-        .unwrap_or_default(); // Ignore BucketAlreadyExists
+    let _ = client.create_bucket().bucket(bucket).send().await;
 
     client
         .put_object()
         .bucket(bucket)
         .key(key)
-        .body(aws_sdk_s3::primitives::ByteStream::from_static(
-            body.as_bytes(),
+        .body(aws_sdk_s3::primitives::ByteStream::from(
+            body.as_bytes().to_vec(),
         ))
         .send()
         .await
@@ -221,12 +219,7 @@ async fn create_folder_puts_zero_byte_placeholder() {
     let prefix = "new-folder";
 
     // Create bucket if not exists.
-    client
-        .create_bucket()
-        .bucket(bucket)
-        .send()
-        .await
-        .unwrap_or_default();
+    let _ = client.create_bucket().bucket(bucket).send().await;
 
     create_folder(&client, bucket, prefix)
         .await
@@ -266,12 +259,7 @@ async fn create_folder_is_idempotent() {
     let bucket = "test-create-folder-idempotent";
     let prefix = "repeat-folder";
 
-    client
-        .create_bucket()
-        .bucket(bucket)
-        .send()
-        .await
-        .unwrap_or_default();
+    let _ = client.create_bucket().bucket(bucket).send().await;
 
     // Call twice — must succeed both times.
     create_folder(&client, bucket, prefix)
