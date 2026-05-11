@@ -63,6 +63,7 @@ async fn make_client(url: &str) -> aws_sdk_s3::Client {
         profiles::compat_flags::{AddressingStyle, CompatFlags},
         s3::{ClientPool, ProxyConfig},
     };
+    use std::sync::Arc;
 
     let profile_id = ProfileId::new_v4();
     let compat = CompatFlags {
@@ -73,9 +74,11 @@ async fn make_client(url: &str) -> aws_sdk_s3::Client {
 
     let pool = ClientPool::new(ProxyConfig::None);
     pool.register_profile(profile_id.clone(), compat).await;
-    pool.get_or_build(&profile_id, "us-east-1")
+    let arc = pool
+        .get_or_build(&profile_id, "us-east-1")
         .await
-        .expect("client must be built for registered profile")
+        .expect("client must be built for registered profile");
+    Arc::unwrap_or_clone(arc)
 }
 
 // ---------------------------------------------------------------------------
@@ -89,19 +92,14 @@ async fn setup_bucket_with_object(
     key: &str,
     body: &str,
 ) {
-    client
-        .create_bucket()
-        .bucket(bucket)
-        .send()
-        .await
-        .unwrap_or_default(); // Ignore BucketAlreadyExists
+    let _ = client.create_bucket().bucket(bucket).send().await;
 
     client
         .put_object()
         .bucket(bucket)
         .key(key)
-        .body(aws_sdk_s3::primitives::ByteStream::from_static(
-            body.as_bytes(),
+        .body(aws_sdk_s3::primitives::ByteStream::from(
+            body.as_bytes().to_vec(),
         ))
         .send()
         .await
@@ -236,12 +234,7 @@ async fn delete_batch_versioned_bucket_specific_version() {
     let bucket = "test-delete-batch-versioned";
 
     // Create bucket.
-    client
-        .create_bucket()
-        .bucket(bucket)
-        .send()
-        .await
-        .unwrap_or_default();
+    let _ = client.create_bucket().bucket(bucket).send().await;
 
     // Enable versioning.
     client
@@ -312,12 +305,7 @@ async fn delete_batch_1500_keys_chunked_into_two_calls() {
     let client = make_client(&url).await;
     let bucket = "test-delete-batch-1500";
 
-    client
-        .create_bucket()
-        .bucket(bucket)
-        .send()
-        .await
-        .unwrap_or_default();
+    let _ = client.create_bucket().bucket(bucket).send().await;
 
     // Create 1 500 objects. We use a single prefix to keep setup fast.
     let key_count = 1_500usize;

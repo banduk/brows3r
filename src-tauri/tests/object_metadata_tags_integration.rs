@@ -64,6 +64,7 @@ async fn make_client(url: &str) -> aws_sdk_s3::Client {
         profiles::compat_flags::{AddressingStyle, CompatFlags},
         s3::{ClientPool, ProxyConfig},
     };
+    use std::sync::Arc;
 
     let profile_id = ProfileId::new_v4();
     let compat = CompatFlags {
@@ -74,9 +75,11 @@ async fn make_client(url: &str) -> aws_sdk_s3::Client {
 
     let pool = ClientPool::new(ProxyConfig::None);
     pool.register_profile(profile_id.clone(), compat).await;
-    pool.get_or_build(&profile_id, "us-east-1")
+    let arc = pool
+        .get_or_build(&profile_id, "us-east-1")
         .await
-        .expect("client must be built for registered profile")
+        .expect("client must be built for registered profile");
+    Arc::unwrap_or_clone(arc)
 }
 
 // ---------------------------------------------------------------------------
@@ -90,19 +93,14 @@ async fn setup_bucket_with_object(
     key: &str,
     body: &str,
 ) -> String {
-    client
-        .create_bucket()
-        .bucket(bucket)
-        .send()
-        .await
-        .unwrap_or_default();
+    let _ = client.create_bucket().bucket(bucket).send().await;
 
     let resp = client
         .put_object()
         .bucket(bucket)
         .key(key)
-        .body(aws_sdk_s3::primitives::ByteStream::from_static(
-            body.as_bytes(),
+        .body(aws_sdk_s3::primitives::ByteStream::from(
+            body.as_bytes().to_vec(),
         ))
         .send()
         .await
@@ -134,9 +132,12 @@ async fn set_metadata_round_trip_via_head_object() {
 
     setup_bucket_with_object(&client, bucket, key, "hello").await;
 
+    // `.metadata(k, v)` in aws-sdk-s3 already prefixes keys with `x-amz-meta-`
+    // when serialising the request. Passing the prefix manually would
+    // double-prefix the header, so the round-trip below would not find the key.
     let mut meta = HashMap::new();
-    meta.insert("x-amz-meta-author".to_string(), "alice".to_string());
-    meta.insert("x-amz-meta-version".to_string(), "2".to_string());
+    meta.insert("author".to_string(), "alice".to_string());
+    meta.insert("version".to_string(), "2".to_string());
 
     set_object_metadata(&client, bucket, key, meta, None)
         .await

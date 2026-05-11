@@ -98,11 +98,20 @@ async fn localstack_buckets_list_happy_path() {
 
 // ---------------------------------------------------------------------------
 // Access denied path: bad credentials return AppError::AccessDenied
+//
+// Requires a backend that validates IAM. LocalStack community accepts any
+// access key/secret and returns 200, so the assertion fails. Gated by
+// `INTEGRATION_IAM_ENFORCED=1`.
 // ---------------------------------------------------------------------------
 
 #[cfg_attr(not(feature = "integration"), ignore)]
 #[tokio::test]
 async fn localstack_buckets_list_bad_creds_access_denied() {
+    if std::env::var("INTEGRATION_IAM_ENFORCED").ok().as_deref() != Some("1") {
+        eprintln!("skipping: INTEGRATION_IAM_ENFORCED!=1 — LocalStack community accepts any creds");
+        return;
+    }
+
     let url = match localstack_url() {
         Some(u) => u,
         None => return,

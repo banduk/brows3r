@@ -229,18 +229,20 @@ pub async fn profile_validate(
 /// Build a `SharedCredentialsProvider` for a profile.
 ///
 /// - Manual profiles: use the keychain secret directly.
-/// - AWS-discovered profiles: use `ProfileFileCredentialsProvider` keyed by the
-///   profile's `display_name` (which mirrors the named entry in
-///   `~/.aws/credentials` for discovered profiles).
+/// - AWS-discovered profiles: load the full SDK config for the named profile so
+///   the SSO / assume-role / credential-process providers are wired in. A bare
+///   `ProfileFileCredentialsProvider` only understands static `aws_access_key_id`
+///   entries and silently fails on SSO profiles.
 /// - Env profiles: fall through to None — the SDK's default chain will pick up
 ///   the env vars on its own.
 ///
-/// Returns `None` when no provider can be constructed (currently: env source).
+/// Returns `None` when no provider can be constructed.
 async fn build_credentials_provider(
     profile: &crate::profiles::Profile,
     secret: Option<&crate::profiles::keychain::Secret>,
 ) -> Option<aws_credential_types::provider::SharedCredentialsProvider> {
     use crate::profiles::ProfileSource;
+    use aws_config::BehaviorVersion;
     use aws_credential_types::provider::SharedCredentialsProvider;
     use aws_credential_types::Credentials;
 
@@ -257,10 +259,11 @@ async fn build_credentials_provider(
 
     match profile.source {
         ProfileSource::AwsCredentials | ProfileSource::AwsConfig => {
-            let provider = aws_config::profile::ProfileFileCredentialsProvider::builder()
+            let sdk_config = aws_config::defaults(BehaviorVersion::latest())
                 .profile_name(profile.display_name.as_str())
-                .build();
-            Some(SharedCredentialsProvider::new(provider))
+                .load()
+                .await;
+            sdk_config.credentials_provider()
         }
         // Env/Manual paths handled above; nothing to register here.
         _ => None,

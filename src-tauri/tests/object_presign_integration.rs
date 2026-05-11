@@ -35,6 +35,7 @@ async fn make_client(url: &str) -> aws_sdk_s3::Client {
         profiles::compat_flags::{AddressingStyle, CompatFlags},
         s3::{ClientPool, ProxyConfig},
     };
+    use std::sync::Arc;
 
     let profile_id = ProfileId::new_v4();
     let compat = CompatFlags {
@@ -45,9 +46,11 @@ async fn make_client(url: &str) -> aws_sdk_s3::Client {
 
     let pool = ClientPool::new(ProxyConfig::None);
     pool.register_profile(profile_id.clone(), compat).await;
-    pool.get_or_build(&profile_id, "us-east-1")
+    let arc = pool
+        .get_or_build(&profile_id, "us-east-1")
         .await
-        .expect("client must be built for registered profile")
+        .expect("client must be built for registered profile");
+    Arc::unwrap_or_clone(arc)
 }
 
 // ---------------------------------------------------------------------------
@@ -56,18 +59,10 @@ async fn make_client(url: &str) -> aws_sdk_s3::Client {
 
 #[cfg(feature = "integration")]
 async fn create_bucket_and_object(client: &aws_sdk_s3::Client, bucket: &str, key: &str) {
-    use aws_sdk_s3::types::{BucketLocationConstraint, CreateBucketConfiguration};
-
-    let _ = client
-        .create_bucket()
-        .bucket(bucket)
-        .create_bucket_configuration(
-            CreateBucketConfiguration::builder()
-                .location_constraint(BucketLocationConstraint::UsEast1)
-                .build(),
-        )
-        .send()
-        .await;
+    // us-east-1 is the AWS S3 default region — no LocationConstraint must be
+    // sent (recent aws-sdk-s3 even removed the `UsEast1` variant). Omitting
+    // `create_bucket_configuration` keeps the bucket created in us-east-1.
+    let _ = client.create_bucket().bucket(bucket).send().await;
 
     client
         .put_object()
