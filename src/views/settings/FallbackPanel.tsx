@@ -5,6 +5,7 @@
  */
 
 import { useState } from "react";
+import { surfaceUnknownError } from "@/lib/errors";
 import { DEFAULT_SETTINGS, useSettingsStore } from "@/store/settings";
 import { FieldRow, NumberInput, PanelActions } from "./_shared";
 
@@ -40,8 +41,12 @@ export function FallbackPanel() {
     setError(null);
     try {
       await update({ fallbackThresholdMb: thresholdMb });
-    } catch {
+    } catch (err) {
       setError("Failed to save fallback settings.");
+      void surfaceUnknownError(err, {
+        operation: "settings_update.fallback",
+        title: "Failed to save fallback settings",
+      });
     } finally {
       setSaving(false);
     }

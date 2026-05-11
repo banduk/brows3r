@@ -5,6 +5,7 @@
  */
 
 import { useState } from "react";
+import { surfaceUnknownError } from "@/lib/errors";
 import { DEFAULT_SETTINGS, useSettingsStore } from "@/store/settings";
 import { FieldRow, NumberInput, PanelActions } from "./_shared";
 
@@ -36,8 +37,12 @@ export function PreviewPanel() {
     setError(null);
     try {
       await update({ previewSizeLimitMb: limitMb });
-    } catch {
+    } catch (err) {
       setError("Failed to save preview settings.");
+      void surfaceUnknownError(err, {
+        operation: "settings_update.preview",
+        title: "Failed to save preview settings",
+      });
     } finally {
       setSaving(false);
     }

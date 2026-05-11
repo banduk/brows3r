@@ -4,6 +4,7 @@
 
 import { useState } from "react";
 import type { ProxyMode } from "@/api/settings";
+import { surfaceUnknownError } from "@/lib/errors";
 import { DEFAULT_SETTINGS, useSettingsStore } from "@/store/settings";
 import { FieldRow, PanelActions } from "./_shared";
 
@@ -57,8 +58,12 @@ export function ProxyPanel() {
     setSaveError(null);
     try {
       await update({ proxy: buildProxy() });
-    } catch {
+    } catch (err) {
       setSaveError("Failed to save proxy settings.");
+      void surfaceUnknownError(err, {
+        operation: "settings_update.proxy",
+        title: "Failed to save proxy settings",
+      });
     } finally {
       setSaving(false);
     }

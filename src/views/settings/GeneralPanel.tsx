@@ -6,6 +6,7 @@
  */
 
 import { useState } from "react";
+import { surfaceUnknownError } from "@/lib/errors";
 import { DEFAULT_SETTINGS, useSettingsStore } from "@/store/settings";
 import { FieldRow, PanelActions } from "./_shared";
 
@@ -54,8 +55,12 @@ export function GeneralPanel() {
     setError(null);
     try {
       await update({ theme, defaultViewMode: viewMode });
-    } catch {
+    } catch (err) {
       setError("Failed to save general settings.");
+      void surfaceUnknownError(err, {
+        operation: "settings_update.general",
+        title: "Failed to save general settings",
+      });
     } finally {
       setSaving(false);
     }

@@ -6,6 +6,7 @@
 
 import { useRef, useState } from "react";
 import type { S3CompatibleEndpoint } from "@/api/settings";
+import { surfaceUnknownError } from "@/lib/errors";
 import { DEFAULT_SETTINGS, useSettingsStore } from "@/store/settings";
 import { FieldRow, PanelActions } from "./_shared";
 
@@ -99,8 +100,12 @@ export function EndpointsPanel() {
     setSaveError(null);
     try {
       await update({ s3CompatibleEndpoints: endpoints.map(toEndpoint) });
-    } catch {
+    } catch (err) {
       setSaveError("Failed to save endpoint settings.");
+      void surfaceUnknownError(err, {
+        operation: "settings_update.endpoints",
+        title: "Failed to save endpoint settings",
+      });
     } finally {
       setSaving(false);
     }

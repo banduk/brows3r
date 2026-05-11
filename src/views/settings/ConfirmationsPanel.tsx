@@ -5,6 +5,7 @@
  */
 
 import { useState } from "react";
+import { surfaceUnknownError } from "@/lib/errors";
 import { DEFAULT_SETTINGS, useSettingsStore } from "@/store/settings";
 import { FieldRow, NumberInput, PanelActions, ToggleSwitch } from "./_shared";
 
@@ -49,8 +50,12 @@ export function ConfirmationsPanel() {
           largeUploadMb,
         },
       });
-    } catch {
+    } catch (err) {
       setError("Failed to save confirmation settings.");
+      void surfaceUnknownError(err, {
+        operation: "settings_update.confirmations",
+        title: "Failed to save confirmation settings",
+      });
     } finally {
       setSaving(false);
     }

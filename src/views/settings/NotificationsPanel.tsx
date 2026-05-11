@@ -3,6 +3,7 @@
  */
 
 import { useState } from "react";
+import { surfaceUnknownError } from "@/lib/errors";
 import { DEFAULT_SETTINGS, useSettingsStore } from "@/store/settings";
 import { PanelActions, ToggleSwitch } from "./_shared";
 
@@ -26,8 +27,12 @@ export function NotificationsPanel() {
       await update({
         notifications: { inApp, osEnabled, sound },
       });
-    } catch {
+    } catch (err) {
       setError("Failed to save notification settings.");
+      void surfaceUnknownError(err, {
+        operation: "settings_update.notifications",
+        title: "Failed to save notification settings",
+      });
     } finally {
       setSaving(false);
     }

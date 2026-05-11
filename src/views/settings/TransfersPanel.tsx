@@ -5,6 +5,7 @@
  */
 
 import { useState } from "react";
+import { surfaceUnknownError } from "@/lib/errors";
 import { DEFAULT_SETTINGS, useSettingsStore } from "@/store/settings";
 import { FieldRow, NumberInput, PanelActions } from "./_shared";
 
@@ -36,8 +37,12 @@ export function TransfersPanel() {
     setError(null);
     try {
       await update({ transferConcurrency: concurrency });
-    } catch {
+    } catch (err) {
       setError("Failed to save transfer settings.");
+      void surfaceUnknownError(err, {
+        operation: "settings_update.transfers",
+        title: "Failed to save transfer settings",
+      });
     } finally {
       setSaving(false);
     }
