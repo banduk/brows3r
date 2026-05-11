@@ -1,29 +1,33 @@
 name: release-please
 
 # ---------------------------------------------------------------------------
-# release-please opens (and keeps up-to-date) a "release PR" against `main`
-# whenever there are unreleased conventional-commits on the branch. The PR
-# body lists the changes, bumps the version across package.json,
-# src-tauri/Cargo.toml and src-tauri/tauri.conf.json, and updates
-# CHANGELOG.md.
+# Two-stage release pipeline.
 #
-# When a maintainer merges the release PR:
-#   1. release-please creates the git tag `vX.Y.Z`.
-#   2. The tag push triggers `release.yml` (signed builds) and
-#      `release-dev.yml` (unsigned builds) — both attach their artefacts to
-#      the GitHub Release that release-please created.
+# Stage 1 — release-please (always runs on push to main)
+#   - Scans conventional commits since the last tag.
+#   - If there's something to release, opens/updates a "release PR".
+#   - If a release PR was just merged, creates the git tag `vX.Y.Z`
+#     AND the GitHub Release in one atomic API call.
 #
-# In other words: the only manual step to ship is "merge the release PR".
-# Everything else is automated.
+# Stage 2 — per-OS builds (only when release-please created a release)
+#   - Builds unsigned .dmg / .deb / .AppImage / .exe on the three native
+#     runners.
+#   - Uploads each artefact directly to the Release that release-please
+#     just created.
 #
-# Conventional-commit conventions used to determine the bump kind:
-#   feat:       → minor
-#   fix:        → patch
-#   perf:       → patch
-#   refactor:   → patch
-#   feat!:      → major (breaking change)
-#   *! / BREAKING CHANGE: → major
-#   chore/docs/test/ci: → no version bump, no changelog entry
+# Why a single workflow rather than `release: published` + a separate
+# release-build.yml?
+#   GITHUB_TOKEN deliberately cannot trigger downstream workflows (an
+#   anti-recursion safeguard). So a Release created here via GITHUB_TOKEN
+#   does NOT fire a `release: published` event for another workflow.
+#   Chaining the builds inside this same workflow via `needs:` and the
+#   action's `release_created` output sidesteps the rule — everything
+#   happens in one run.
+#
+# Maintainer's day-to-day:
+#   - Commit with conventional commit prefixes (`feat:`, `fix:`, ...).
+#   - When you're ready to ship, merge the open "chore: release X.Y.Z" PR.
+#   - ~10–15 min later the Release page has signed-less binaries attached.
 # ---------------------------------------------------------------------------
 
 on:
@@ -36,21 +40,148 @@ permissions:
   pull-requests: write
   issues: write
 
+env:
+  CARGO_TERM_COLOR: always
+
 jobs:
+  # -------------------------------------------------------------------------
+  # 1. release-please — version bump PR + tag/release creation
+  # -------------------------------------------------------------------------
   release-please:
     runs-on: ubuntu-latest
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
     steps:
-      - uses: googleapis/release-please-action@v4
+      - id: release
+        uses: googleapis/release-please-action@v4
         with:
-          # release-type and version source live in release-please-config.json
-          # and .release-please-manifest.json at the repo root.
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
-          # Use a PAT if you want subsequent workflows (release.yml,
-          # release-dev.yml) to fire from the release-please tag push.
-          # GITHUB_TOKEN cannot trigger downstream workflows by design;
-          # set RELEASE_PLEASE_TOKEN if/when you create a fine-grained PAT
-          # with `contents:write` and `actions:write` on this repo. Until
-          # then the default token works but you'll need to re-run the
-          # release pipelines manually (or push an empty commit to the tag).
-          token: ${{ secrets.RELEASE_PLEASE_TOKEN || secrets.GITHUB_TOKEN }}
+          # GITHUB_TOKEN is fine here because the downstream build jobs
+          # run inside the same workflow via `needs:` (see file header).
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  # -------------------------------------------------------------------------
+  # 2a. macOS — universal .dmg
+  # -------------------------------------------------------------------------
+  build-macos:
+    needs: release-please
+    if: needs.release-please.outputs.release_created == 'true'
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.release-please.outputs.tag_name }}
+
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin,x86_64-apple-darwin
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm tauri build --target universal-apple-darwin
+
+      - name: Upload .dmg to release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ needs.release-please.outputs.tag_name }}
+        run: |
+          shopt -s nullglob
+          ARTS=(src-tauri/target/universal-apple-darwin/release/bundle/dmg/*.dmg)
+          if [ ${#ARTS[@]} -eq 0 ]; then
+            echo "No .dmg artefacts produced" >&2
+            exit 1
+          fi
+          gh release upload "$TAG" "${ARTS[@]}" --clobber --repo "$GITHUB_REPOSITORY"
+
+  # -------------------------------------------------------------------------
+  # 2b. Linux — .deb + .AppImage
+  # -------------------------------------------------------------------------
+  build-linux:
+    needs: release-please
+    if: needs.release-please.outputs.release_created == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.release-please.outputs.tag_name }}
+
+      - name: Linux system deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            libssl-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev \
+            libgtk-3-dev
+
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - uses: dtolnay/rust-toolchain@stable
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm tauri build
+
+      - name: Upload .deb + .AppImage to release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ needs.release-please.outputs.tag_name }}
+        run: |
+          shopt -s nullglob
+          ARTS=(
+            src-tauri/target/release/bundle/deb/*.deb
+            src-tauri/target/release/bundle/appimage/*.AppImage
+          )
+          if [ ${#ARTS[@]} -eq 0 ]; then
+            echo "No Linux artefacts produced" >&2
+            exit 1
+          fi
+          gh release upload "$TAG" "${ARTS[@]}" --clobber --repo "$GITHUB_REPOSITORY"
+
+  # -------------------------------------------------------------------------
+  # 2c. Windows — NSIS .exe
+  # -------------------------------------------------------------------------
+  build-windows:
+    needs: release-please
+    if: needs.release-please.outputs.release_created == 'true'
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.release-please.outputs.tag_name }}
+
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - uses: dtolnay/rust-toolchain@stable
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm tauri build
+
+      - name: Upload .exe to release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ needs.release-please.outputs.tag_name }}
+        run: |
+          shopt -s nullglob
+          ARTS=(src-tauri/target/release/bundle/nsis/*.exe)
+          if [ ${#ARTS[@]} -eq 0 ]; then
+            echo "No .exe artefacts produced" >&2
+            exit 1
+          fi
+          gh release upload "$TAG" "${ARTS[@]}" --clobber --repo "$GITHUB_REPOSITORY"
