@@ -10,7 +10,7 @@
 //!
 //! # Usage
 //!
-//! ```rust,ignore
+//! ```text
 //! events::emit(&app_handle, EventKind::ObjectsUpdated, payload)?;
 //! ```
 
