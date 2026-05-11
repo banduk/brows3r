@@ -22,6 +22,7 @@ import { useEffect, useRef, useState } from "react";
 import type { RecentLocation } from "@/api/bookmarks";
 import { recentsClear, recentsList, recentTrack } from "@/api/bookmarks";
 import { Button } from "@/components/ui/button";
+import { surfaceUnknownError } from "@/lib/errors";
 import { useValidatedProfile } from "@/query/hooks/useValidatedProfile";
 import { keys } from "@/query/keys";
 import { usePanesStore } from "@/store/panes";
@@ -117,6 +118,11 @@ export function Recents() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: keys.recents() });
     },
+    onError: (err) =>
+      surfaceUnknownError(err, {
+        operation: "recents_clear",
+        title: "Failed to clear recents",
+      }),
   });
 
   function handleNavigate(entry: RecentLocation) {

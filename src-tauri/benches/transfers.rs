@@ -13,7 +13,8 @@
 //! Adding a new bench is one new `c.bench_function(…)` call or a new file
 //! under `benches/`.  No changes to library code are required.
 
-use criterion::{black_box, criterion_group, criterion_main, Criterion};
+use criterion::{criterion_group, criterion_main, Criterion};
+use std::hint::black_box;
 
 use brows3r_lib::transfers::{progress::ProgressThrottle, upload::compute_part_size};
 
@@ -70,7 +71,7 @@ fn bench_progress_throttle(c: &mut Criterion) {
 /// Expected order-of-magnitude: single-digit nanoseconds (pure integer math).
 fn bench_part_size_calculation(c: &mut Criterion) {
     let file_sizes: &[(&str, u64)] = &[
-        ("1_mb", 1 * 1024 * 1024),
+        ("1_mb", 1024 * 1024),
         ("50_mb", 50 * 1024 * 1024),
         ("500_mb", 500 * 1024 * 1024),
         ("5_gb", 5 * 1024 * 1024 * 1024),

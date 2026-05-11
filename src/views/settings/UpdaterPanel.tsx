@@ -3,6 +3,7 @@
  */
 
 import { useState } from "react";
+import { surfaceUnknownError } from "@/lib/errors";
 import { DEFAULT_SETTINGS, useSettingsStore } from "@/store/settings";
 import { FieldRow, PanelActions, ToggleSwitch } from "./_shared";
 
@@ -33,8 +34,12 @@ export function UpdaterPanel() {
     setError(null);
     try {
       await update({ autoUpdate: { enabled, channel } });
-    } catch {
+    } catch (err) {
       setError("Failed to save updater settings.");
+      void surfaceUnknownError(err, {
+        operation: "settings_update.updater",
+        title: "Failed to save updater settings",
+      });
     } finally {
       setSaving(false);
     }

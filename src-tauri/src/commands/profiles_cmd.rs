@@ -141,7 +141,7 @@ pub async fn profile_delete(
 /// Called from the `KeychainFallbackPrompt` UI component when the OS keychain
 /// is unavailable and the app has fallen back to the encrypted-file backend.
 ///
-/// The passphrase is forwarded to [`KeychainBackend::unlock`]. For backends
+/// The passphrase is forwarded to `KeychainBackend::unlock`. For backends
 /// that do not need a passphrase (e.g. `KeyringBackend`) this is a no-op that
 /// returns `Ok(())`. Full FileBackend re-key logic is wired here; the trait
 /// method default handles all other backends transparently.

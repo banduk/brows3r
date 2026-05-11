@@ -530,7 +530,7 @@ mod tests {
         let cache = CacheStore::in_memory(CacheConfig::default());
         let key = region_cache_key(&pid, "bucket-eu");
 
-        cache.put(&key, &"eu-west-1".to_string(), None).unwrap();
+        cache.put(&key, "eu-west-1".to_string(), None).unwrap();
 
         let read = cache
             .get::<String>(&key, Some(1_700_000_000_000))

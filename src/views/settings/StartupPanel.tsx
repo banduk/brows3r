@@ -3,6 +3,7 @@
  */
 
 import { useState } from "react";
+import { surfaceUnknownError } from "@/lib/errors";
 import { DEFAULT_SETTINGS, useSettingsStore } from "@/store/settings";
 import { FieldRow, PanelActions, ToggleSwitch } from "./_shared";
 
@@ -28,8 +29,12 @@ export function StartupPanel() {
           openTo: openTo.trim().length > 0 ? openTo.trim() : undefined,
         },
       });
-    } catch {
+    } catch (err) {
       setError("Failed to save startup settings.");
+      void surfaceUnknownError(err, {
+        operation: "settings_update.startup",
+        title: "Failed to save startup settings",
+      });
     } finally {
       setSaving(false);
     }

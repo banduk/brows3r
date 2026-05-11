@@ -231,7 +231,7 @@ impl DiffStore {
 
     /// Set the status of a diff record to [`DiffStatus::Cancelled`].
     ///
-    /// A cancelled record's [`consume`] will subsequently return `None` (the
+    /// A cancelled record's `consume` will subsequently return `None` (the
     /// `Validation` error path in `object_set_storage_class`).
     ///
     /// Returns `AppError::NotFound` when the id does not exist.

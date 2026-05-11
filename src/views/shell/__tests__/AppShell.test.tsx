@@ -14,23 +14,11 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { cleanup, render, screen } from "@testing-library/react";
 import type { ReactNode } from "react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { axe } from "vitest-axe";
 import { usePanesStore } from "@/store/panes";
 import { mockInvoke } from "@/test/mocks/tauri";
 import { AppShell } from "../AppShell";
-
-// ---------------------------------------------------------------------------
-// Stub ResizeObserver (not in jsdom) so react-resizable-panels doesn't crash.
-// ---------------------------------------------------------------------------
-vi.stubGlobal(
-  "ResizeObserver",
-  vi.fn(() => ({
-    observe: vi.fn(),
-    unobserve: vi.fn(),
-    disconnect: vi.fn(),
-  })),
-);
 
 // ---------------------------------------------------------------------------
 // Wrapper

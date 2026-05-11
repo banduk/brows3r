@@ -119,7 +119,6 @@ async fn localstack_buckets_list_bad_creds_access_denied() {
 
     use aws_credential_types::{provider::SharedCredentialsProvider, Credentials};
     use brows3r_lib::{
-        error::AppError,
         ids::ProfileId,
         profiles::compat_flags::{AddressingStyle, CompatFlags},
         s3::{client::ClientBuilder, list::list_buckets, ProxyConfig},

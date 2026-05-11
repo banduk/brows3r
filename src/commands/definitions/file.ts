@@ -27,7 +27,7 @@ import {
   objectPresign,
 } from "@/api/objects";
 import { writeText } from "@/lib/clipboard";
-import { dispatch, present } from "@/lib/errors";
+import { surfaceUnknownError } from "@/lib/errors";
 import {
   optimisticCreateFolder,
   optimisticDeleteSingle,
@@ -204,32 +204,11 @@ registry.register({
       );
     } catch (err) {
       rollback?.();
-      if (
-        typeof err === "object" &&
-        err !== null &&
-        "kind" in err &&
-        "message" in err &&
-        "retryable" in err
-      ) {
-        const policy = present(
-          err as Parameters<typeof present>[0],
-          "userInitiated",
-        );
-        await dispatch(
-          {
-            id: `rename-err-${Date.now().toString()}`,
-            severity: "error",
-            category: "userInitiated",
-            title: "Rename failed",
-            message: (err as { message: string }).message,
-            resource: key,
-            operation: "rename",
-            timestamp: Date.now(),
-            details: err,
-          },
-          policy.placement,
-        );
-      }
+      await surfaceUnknownError(err, {
+        operation: "rename",
+        resource: key,
+        title: "Rename failed",
+      });
     }
   },
 });
@@ -265,32 +244,11 @@ registry.register({
       await objectDeleteBatch(pid, bkt, deleteKeys);
     } catch (err) {
       rollback?.();
-      if (
-        typeof err === "object" &&
-        err !== null &&
-        "kind" in err &&
-        "message" in err &&
-        "retryable" in err
-      ) {
-        const policy = present(
-          err as Parameters<typeof present>[0],
-          "userInitiated",
-        );
-        await dispatch(
-          {
-            id: `delete-err-${Date.now().toString()}`,
-            severity: "error",
-            category: "userInitiated",
-            title: "Delete failed",
-            message: (err as { message: string }).message,
-            resource: ks.join(", "),
-            operation: "delete",
-            timestamp: Date.now(),
-            details: err,
-          },
-          policy.placement,
-        );
-      }
+      await surfaceUnknownError(err, {
+        operation: "delete",
+        resource: ks.join(", "),
+        title: "Delete failed",
+      });
     }
   },
 });
@@ -324,32 +282,11 @@ registry.register({
       await objectCreateFolder(pid, bkt, newPrefix);
     } catch (err) {
       rollback?.();
-      if (
-        typeof err === "object" &&
-        err !== null &&
-        "kind" in err &&
-        "message" in err &&
-        "retryable" in err
-      ) {
-        const policy = present(
-          err as Parameters<typeof present>[0],
-          "userInitiated",
-        );
-        await dispatch(
-          {
-            id: `mkdir-err-${Date.now().toString()}`,
-            severity: "error",
-            category: "userInitiated",
-            title: "Create folder failed",
-            message: (err as { message: string }).message,
-            resource: newPrefix,
-            operation: "create_folder",
-            timestamp: Date.now(),
-            details: err,
-          },
-          policy.placement,
-        );
-      }
+      await surfaceUnknownError(err, {
+        operation: "create_folder",
+        resource: newPrefix,
+        title: "Create folder failed",
+      });
     }
   },
 });
@@ -389,32 +326,11 @@ registry.register({
         }),
       );
     } catch (err) {
-      if (
-        typeof err === "object" &&
-        err !== null &&
-        "kind" in err &&
-        "message" in err &&
-        "retryable" in err
-      ) {
-        const policy = present(
-          err as Parameters<typeof present>[0],
-          "userInitiated",
-        );
-        await dispatch(
-          {
-            id: `presign-err-${Date.now().toString()}`,
-            severity: "error",
-            category: "userInitiated",
-            title: "Copy presigned URL failed",
-            message: (err as { message: string }).message,
-            resource: key,
-            operation: "presign",
-            timestamp: Date.now(),
-            details: err,
-          },
-          policy.placement,
-        );
-      }
+      await surfaceUnknownError(err, {
+        operation: "presign",
+        resource: key,
+        title: "Copy presigned URL failed",
+      });
     }
   },
 });

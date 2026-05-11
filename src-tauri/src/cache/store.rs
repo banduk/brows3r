@@ -32,7 +32,7 @@ use std::{
     time::Duration,
 };
 
-use redb::{Database, ReadableTable, TableDefinition};
+use redb::{Database, ReadableDatabase, ReadableTable, TableDefinition};
 use serde::{de::DeserializeOwned, Serialize};
 use serde_json::Value;
 
@@ -44,7 +44,7 @@ use super::{CacheConfig, CacheEntry, CacheKey, CacheRead, Freshness};
 // redb table definition
 // ---------------------------------------------------------------------------
 
-/// Single table: serialized CacheKey → JSON-encoded CacheEntry<Value>.
+/// Single table: serialized CacheKey → JSON-encoded `CacheEntry<Value>`.
 const CACHE_TABLE: TableDefinition<&[u8], &[u8]> = TableDefinition::new("cache");
 
 // ---------------------------------------------------------------------------

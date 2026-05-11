@@ -7,6 +7,7 @@
  */
 
 import { useState } from "react";
+import { surfaceUnknownError } from "@/lib/errors";
 import { DEFAULT_SETTINGS, useSettingsStore } from "@/store/settings";
 import { FieldRow, NumberInput, PanelActions } from "./_shared";
 
@@ -44,8 +45,12 @@ export function CachePanel() {
     setSaveError(null);
     try {
       await update({ cacheTtlSecs: ttlSecs, cacheSizeCapMb: sizeMb });
-    } catch {
+    } catch (err) {
       setSaveError("Failed to save cache settings.");
+      void surfaceUnknownError(err, {
+        operation: "settings_update.cache",
+        title: "Failed to save cache settings",
+      });
     } finally {
       setSaving(false);
     }

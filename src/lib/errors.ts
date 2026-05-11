@@ -349,3 +349,126 @@ export async function dispatch(
     });
   }
 }
+
+// ---------------------------------------------------------------------------
+// surfaceError — one-call convenience for user-facing error reporting
+// ---------------------------------------------------------------------------
+
+/** Human-friendly title for each AppError kind. */
+function titleForKind(kind: AppError["kind"]): string {
+  switch (kind) {
+    case "Auth":
+      return "Authentication failed";
+    case "AccessDenied":
+      return "Access denied";
+    case "NotFound":
+      return "Not found";
+    case "Conflict":
+      return "Conflict";
+    case "RateLimited":
+      return "Rate limited";
+    case "Unsupported":
+      return "Unsupported operation";
+    case "Network":
+      return "Network error";
+    case "Cancelled":
+      return "Cancelled";
+    case "Locked":
+      return "Resource locked";
+    case "Validation":
+      return "Invalid input";
+    case "ProviderSpecific":
+      return "Provider error";
+    case "Internal":
+      return "Internal error";
+  }
+}
+
+export interface SurfaceErrorOptions {
+  /** Logical operation name — appears in the notification ID + panel entry. */
+  operation: string;
+  /** Optional resource identifier the operation targeted (profile ID, bucket, key, etc.). */
+  resource?: string | null;
+  /** Defaults to `"userInitiated"`. */
+  context?: ErrorContext;
+  /** Override the auto-derived title (e.g. "Profile validation failed"). */
+  title?: string;
+}
+
+/**
+ * Surface a backend `AppError` through the standard notification pipeline.
+ *
+ * One-call helper that replaces the boilerplate of constructing a
+ * `Notification`, calling `present()`, and calling `dispatch()` at every
+ * mutation/onError site. Use this in:
+ *
+ * - `useMutation.onError` handlers
+ * - `try/catch` blocks around `await invoke(...)` calls
+ * - `useSuccess` handlers that receive `{ ok: false, error }` payloads
+ *
+ * Silently no-ops for `Cancelled` (its policy is `"silent"`).
+ */
+export async function surfaceError(
+  error: AppError,
+  opts: SurfaceErrorOptions,
+): Promise<void> {
+  const ctx = opts.context ?? "userInitiated";
+  const policy = present(error, ctx);
+  if (policy.placement === "silent") return;
+
+  const notification: Notification = {
+    id: `${opts.operation}:${opts.resource ?? "global"}:${Date.now()}`,
+    severity: policy.severity,
+    category: ctx,
+    title: opts.title ?? titleForKind(error.kind),
+    message: error.message,
+    resource: opts.resource ?? null,
+    operation: opts.operation,
+    timestamp: Date.now(),
+    details: "details" in error ? (error.details ?? null) : null,
+  };
+
+  await dispatch(notification, policy.placement);
+}
+
+/**
+ * Surface an arbitrary unknown error value.
+ *
+ * Wraps `surfaceError` for cases where the caller doesn't know the error
+ * shape upfront (typical `useMutation.onError` and `catch (err: unknown)`
+ * sites). When `err` is not an `AppError`, fabricates a synthetic
+ * `Internal`-shaped notification so the user still sees *something* rather
+ * than silence.
+ */
+export async function surfaceUnknownError(
+  err: unknown,
+  opts: SurfaceErrorOptions,
+): Promise<void> {
+  if (isAppError(err)) {
+    await surfaceError(err, opts);
+    return;
+  }
+
+  const ctx = opts.context ?? "userInitiated";
+  const message =
+    err !== null &&
+    typeof err === "object" &&
+    "message" in err &&
+    typeof (err as { message: unknown }).message === "string"
+      ? (err as { message: string }).message
+      : String(err);
+
+  const notification: Notification = {
+    id: `${opts.operation}:${opts.resource ?? "global"}:${Date.now()}`,
+    severity: "error",
+    category: ctx,
+    title: opts.title ?? "Unexpected error",
+    message,
+    resource: opts.resource ?? null,
+    operation: opts.operation,
+    timestamp: Date.now(),
+    details: null,
+  };
+
+  await dispatch(notification, "panel+toast");
+}

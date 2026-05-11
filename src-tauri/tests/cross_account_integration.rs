@@ -214,7 +214,7 @@ async fn large_file_threshold_validation_then_token_path() {
 
     // No token: should require confirmation.
     let confirmed_token: Option<String> = None;
-    let threshold: u64 = 1 * 1024 * 1024; // 1 MiB
+    let threshold: u64 = 1024 * 1024; // 1 MiB
     let source_size: u64 = data.len() as u64;
 
     let needs_confirmation = source_size > threshold && {

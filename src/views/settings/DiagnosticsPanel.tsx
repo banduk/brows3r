@@ -20,6 +20,7 @@ import {
   diagnosticsExport,
   type RedactionLevel,
 } from "@/api/diagnostics";
+import { surfaceUnknownError } from "@/lib/errors";
 import { DEFAULT_SETTINGS, useSettingsStore } from "@/store/settings";
 import { FieldRow, PanelActions, ToggleSwitch } from "./_shared";
 
@@ -61,8 +62,12 @@ export function DiagnosticsPanel() {
     setError(null);
     try {
       await update({ diagnosticsEnabled: enabled });
-    } catch {
+    } catch (err) {
       setError("Failed to save diagnostics settings.");
+      void surfaceUnknownError(err, {
+        operation: "settings_update.diagnostics",
+        title: "Failed to save diagnostics settings",
+      });
     } finally {
       setSaving(false);
     }
@@ -87,8 +92,12 @@ export function DiagnosticsPanel() {
     let bundleRef: BundleRef;
     try {
       bundleRef = await diagnosticsCollect(config);
-    } catch {
+    } catch (err) {
       setExportError("Failed to collect the diagnostic bundle.");
+      void surfaceUnknownError(err, {
+        operation: "diagnostics_collect",
+        title: "Failed to collect diagnostic bundle",
+      });
       setCollecting(false);
       return;
     }
@@ -115,8 +124,13 @@ export function DiagnosticsPanel() {
     try {
       await diagnosticsExport(bundleRef, savePath);
       setExportSuccess(savePath);
-    } catch {
+    } catch (err) {
       setExportError("Failed to save the diagnostic bundle.");
+      void surfaceUnknownError(err, {
+        operation: "diagnostics_export",
+        resource: savePath,
+        title: "Failed to save diagnostic bundle",
+      });
     } finally {
       setCollecting(false);
     }

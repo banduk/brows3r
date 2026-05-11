@@ -15,6 +15,7 @@ import { useState } from "react";
 import { detectConflicts } from "@/commands/conflicts";
 import { registry } from "@/commands/registry";
 import { BASELINE_SHORTCUTS, platformShortcut } from "@/commands/shortcuts";
+import { surfaceUnknownError } from "@/lib/errors";
 import { DEFAULT_SETTINGS, useSettingsStore } from "@/store/settings";
 import { PanelActions } from "./_shared";
 
@@ -135,8 +136,12 @@ export function ShortcutsPanel() {
     setError(null);
     try {
       await update({ keyboardShortcuts: overrides });
-    } catch {
+    } catch (err) {
       setError("Failed to save shortcut settings.");
+      void surfaceUnknownError(err, {
+        operation: "settings_update.shortcuts",
+        title: "Failed to save shortcut settings",
+      });
     } finally {
       setSaving(false);
     }

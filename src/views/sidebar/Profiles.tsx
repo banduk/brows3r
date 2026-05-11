@@ -24,6 +24,7 @@ import {
 } from "@/api/profiles";
 import { PopoverMenu } from "@/components/PopoverMenu";
 import { Button } from "@/components/ui/button";
+import { surfaceError, surfaceUnknownError } from "@/lib/errors";
 import { cn } from "@/lib/utils";
 import { keys } from "@/query/keys";
 import { usePanesStore } from "@/store/panes";
@@ -169,13 +170,38 @@ export function Profiles() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: keys.profiles() });
     },
+    onError: (err, profileId) =>
+      surfaceUnknownError(err, {
+        operation: "profile_delete",
+        resource: profileId,
+        title: "Failed to delete profile",
+      }),
   });
 
   const validateMutation = useMutation({
     mutationFn: (profileId: string) => profileValidate(profileId),
-    onSuccess: () => {
+    onSuccess: async (report) => {
       void queryClient.invalidateQueries({ queryKey: keys.profiles() });
+
+      // The backend's `profile_validate` command always returns Ok(report)
+      // even when the AWS probe fails — the failure lives in `report.error`.
+      // Without surfacing it here the user sees the validation dot stay
+      // grey/red with no clue about *why* (SSO token expired, region wrong,
+      // credentials missing, etc.).
+      if (!report.ok && report.error) {
+        await surfaceError(report.error, {
+          operation: "profile_validate",
+          resource: report.profileId,
+          title: "Profile validation failed",
+        });
+      }
     },
+    onError: (err, profileId) =>
+      surfaceUnknownError(err, {
+        operation: "profile_validate",
+        resource: profileId,
+        title: "Profile validation failed",
+      }),
   });
 
   function handleEdit(profile: ProfileSummary) {

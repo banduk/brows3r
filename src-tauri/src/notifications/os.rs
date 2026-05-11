@@ -158,6 +158,13 @@ pub struct MockOsChannel {
 }
 
 #[cfg(test)]
+impl Default for MockOsChannel {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+#[cfg(test)]
 impl MockOsChannel {
     pub fn new() -> Self {
         Self {
@@ -225,11 +232,13 @@ mod tests {
     use tokio::sync::Mutex;
 
     fn make_settings(os_enabled: bool) -> SettingsHandle {
-        let mut settings = Settings::default();
-        settings.notifications = NotificationSettings {
-            in_app: true,
-            os_enabled,
-            sound: false,
+        let settings = Settings {
+            notifications: NotificationSettings {
+                in_app: true,
+                os_enabled,
+                sound: false,
+            },
+            ..Settings::default()
         };
         SettingsHandle {
             inner: std::sync::Arc::new(Mutex::new(settings)),

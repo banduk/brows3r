@@ -137,6 +137,34 @@ pub async fn presign_get_object(
     })
 }
 
+/// Pure validation helper — exposed for unit tests in other modules.
+///
+/// Calling this from `objects_cmd` tests avoids the need for a real S3 client
+/// while still testing the same validation path as `presign_get_object`.
+#[doc(hidden)]
+pub fn presign_get_object_validate_only(expires_secs: u64) -> Result<(), AppError> {
+    validate_expires_secs(expires_secs)
+}
+
+/// Pure validation helper extracted so unit tests can call it without a real
+/// client.  The command and `presign_get_object` both call this inline for
+/// consistency.
+fn validate_expires_secs(expires_secs: u64) -> Result<(), AppError> {
+    if expires_secs < MIN_EXPIRES_SECS {
+        return Err(AppError::Validation {
+            field: "expires_secs".to_string(),
+            hint: format!("expires_secs must be at least {MIN_EXPIRES_SECS} seconds"),
+        });
+    }
+    if expires_secs > MAX_EXPIRES_SECS {
+        return Err(AppError::Validation {
+            field: "expires_secs".to_string(),
+            hint: format!("expires_secs must not exceed {MAX_EXPIRES_SECS} seconds (7 days)"),
+        });
+    }
+    Ok(())
+}
+
 // ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
@@ -233,32 +261,4 @@ mod tests {
             "expires_at must be within 1 s of now + expires_secs"
         );
     }
-}
-
-/// Pure validation helper — exposed for unit tests in other modules.
-///
-/// Calling this from `objects_cmd` tests avoids the need for a real S3 client
-/// while still testing the same validation path as `presign_get_object`.
-#[doc(hidden)]
-pub fn presign_get_object_validate_only(expires_secs: u64) -> Result<(), AppError> {
-    validate_expires_secs(expires_secs)
-}
-
-/// Pure validation helper extracted so unit tests can call it without a real
-/// client.  The command and `presign_get_object` both call this inline for
-/// consistency.
-fn validate_expires_secs(expires_secs: u64) -> Result<(), AppError> {
-    if expires_secs < MIN_EXPIRES_SECS {
-        return Err(AppError::Validation {
-            field: "expires_secs".to_string(),
-            hint: format!("expires_secs must be at least {MIN_EXPIRES_SECS} seconds"),
-        });
-    }
-    if expires_secs > MAX_EXPIRES_SECS {
-        return Err(AppError::Validation {
-            field: "expires_secs".to_string(),
-            hint: format!("expires_secs must not exceed {MAX_EXPIRES_SECS} seconds (7 days)"),
-        });
-    }
-    Ok(())
 }

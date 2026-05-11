@@ -70,6 +70,7 @@ import { bookmarkAdd, bookmarkRemove, bookmarksList } from "@/api/bookmarks";
 import { objectCreateFolder, objectsListFlat } from "@/api/objects";
 import { transferDownloadMany, transferUploadMany } from "@/api/transfers";
 import { registry } from "@/commands/registry";
+import { surfaceUnknownError } from "@/lib/errors";
 import { keys } from "@/query/keys";
 import {
   canBack as historyCanBack,
@@ -419,7 +420,15 @@ export function Toolbar() {
       };
     });
     if (specs.length === 0) return;
-    await transferUploadMany(specs);
+    try {
+      await transferUploadMany(specs);
+    } catch (err) {
+      await surfaceUnknownError(err, {
+        operation: "transfer_upload_many",
+        resource: bucket,
+        title: "Failed to start upload",
+      });
+    }
   }
 
   // ---------- Bookmark star: active state lookup ---------------------------
@@ -500,9 +509,17 @@ export function Toolbar() {
       const basename = onlyKey.split("/").pop() ?? onlyKey;
       const dest = await saveDialog({ defaultPath: basename });
       if (!dest) return;
-      await transferDownloadMany([
-        { profileId, bucket, key: onlyKey, destPath: dest },
-      ]);
+      try {
+        await transferDownloadMany([
+          { profileId, bucket, key: onlyKey, destPath: dest },
+        ]);
+      } catch (err) {
+        await surfaceUnknownError(err, {
+          operation: "transfer_download_many",
+          resource: onlyKey,
+          title: "Failed to start download",
+        });
+      }
       return;
     }
 
@@ -533,15 +550,24 @@ export function Toolbar() {
     // 1000 per page; loop with the continuation token to gather them all.
     const collected: string[] = [];
     let cursor: string | undefined;
-    do {
-      const page = await objectsListFlat(profileId, bucket, targetPrefix, {
-        continuationToken: cursor,
+    try {
+      do {
+        const page = await objectsListFlat(profileId, bucket, targetPrefix, {
+          continuationToken: cursor,
+        });
+        for (const entry of page.entries) {
+          if (!entry.isPrefix) collected.push(entry.key);
+        }
+        cursor = page.nextContinuationToken;
+      } while (cursor);
+    } catch (err) {
+      await surfaceUnknownError(err, {
+        operation: "objects_list_flat",
+        resource: `${bucket}/${targetPrefix}`,
+        title: "Failed to enumerate objects for download",
       });
-      for (const entry of page.entries) {
-        if (!entry.isPrefix) collected.push(entry.key);
-      }
-      cursor = page.nextContinuationToken;
-    } while (cursor);
+      return;
+    }
 
     if (collected.length === 0) {
       window.alert("Nothing to download — no objects under this prefix.");
@@ -561,7 +587,15 @@ export function Toolbar() {
         destPath: `${root}/${rel}`,
       };
     });
-    await transferDownloadMany(specs);
+    try {
+      await transferDownloadMany(specs);
+    } catch (err) {
+      await surfaceUnknownError(err, {
+        operation: "transfer_download_many",
+        resource: `${bucket}/${targetPrefix}`,
+        title: "Failed to start download",
+      });
+    }
   }
 
   /**
@@ -587,9 +621,11 @@ export function Toolbar() {
         await bookmarkRemove(activeBookmark.id);
         void queryClient.invalidateQueries({ queryKey: keys.bookmarks() });
       } catch (err) {
-        window.alert(
-          `Failed to remove bookmark: ${err instanceof Error ? err.message : String(err)}`,
-        );
+        await surfaceUnknownError(err, {
+          operation: "bookmark_remove",
+          resource: activeBookmark.id,
+          title: "Failed to remove bookmark",
+        });
       }
       return;
     }
@@ -599,9 +635,11 @@ export function Toolbar() {
       await bookmarkAdd(profileId, bucket, target);
       void queryClient.invalidateQueries({ queryKey: keys.bookmarks() });
     } catch (err) {
-      window.alert(
-        `Failed to add bookmark: ${err instanceof Error ? err.message : String(err)}`,
-      );
+      await surfaceUnknownError(err, {
+        operation: "bookmark_add",
+        resource: `${bucket}/${target}`,
+        title: "Failed to add bookmark",
+      });
     }
   }
 
@@ -619,9 +657,11 @@ export function Toolbar() {
     try {
       await objectCreateFolder(profileId, bucket, `${prefix}${normalised}`);
     } catch (err) {
-      window.alert(
-        `Failed to create folder: ${err instanceof Error ? err.message : String(err)}`,
-      );
+      await surfaceUnknownError(err, {
+        operation: "object_create_folder",
+        resource: `${bucket}/${prefix}${normalised}`,
+        title: "Failed to create folder",
+      });
     }
   }
 

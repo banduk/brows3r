@@ -7,6 +7,7 @@
  */
 
 import { useState } from "react";
+import { surfaceUnknownError } from "@/lib/errors";
 import { DEFAULT_SETTINGS, useSettingsStore } from "@/store/settings";
 import { FieldRow, PanelActions } from "./_shared";
 
@@ -45,8 +46,12 @@ export function DefaultViewPanel() {
     setError(null);
     try {
       await update({ defaultViewMode: viewMode });
-    } catch {
+    } catch (err) {
       setError("Failed to save default view settings.");
+      void surfaceUnknownError(err, {
+        operation: "settings_update.default_view",
+        title: "Failed to save default view settings",
+      });
     } finally {
       setSaving(false);
     }

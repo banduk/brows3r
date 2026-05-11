@@ -7,11 +7,11 @@
 //!
 //! - [`KeyringBackend`] — wraps the `keyring` crate; active on macOS
 //!   (Keychain), Windows (Credential Manager), and Linux (Secret Service).
-//! - [`FileBackend`] — AES-256-GCM encrypted `secrets.enc` sidecar; used
+//! - `FileBackend` — AES-256-GCM encrypted `secrets.enc` sidecar; used
 //!   when `KeyringBackend` init fails (headless Linux, CI, locked DBus).
 //!   Passphrase is supplied by the caller; prompting the user is deferred
 //!   to the Credential Manager UI in task 18.
-//! - [`StubBackend`] — in-memory `HashMap` for unit tests; gated behind
+//! - `StubBackend` — in-memory `HashMap` for unit tests; gated behind
 //!   the `test-keyring-stub` cargo feature.
 //!
 //! # OCP contract
@@ -27,7 +27,7 @@
 //! can never be emitted across Tauri IPC by accident. Fields are zeroed in
 //! memory on drop via [`zeroize::ZeroizeOnDrop`].
 //!
-//! Internal storage (keyring JSON blob, FileBackend map) uses [`StoredSecret`],
+//! Internal storage (keyring JSON blob, FileBackend map) uses `StoredSecret`,
 //! a private mirror that CAN serialize all fields. The two structs are
 //! intentionally separate to enforce the IPC-safe contract on `Secret`.
 
@@ -48,7 +48,7 @@ use crate::error::AppError;
 /// serialized via Tauri IPC (e.g. returned from a command), never leaks
 /// credentials. Memory is zeroed on drop via [`ZeroizeOnDrop`].
 ///
-/// Internal storage backends use [`StoredSecret`] to persist the actual values.
+/// Internal storage backends use `StoredSecret` to persist the actual values.
 #[derive(Debug, Clone, Serialize, Deserialize, Zeroize, ZeroizeOnDrop)]
 pub struct Secret {
     #[serde(skip_serializing)]
@@ -128,7 +128,7 @@ pub trait KeychainBackend: Send + Sync {
 /// Service name is fixed at `"brows3r"`. The per-entry credential name is
 /// `"profile:<profile_id>"`.
 ///
-/// Secrets are serialized as [`StoredSecret`] JSON before storage; the
+/// Secrets are serialized as `StoredSecret` JSON before storage; the
 /// `keyring` crate treats its value as an opaque password string, so JSON is
 /// the simplest portable encoding.
 pub struct KeyringBackend;
@@ -366,7 +366,7 @@ impl Drop for FileBackend {
 
 /// Public file-based keychain backend.
 ///
-/// Wraps [`FileBackend`] and stores the passphrase as a
+/// Wraps `FileBackend` and stores the passphrase as a
 /// [`zeroize::Zeroizing`] string so it is scrubbed from memory on drop.
 pub struct FileBackendWithPassphrase {
     inner: FileBackend,
