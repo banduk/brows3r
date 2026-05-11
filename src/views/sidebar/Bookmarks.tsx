@@ -14,7 +14,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { BookmarkIcon, FileIcon, MoreHorizontalIcon } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Bookmark } from "@/api/bookmarks";
 import {
   bookmarkAdd,
@@ -24,6 +24,7 @@ import {
 } from "@/api/bookmarks";
 import { PopoverMenu } from "@/components/PopoverMenu";
 import { Button } from "@/components/ui/button";
+import { surfaceUnknownError } from "@/lib/errors";
 import {
   useProfilesList,
   useValidatedProfile,
@@ -290,10 +291,24 @@ export function Bookmarks() {
     queryFn: bookmarksList,
   });
 
+  // Track orphan IDs that have already failed a removal attempt so the
+  // auto-prune loop below does not retry them on every render. Without this
+  // a permanent failure (disk full, file lock, malformed entry) would burn
+  // CPU forever and flood the notification panel.
+  const failedOrphanIds = useRef<Set<string>>(new Set());
+
   const removeMutation = useMutation({
     mutationFn: (id: string) => bookmarkRemove(id),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: keys.bookmarks() });
+    },
+    onError: (err, id) => {
+      failedOrphanIds.current.add(id);
+      return surfaceUnknownError(err, {
+        operation: "bookmark_remove",
+        resource: id,
+        title: "Failed to remove bookmark",
+      });
     },
   });
 
@@ -316,11 +331,16 @@ export function Bookmarks() {
     if (profilesLoading || isLoading) return;
     if (bookmarks.length === 0 || allProfiles.length === 0) return;
     const validIds = new Set(allProfiles.map((p) => p.id));
-    const orphans = bookmarks.filter((bm) => !validIds.has(bm.profileId));
+    const orphans = bookmarks.filter(
+      (bm) =>
+        !validIds.has(bm.profileId) && !failedOrphanIds.current.has(bm.id),
+    );
     for (const orphan of orphans) {
       // Fire-and-forget: each removeMutate call dedupes by mutation key
       // internally, and onSuccess invalidates the bookmarks query, so the
-      // list converges to the pruned state on the next render.
+      // list converges to the pruned state on the next render. Failures
+      // are tagged in failedOrphanIds (via removeMutation.onError) so we
+      // do not retry the same orphan forever.
       removeMutate(orphan.id);
     }
   }, [bookmarks, allProfiles, isLoading, profilesLoading, removeMutate]);
@@ -332,6 +352,12 @@ export function Bookmarks() {
       void queryClient.invalidateQueries({ queryKey: keys.bookmarks() });
       setEditTarget(null);
     },
+    onError: (err, vars) =>
+      surfaceUnknownError(err, {
+        operation: "bookmark_update",
+        resource: vars.id,
+        title: "Failed to update bookmark",
+      }),
   });
 
   function handleNavigate(bm: Bookmark) {

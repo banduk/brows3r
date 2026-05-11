@@ -24,47 +24,11 @@ import {
 } from "@/api/profiles";
 import { PopoverMenu } from "@/components/PopoverMenu";
 import { Button } from "@/components/ui/button";
-import { type AppError, dispatch, isAppError, present } from "@/lib/errors";
+import { surfaceError, surfaceUnknownError } from "@/lib/errors";
 import { cn } from "@/lib/utils";
 import { keys } from "@/query/keys";
 import { usePanesStore } from "@/store/panes";
 import { ProfileEditor } from "@/views/settings/ProfileEditor";
-
-// ---------------------------------------------------------------------------
-// Validation error surfacing
-// ---------------------------------------------------------------------------
-
-/**
- * Push a profile-validation failure into the notification system.
- *
- * `profile_validate` returns a `ValidationReport` with `ok: false` instead of
- * throwing on AWS-side failures (expired SSO token, wrong region, etc.). The
- * sidebar mutation used to discard that report entirely — the user only saw
- * the validation dot stay unvalidated, with no explanation. This funnels the
- * error through the standard `present()` + `dispatch()` pipeline so the same
- * placement rules other errors follow apply here.
- */
-async function surfaceValidationError(
-  profileId: string | null,
-  error: AppError,
-): Promise<void> {
-  const policy = present(error, "userInitiated");
-  if (policy.placement === "silent") return;
-  await dispatch(
-    {
-      id: `profile-validate:${profileId ?? "unknown"}:${Date.now()}`,
-      severity: policy.severity === "info" ? "info" : policy.severity,
-      category: "userInitiated",
-      title: `Profile validation failed (${error.kind})`,
-      message: error.message,
-      resource: profileId,
-      operation: "profile_validate",
-      timestamp: Date.now(),
-      details: "details" in error ? error.details : null,
-    },
-    policy.placement,
-  );
-}
 
 // ---------------------------------------------------------------------------
 // Source badge
@@ -206,6 +170,12 @@ export function Profiles() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: keys.profiles() });
     },
+    onError: (err, profileId) =>
+      surfaceUnknownError(err, {
+        operation: "profile_delete",
+        resource: profileId,
+        title: "Failed to delete profile",
+      }),
   });
 
   const validateMutation = useMutation({
@@ -219,16 +189,19 @@ export function Profiles() {
       // grey/red with no clue about *why* (SSO token expired, region wrong,
       // credentials missing, etc.).
       if (!report.ok && report.error) {
-        await surfaceValidationError(report.profileId, report.error);
+        await surfaceError(report.error, {
+          operation: "profile_validate",
+          resource: report.profileId,
+          title: "Profile validation failed",
+        });
       }
     },
-    onError: async (err) => {
-      // Hard IPC failure path (rare for validate, but possible if the
-      // command itself panics or returns Err).
-      if (isAppError(err)) {
-        await surfaceValidationError(null, err);
-      }
-    },
+    onError: (err, profileId) =>
+      surfaceUnknownError(err, {
+        operation: "profile_validate",
+        resource: profileId,
+        title: "Profile validation failed",
+      }),
   });
 
   function handleEdit(profile: ProfileSummary) {
