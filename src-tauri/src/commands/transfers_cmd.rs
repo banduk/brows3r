@@ -138,14 +138,15 @@ async fn enqueue_download(
             settings,
         );
 
-        let _ = download_object(
+        let id_for_err = request_id_clone.clone();
+        let result = download_object(
             client,
             bucket,
             key,
             dest_path,
             request_id_clone,
             &channel,
-            registry_handle,
+            registry_handle.clone(),
             lock_registry,
             cancel_rx,
             profile_id,
@@ -154,6 +155,22 @@ async fn enqueue_download(
             &os_notifier,
         )
         .await;
+
+        // download_object emits its own Failed state events on internal
+        // errors, but a non-emitting failure (lock acquisition, early
+        // setup, panic-equivalent) used to vanish silently. Persist the
+        // AppError on the Transfer record so TransferRow can render the
+        // reason instead of just a red badge.
+        if let Err(err) = result {
+            eprintln!("download task {id_for_err} failed: {err:?}");
+            let mut reg = registry_handle.0.write().await;
+            let _ = reg.update(&id_for_err, |t| {
+                t.error = Some(err);
+                if t.state != TransferState::Failed {
+                    t.state = TransferState::Failed;
+                }
+            });
+        }
     });
 
     Ok(request_id)
@@ -223,14 +240,15 @@ async fn enqueue_upload(
             settings,
         );
 
-        let _ = upload_object(
+        let id_for_err = request_id_clone.clone();
+        let result = upload_object(
             client,
             bucket,
             key,
             source_path,
             request_id_clone,
             &channel,
-            registry_handle,
+            registry_handle.clone(),
             lock_registry,
             multipart_table,
             PARTS_CONCURRENCY,
@@ -241,6 +259,20 @@ async fn enqueue_upload(
             &os_notifier,
         )
         .await;
+
+        // upload_object emits its own Failed state events on internal
+        // errors, but non-emitting failures used to vanish. Persist the
+        // AppError on the Transfer record so TransferRow can render it.
+        if let Err(err) = result {
+            eprintln!("upload task {id_for_err} failed: {err:?}");
+            let mut reg = registry_handle.0.write().await;
+            let _ = reg.update(&id_for_err, |t| {
+                t.error = Some(err);
+                if t.state != TransferState::Failed {
+                    t.state = TransferState::Failed;
+                }
+            });
+        }
     });
 
     Ok(request_id)
@@ -467,30 +499,32 @@ pub async fn transfer_upload_many(
     settings: State<'_, SettingsHandle>,
     channel: AppHandle,
 ) -> Result<Vec<String>, AppError> {
+    // Fail-fast on the first spec that cannot be enqueued. Previously this
+    // used `.unwrap_or_default()` which silently pushed an empty string for
+    // each failed spec — the frontend has no caller that distinguishes an
+    // empty id from a real one, so per-item failures were invisible. The
+    // user-visible payoff: a bad spec now surfaces in the toolbar's
+    // `surfaceUnknownError` instead of looking like "upload started" with
+    // nothing actually happening.
     let mut ids = Vec::with_capacity(specs.len());
     for spec in specs {
-        let id = async {
-            let (client, profile_id_resolved) =
-                resolve_client(&spec.profile_id, &store, &pool).await?;
-            let lock_registry = Arc::clone(&locks.0);
-            let multipart_arc = Arc::new(multipart_table.0.clone());
-            enqueue_upload(
-                profile_id_resolved,
-                spec.bucket,
-                spec.key,
-                PathBuf::from(spec.source_path),
-                &queue,
-                client,
-                lock_registry,
-                multipart_arc,
-                (*log).clone(),
-                (*settings).clone(),
-                channel.clone(),
-            )
-            .await
-        }
-        .await
-        .unwrap_or_default();
+        let (client, profile_id_resolved) = resolve_client(&spec.profile_id, &store, &pool).await?;
+        let lock_registry = Arc::clone(&locks.0);
+        let multipart_arc = Arc::new(multipart_table.0.clone());
+        let id = enqueue_upload(
+            profile_id_resolved,
+            spec.bucket,
+            spec.key,
+            PathBuf::from(spec.source_path),
+            &queue,
+            client,
+            lock_registry,
+            multipart_arc,
+            (*log).clone(),
+            (*settings).clone(),
+            channel.clone(),
+        )
+        .await?;
         ids.push(id);
     }
     Ok(ids)
@@ -514,28 +548,25 @@ pub async fn transfer_download_many(
     settings: State<'_, SettingsHandle>,
     channel: AppHandle,
 ) -> Result<Vec<String>, AppError> {
+    // Fail-fast on the first spec that cannot be enqueued. See
+    // `transfer_upload_many` for the full rationale — same change.
     let mut ids = Vec::with_capacity(specs.len());
     for spec in specs {
-        let id = async {
-            let (client, profile_id_resolved) =
-                resolve_client(&spec.profile_id, &store, &pool).await?;
-            let lock_registry = Arc::clone(&locks.0);
-            enqueue_download(
-                profile_id_resolved,
-                spec.bucket,
-                spec.key,
-                PathBuf::from(spec.dest_path),
-                &queue,
-                client,
-                lock_registry,
-                (*log).clone(),
-                (*settings).clone(),
-                channel.clone(),
-            )
-            .await
-        }
-        .await
-        .unwrap_or_default();
+        let (client, profile_id_resolved) = resolve_client(&spec.profile_id, &store, &pool).await?;
+        let lock_registry = Arc::clone(&locks.0);
+        let id = enqueue_download(
+            profile_id_resolved,
+            spec.bucket,
+            spec.key,
+            PathBuf::from(spec.dest_path),
+            &queue,
+            client,
+            lock_registry,
+            (*log).clone(),
+            (*settings).clone(),
+            channel.clone(),
+        )
+        .await?;
         ids.push(id);
     }
     Ok(ids)

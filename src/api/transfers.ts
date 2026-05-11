@@ -243,8 +243,10 @@ export function transferRetry(requestId: string): Promise<string> {
 /**
  * Bulk-enqueue multiple uploads.
  *
- * Returns a list of request IDs in the same order as `specs`.
- * Individual failures produce an empty string entry.
+ * Returns a list of request IDs in the same order as `specs`. The backend
+ * now fails-fast on the first un-enqueable spec — the call rejects with
+ * the underlying `AppError`. Callers should surface the rejection via
+ * `surfaceUnknownError` (see `Toolbar.handleUpload`).
  *
  * @param specs - Array of upload specs.
  * @returns Array of request IDs.
@@ -258,8 +260,9 @@ export function transferUploadMany(
 /**
  * Bulk-enqueue multiple downloads.
  *
- * Returns a list of request IDs in the same order as `specs`.
- * Individual failures produce an empty string entry.
+ * Returns a list of request IDs in the same order as `specs`. The backend
+ * now fails-fast on the first un-enqueable spec — see `transferUploadMany`
+ * for the full rationale.
  *
  * @param specs - Array of download specs.
  * @returns Array of request IDs.
