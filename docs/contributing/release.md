@@ -661,3 +661,119 @@ the release post.
   referencing the CHANGELOG entry.
 - If the key was rotated since the last release, include a prominent note that
   users on older versions must download manually (see Section 4.2).
+
+---
+
+## Alternative release strategies (future)
+
+The current pipeline (`release-please.yml` + chained build jobs +
+`release-build.yml` for manual recovery) implements **continuous release**:
+release-please keeps one open PR titled `chore(main): release X.Y.Z`,
+and merging that PR cuts the version. This page documents the most common
+community alternatives so the project can switch deliberately when the
+context changes.
+
+### Pattern 1 — Continuous release (current)
+
+What we have. release-please opens/refreshes a release PR on every push to
+`main`. Maintainer merges when ready.
+
+**Strengths**: zero ceremony, conventional-commit-driven version inference,
+PR works as a "ready-to-ship preview".
+
+**When to switch away**: contributors complain about a perma-open PR, or
+release cadence drops below ~monthly.
+
+### Pattern 2 — Manual-only
+
+Strip the `push` trigger from `release-please.yml`, leaving
+`workflow_dispatch` only. Maintainer clicks "Run workflow" in Actions when
+they want to consider a release.
+
+**Strengths**: no open PR until the maintainer asks for one. Fewer email
+notifications.
+
+**Trade-off**: forgotten releases — feature accumulates on `main` but
+nothing tells the maintainer "X commits since last release".
+
+### Pattern 3 — Channel-based (Chrome / Firefox / VS Code)
+
+Multiple long-lived branches map to release channels with distinct version
+schemes:
+
+```
+main      → stable   v1.2.3
+develop   → beta     v1.3.0-beta.4   ← continuous from `develop`
+nightly   → nightly  v1.4.0-dev.20260512  ← cron-built
+```
+
+release-please supports this via the `target-branch` input plus per-branch
+configs that set `prerelease: true` and `prerelease-type: "beta"`. Run one
+job per branch in a matrix.
+
+**Strengths**: enthusiasts test the beta, mainstream users stay on stable.
+Catches regressions before they reach the latter.
+
+**When to adopt**: brows3r grows a public beta tester pool.
+
+### Pattern 4 — Release branches (Git Flow)
+
+Cut `release/1.x` from `main` when the line stabilises; bug fixes land on
+the release branch (via cherry-pick from `main`) for the lifetime of the
+1.x series. Major version 2 branches from `main` later.
+
+**Strengths**: supports LTS in parallel with active development. Common in
+projects with downstream consumers locked to a major.
+
+**Trade-off**: heavy process. Worth it only when "v1 is in production at
+several places and we can't break them while building v2".
+
+### Pattern 5 — Tag-and-forget
+
+Delete `release-please.yml` entirely; you run `git tag v1.2.3 && git push
+--tags` manually. Enable the `push.tags` trigger in `release.yml` so the
+signed pipeline (or the unsigned `release-build.yml`) reacts to the tag.
+
+**Strengths**: zero infra moving parts.
+
+**Trade-off**: you maintain `CHANGELOG.md` and the three version files
+(`package.json`, `Cargo.toml`, `tauri.conf.json`) by hand. No conventional-
+commit version inference.
+
+### Builds for arbitrary branches (today, no setup needed)
+
+`release-build.yml` already accepts any ref via `workflow_dispatch`. To
+hand a colleague a binary built from `feature/foo`:
+
+```sh
+gh workflow run release-build.yml --repo banduk/brows3r --ref feature/foo \
+  -f tag=$(git rev-parse --short HEAD)
+```
+
+(The artefacts upload step uploads to a GitHub Release named after the
+tag input — for a feature-branch dry-run you'll see a "release not found"
+error after the build itself succeeds. The native bundles still appear in
+the workflow run's *Artifacts* section, downloadable from the Actions UI.)
+
+If feature-branch previews become routine, two cheap upgrades:
+
+1. Make the upload step conditional on a real release existing, so the
+   workflow succeeds for unreleased builds.
+2. Wire a PR-comment bot ("/preview") that runs release-build for the
+   PR's head branch and posts artefact URLs back to the PR.
+
+Neither is implemented yet — drop them in when the pain justifies the
+infra.
+
+### Choosing one
+
+| Symptom | Try |
+|---|---|
+| "Don't want the open release PR" | Pattern 2 — manual-only |
+| "Solo and prefer typing tags" | Pattern 5 — tag-and-forget |
+| "Want users to opt into beta channel" | Pattern 3 — channel-based |
+| "Need v1 maintained while building v2" | Pattern 4 — release branches |
+| "Need one-off binaries from feature branches" | Existing `release-build.yml` dispatch |
+
+Default for brows3r-the-solo-project is Pattern 1. Re-evaluate when the
+team grows past one or release cadence shifts.
