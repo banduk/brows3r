@@ -171,14 +171,19 @@ not API consumers.
 
 | Command | Use |
 |---|---|
-| `pnpm docs:dev` | Live-reload preview at `http://localhost:5173/`. |
-| `pnpm docs:build` | Full production build into `dist-docs/`. Catches dead links. |
-| `pnpm docs:preview` | Serve the production build locally. |
+| `pnpm docs:dev` | Live-reload preview at `http://localhost:5173/`. **API links 404 here** — TypeDoc/rustdoc only exist in `dist-docs/` after a build. |
+| `pnpm docs:build` | Full production build into `dist-docs/`. Catches dead links. Does NOT generate the API references. |
+| `pnpm docs:preview` | Serve `dist-docs/` locally at `http://localhost:4173/`. |
 | `pnpm docs:api:ts` | Regenerate TypeDoc into `dist-docs/api/ts/`. |
-| `(cd src-tauri && cargo doc --no-deps --open)` | rustdoc + open in browser. |
+| `pnpm docs:api:rust` | Regenerate rustdoc into `dist-docs/api/rust/` (with an index redirect). |
+| `pnpm docs:full` | Full pipeline: `docs:build` + both API regenerations. Mirrors what CI does. |
+| `pnpm docs:full:preview` | `docs:full` then `docs:preview`. Use this to validate API links locally. |
 
-The dev server picks up markdown changes instantly, sidebar/config changes
-require a restart.
+The dev server picks up markdown changes instantly; sidebar/config changes
+require a restart. If you want to click the **API** dropdown locally and
+actually land on the TypeScript or Rust references, run `docs:full:preview`
+— `docs:dev` will return 404 because those folders are only materialised
+during the full build.
 
 ## How the workflow runs
 

@@ -19,6 +19,9 @@
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
     "docs:api:ts": "typedoc",
+    "docs:api:rust": "cd src-tauri && cargo doc --no-deps --document-private-items && mkdir -p ../dist-docs/api/rust && cp -R target/doc/* ../dist-docs/api/rust/ && cd .. && (test -f dist-docs/api/rust/index.html || echo '<meta http-equiv=\"refresh\" content=\"0; url=brows3r_lib/\">' > dist-docs/api/rust/index.html)",
+    "docs:full": "pnpm docs:build && pnpm docs:api:ts && pnpm docs:api:rust",
+    "docs:full:preview": "pnpm docs:full && pnpm docs:preview",
     "postinstall": "lefthook install && node scripts/sync-pdf-worker.mjs"
   },
   "dependencies": {
