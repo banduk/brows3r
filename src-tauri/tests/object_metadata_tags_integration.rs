@@ -132,9 +132,12 @@ async fn set_metadata_round_trip_via_head_object() {
 
     setup_bucket_with_object(&client, bucket, key, "hello").await;
 
+    // `.metadata(k, v)` in aws-sdk-s3 already prefixes keys with `x-amz-meta-`
+    // when serialising the request. Passing the prefix manually would
+    // double-prefix the header, so the round-trip below would not find the key.
     let mut meta = HashMap::new();
-    meta.insert("x-amz-meta-author".to_string(), "alice".to_string());
-    meta.insert("x-amz-meta-version".to_string(), "2".to_string());
+    meta.insert("author".to_string(), "alice".to_string());
+    meta.insert("version".to_string(), "2".to_string());
 
     set_object_metadata(&client, bucket, key, meta, None)
         .await
