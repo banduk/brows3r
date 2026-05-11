@@ -1,0 +1,25 @@
+# Force LF for every text file regardless of the platform that checks the
+# repo out. Without this, Windows runners inherit `core.autocrlf=true` and
+# rewrite line endings on checkout — biome then sees CRLF and fails the
+# `Lint (Biome)` CI step with a sea of phantom format diffs.
+* text=auto eol=lf
+
+# Windows-only scripts must stay CRLF.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# Binary assets — never normalise.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.icns binary
+*.pdf binary
+*.parquet binary
+*.zip binary
+*.tar binary
+*.gz binary
+*.wasm binary

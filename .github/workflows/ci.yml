@@ -107,12 +107,14 @@ jobs:
     name: integration (ubuntu-latest + LocalStack)
     runs-on: ubuntu-latest
 
-    # TODO: pin to a specific digest once a stable digest is identified, e.g.:
-    #   image: localstack/localstack@sha256:<digest>
-    # Using the :stable tag for now; track in a follow-up task.
+    # Pin to a free 3.x tag — LocalStack's `:stable` tag started requiring a
+    # Pro license in May 2026 (the Pro license-check now runs unconditionally
+    # at startup and aborts the container if no LOCALSTACK_AUTH_TOKEN is set).
+    # The `3` tag still ships the community build, which is all we need for
+    # S3-only integration coverage.
     services:
       localstack:
-        image: localstack/localstack:stable
+        image: localstack/localstack:3
         ports:
           - 4566:4566
         env:

@@ -1,3 +1,25 @@
+// Crate-wide clippy allow-list.
+//
+// The Rust 1.95+ toolchain promoted three lints that fire heavily across
+// this crate and that we deliberately leave as-is for v1 — the cost of
+// refactoring outweighs the readability gain right now. CI runs clippy with
+// `-D warnings`, so an unmuted lint becomes a hard fail.
+//
+//   - too_many_arguments         : Tauri command handlers receive multiple
+//                                  `State<…>` args plus the operation params.
+//                                  Splitting them into a struct hurts call-site
+//                                  ergonomics without a clear payoff.
+//   - doc_overindented_list_items: doc-comment list style renders fine in our
+//                                  current renderer; not worth a sweep.
+//   - collapsible_match          : one outer match + inner if-else reads more
+//                                  clearly than a guarded match arm in
+//                                  `cache/capability.rs::map_error_to_class`.
+//
+// Future cleanup: remove individually once a refactor sweep is scheduled.
+#![allow(clippy::too_many_arguments)]
+#![allow(clippy::doc_overindented_list_items)]
+#![allow(clippy::collapsible_match)]
+
 pub mod bookmarks;
 pub mod cache;
 pub mod commands;
