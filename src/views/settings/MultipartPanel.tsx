@@ -21,6 +21,7 @@ import {
   multipartScan,
 } from "@/api/transfers";
 import { Button } from "@/components/ui/button";
+import { surfaceUnknownError } from "@/lib/errors";
 import { formatRelative } from "@/lib/format";
 import { usePanesStore } from "@/store/panes";
 
@@ -67,9 +68,11 @@ export function MultipartPanel() {
       );
       await queryClient.invalidateQueries({ queryKey: ["multipart"] });
     } catch (err) {
-      window.alert(
-        `Abort failed: ${err instanceof Error ? err.message : String(err)}`,
-      );
+      await surfaceUnknownError(err, {
+        operation: "multipart_abort",
+        resource: `${bucket}/${upload.key}#${upload.uploadId}`,
+        title: "Failed to abort multipart upload",
+      });
     }
   }
 
