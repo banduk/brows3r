@@ -184,11 +184,23 @@ async fn localstack_bucket_inspect_happy_path() {
 
 // ---------------------------------------------------------------------------
 // Denied section: AccessDenied → SectionResult::Denied + capability cache
+//
+// Requires a backend that actually validates IAM credentials. LocalStack's
+// community edition (the one CI uses) is permissive — it accepts any access
+// key/secret and returns 200 for every authenticated call, so the "bad creds"
+// path here never produces a `Denied` section and the assertion below fails.
+// Gated by `INTEGRATION_IAM_ENFORCED=1`. Set that against real AWS or
+// LocalStack Pro (`LOCALSTACK_AUTH_TOKEN` + `IAM_SOFT_MODE=0`).
 // ---------------------------------------------------------------------------
 
 #[cfg_attr(not(feature = "integration"), ignore)]
 #[tokio::test]
 async fn localstack_bucket_inspect_denied_section_recorded_in_cache() {
+    if std::env::var("INTEGRATION_IAM_ENFORCED").ok().as_deref() != Some("1") {
+        eprintln!("skipping: INTEGRATION_IAM_ENFORCED!=1 — LocalStack community accepts any creds");
+        return;
+    }
+
     let url = match localstack_url() {
         Some(u) => u,
         None => return,
