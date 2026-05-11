@@ -199,11 +199,12 @@ impl Default for Redactor {
 /// Return the current user's home directory as a string, without a trailing
 /// slash.  Returns `None` when the home directory cannot be determined.
 fn dirs_home() -> Option<String> {
-    // `HOME` env var is the most portable approach; avoids pulling in the
-    // `dirs` crate just for this one function.
+    // `HOME` on Unix, `USERPROFILE` on Windows. Probing both keeps us off the
+    // `dirs` crate while still working on every CI runner platform.
     std::env::var("HOME")
+        .or_else(|_| std::env::var("USERPROFILE"))
         .ok()
-        .map(|h| h.trim_end_matches('/').to_owned())
+        .map(|h| h.trim_end_matches(['/', '\\']).to_owned())
 }
 
 // ---------------------------------------------------------------------------
@@ -368,9 +369,18 @@ mod tests {
     fn home_path_positive_literal() {
         let r = Redactor::new();
         let input = fixture("home_path.positive.txt");
-        // Replace the placeholder with the actual home dir so the fixture
-        // works regardless of the test runner's home dir.
-        let home = std::env::var("HOME").unwrap_or_default();
+        // Resolve the home directory in a cross-platform way: $HOME on
+        // Unix, %USERPROFILE% on Windows. The previous std::env::var("HOME")
+        // returned an empty string on the CI Windows runner and the
+        // fixture-with-empty-prefix doesn't trip the redactor's path
+        // pattern, so the assertion below failed.
+        let home = std::env::var("HOME")
+            .or_else(|_| std::env::var("USERPROFILE"))
+            .unwrap_or_default();
+        assert!(
+            !home.is_empty(),
+            "test setup error: neither HOME nor USERPROFILE is set",
+        );
         let input = input.replace("__HOME__", &home);
         let got = r.redact_path(&input);
         assert!(
