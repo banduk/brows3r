@@ -62,7 +62,7 @@ async fn make_client(
 ) {
     use brows3r_lib::{
         ids::ProfileId,
-        profiles::compat_flags::{AddressingStyle, CompatFlags},
+        profiles::compat_flags::{AddressingStyle, ChecksumMode, CompatFlags},
         s3::{ClientPool, ProxyConfig},
     };
 
@@ -70,6 +70,13 @@ async fn make_client(
     let compat = CompatFlags {
         endpoint_url: Some(url.to_owned()),
         addressing_style: AddressingStyle::Path,
+        // LocalStack 3.x community rejects upload_part calls that carry the
+        // default aws-sdk-s3 1.x flexible-checksum trailer (CRC32). Single
+        // PutObject works because it stamps the checksum as a header; multipart
+        // UploadPart streams via trailers, which LocalStack's chunked-encoding
+        // path can't parse. Disabling client-side checksum makes the SDK switch
+        // to `WhenRequired`, dropping the trailer.
+        checksum_mode: ChecksumMode::Disabled,
         ..Default::default()
     };
 
