@@ -114,6 +114,37 @@ interface UiState {
   textPreviewPrefs: TextPreviewPrefs;
   /** Resizable column widths for the file list (Details view). */
   detailsColumnWidths: DetailsColumnWidths;
+  /**
+   * When `true` the Activity Center (transfer history + filters)
+   * replaces the main pane. The floating Transfer Manager popup stays
+   * available for ambient awareness.
+   */
+  activityCenterOpen: boolean;
+  /**
+   * When `true` the Notifications Center (errors + warnings + info
+   * messages) replaces the main pane. Mutually exclusive with the
+   * Activity Center — opening one closes the other.
+   */
+  notificationsCenterOpen: boolean;
+  /**
+   * Unix-ms timestamp of the last time the user opened the Activity
+   * Center. Drives the "new download" highlight on the status-bar chip:
+   * transfers finished AFTER this stamp count as "unseen".
+   */
+  activityLastSeenAt: number;
+  /**
+   * Unix-ms timestamp of the last time the user opened the
+   * Notifications Center.
+   */
+  notificationsLastSeenAt: number;
+  /**
+   * Unix-ms timestamp of the last time a new download/upload was kicked
+   * off. Drives a short attention-grabbing flash on the Activity chip
+   * — the chip is "highlighted" while `Date.now() - activityFlashAt`
+   * is below the flash window. Resets to 0 once the user opens the
+   * Activity Center.
+   */
+  activityFlashAt: number;
 
   setTheme(theme: UiState["theme"]): void;
   toggleSidebar(): void;
@@ -132,6 +163,16 @@ interface UiState {
   setDetailsColumnWidth(column: keyof DetailsColumnWidths, px: number): void;
   /** Restore the default details-table column widths. */
   resetDetailsColumnWidths(): void;
+  /** Toggle the Activity Center on/off. */
+  toggleActivityCenter(): void;
+  /** Explicitly set the Activity Center state. */
+  setActivityCenterOpen(open: boolean): void;
+  /** Toggle the Notifications Center on/off. */
+  toggleNotificationsCenter(): void;
+  /** Explicitly set the Notifications Center state. */
+  setNotificationsCenterOpen(open: boolean): void;
+  /** Stamp the activity chip "flash" timestamp to now. */
+  flashActivity(): void;
 }
 
 // ---------------------------------------------------------------------------
@@ -152,6 +193,11 @@ export const useUiStore = create<UiState>()(
       firstRunCompleted: false,
       textPreviewPrefs: { ...DEFAULT_TEXT_PREVIEW_PREFS },
       detailsColumnWidths: { ...DEFAULT_DETAILS_COLUMN_WIDTHS },
+      activityCenterOpen: false,
+      notificationsCenterOpen: false,
+      activityLastSeenAt: 0,
+      notificationsLastSeenAt: 0,
+      activityFlashAt: 0,
 
       // ---- actions ----
       setTheme: (theme) => set({ theme }),
@@ -190,6 +236,48 @@ export const useUiStore = create<UiState>()(
         })),
       resetDetailsColumnWidths: () =>
         set({ detailsColumnWidths: { ...DEFAULT_DETAILS_COLUMN_WIDTHS } }),
+      toggleActivityCenter: () =>
+        set((s) => {
+          const nextOpen = !s.activityCenterOpen;
+          return {
+            activityCenterOpen: nextOpen,
+            // Mutually exclusive with the Notifications Center.
+            notificationsCenterOpen: nextOpen
+              ? false
+              : s.notificationsCenterOpen,
+            // Opening counts as "seen" — clears the unseen dot AND the
+            // attention flash from a new download.
+            activityLastSeenAt: nextOpen ? Date.now() : s.activityLastSeenAt,
+            activityFlashAt: nextOpen ? 0 : s.activityFlashAt,
+          };
+        }),
+      setActivityCenterOpen: (open) =>
+        set((s) => ({
+          activityCenterOpen: open,
+          notificationsCenterOpen: open ? false : s.notificationsCenterOpen,
+          activityLastSeenAt: open ? Date.now() : s.activityLastSeenAt,
+          activityFlashAt: open ? 0 : s.activityFlashAt,
+        })),
+      toggleNotificationsCenter: () =>
+        set((s) => {
+          const nextOpen = !s.notificationsCenterOpen;
+          return {
+            notificationsCenterOpen: nextOpen,
+            activityCenterOpen: nextOpen ? false : s.activityCenterOpen,
+            notificationsLastSeenAt: nextOpen
+              ? Date.now()
+              : s.notificationsLastSeenAt,
+          };
+        }),
+      setNotificationsCenterOpen: (open) =>
+        set((s) => ({
+          notificationsCenterOpen: open,
+          activityCenterOpen: open ? false : s.activityCenterOpen,
+          notificationsLastSeenAt: open
+            ? Date.now()
+            : s.notificationsLastSeenAt,
+        })),
+      flashActivity: () => set({ activityFlashAt: Date.now() }),
     }),
     {
       // Bumped from "brows3r-ui" → "brows3r-ui-v2" so any old localStorage

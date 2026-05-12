@@ -1,0 +1,379 @@
+{
+  "menu": {
+    "file": {
+      "open": "打开",
+      "download": "下载",
+      "copyPresignedUrl": "复制预签名 URL",
+      "delete": "删除",
+      "createFolder": "在此创建文件夹",
+      "properties": "属性",
+      "refresh": "刷新",
+      "bookmarkLocation": "收藏此位置",
+      "bookmarkFirst": "收藏第一个选中项",
+      "bookmarkItem": "收藏此项",
+      "actions": "操作"
+    },
+    "tooltip": {
+      "disabledLockSuffix": "进行中"
+    }
+  },
+  "common": {
+    "save": "保存",
+    "cancel": "取消",
+    "close": "关闭",
+    "ok": "确定",
+    "retry": "重试",
+    "reset": "重置",
+    "edit": "编辑",
+    "select": "选择",
+    "loading": "加载中…",
+    "search": "搜索",
+    "filter": "筛选",
+    "select_a_file_to_preview": "选择文件以预览",
+    "select_all": "全选"
+  },
+  "sidebar": {
+    "label": "侧边栏",
+    "profiles": "配置文件",
+    "addProfile": "添加配置文件",
+    "bookmarks": "书签",
+    "recents": "最近"
+  },
+  "profiles": {
+    "loading": "正在加载配置文件…",
+    "loadError": "加载配置文件失败。",
+    "checkNotifications": "请查看通知面板了解详情。",
+    "empty": "未找到配置文件。点击\"添加配置文件\"开始。",
+    "listAria": "配置文件列表",
+    "rowActionsAria": "{{name}} 的操作",
+    "edit": "编辑",
+    "validate": "验证",
+    "delete": "删除",
+    "deleteConfirm": "删除配置文件 \"{{name}}\"?此操作无法撤销。",
+    "validatedRecently": "已验证",
+    "validationStale": "验证已过期",
+    "notValidated": "未验证",
+    "validating": "正在验证…",
+    "errorWithReason": "验证失败:{{reason}}"
+  },
+  "bookmarks": {
+    "loading": "正在加载书签…",
+    "loadError": "加载书签失败。",
+    "empty": "还没有书签。",
+    "listAria": "书签列表",
+    "rowActionsAria": "{{name}} 的操作",
+    "rename": "重命名…",
+    "remove": "移除书签",
+    "removeConfirm": "移除书签 \"{{name}}\"?\n\n这仅移除侧边栏的快捷方式;S3 中的 bucket/文件夹/对象不会被改动。",
+    "editAria": "编辑书签",
+    "renameTitle": "重命名书签",
+    "labelPlaceholder": "标签(留空使用前缀)",
+    "validateTooltip": "验证此配置文件以使用此书签",
+    "validateToUse": "验证后可用"
+  },
+  "breadcrumb": {
+    "label": "面包屑导航",
+    "editAria": "前往路径"
+  },
+  "buckets": {
+    "gateTitle": "配置文件未验证",
+    "gateBody": "在列出存储桶之前,从侧边栏验证配置文件。",
+    "loading": "正在加载存储桶…",
+    "loadError": "加载存储桶失败",
+    "emptyTitle": "未找到存储桶",
+    "emptyBody": "此配置文件无法访问任何 S3 存储桶。",
+    "filterNoMatch": "没有匹配 \"{{filter}}\" 的存储桶",
+    "filterClearHint": "清除筛选(Esc)或调整查询。",
+    "listAria": "存储桶列表"
+  },
+  "preview": {
+    "label": "预览",
+    "empty": "选择文件以预览",
+    "validateGate": "验证此配置文件以预览文件",
+    "sizeLimit": "文件大小 {{size}} MB — 超过 {{limit}} MB 的预览限制。",
+    "previewAnyway": "仍然预览",
+    "editInMonaco": "在 Monaco 中编辑",
+    "exitEdit": "退出编辑模式"
+  },
+  "toolbar": {
+    "label": "文件浏览器工具栏",
+    "back": "后退",
+    "forward": "前进",
+    "up": "上一级",
+    "refresh": "刷新",
+    "inspect": "查看选择",
+    "upload": "上传文件",
+    "downloadFile": "下载所选文件",
+    "downloadBulk": "下载(文件夹/存储桶——逐个对象获取)",
+    "newFolder": "新建文件夹",
+    "bookmarkRemove": "移除书签",
+    "bookmarkObject": "为所选对象添加书签",
+    "bookmarkLocation": "为此位置添加书签",
+    "filterAria": "筛选(模糊)",
+    "filterTooltip": "筛选当前视图——按 \"/\" 聚焦,Esc 清除",
+    "filterPlaceholder": "筛选… 按 \"/\"",
+    "viewModeAria": "查看模式:{{label}}",
+    "viewModeMenuAria": "查看模式",
+    "viewMode": {
+      "details": "详情",
+      "icons": "图标",
+      "gallery": "画廊",
+      "columns": "列",
+      "tree": "树",
+      "flatKey": "扁平键",
+      "dualPane": "双窗格"
+    }
+  },
+  "statusBar": {
+    "label": "状态栏",
+    "noLocation": "无位置",
+    "noProfile": "无配置文件",
+    "validated": "已验证",
+    "notValidated": "未验证",
+    "openSettings": "打开设置 (⌘,)",
+    "shortcuts": {
+      "aria": "键盘快捷键",
+      "label": "按键",
+      "title": "键盘快捷键"
+    }
+  },
+  "activity": {
+    "label": "下载",
+    "titleActive": "{{count}} 个活动传输 — {{pct}}%",
+    "titleCompleted": "{{count}} 个已完成的传输",
+    "titleUnseen": "上次查看后新增 {{count}} 个",
+    "titleIdle": "无传输"
+  },
+  "notificationsChip": {
+    "label": "通知",
+    "titleErrors": "{{count}} 个新错误 — 点击查看",
+    "titleUnseen": "{{count}} 条新通知",
+    "titleTotal": "{{count}} 条通知",
+    "titleIdle": "无通知"
+  },
+  "notificationsCenter": {
+    "label": "通知中心",
+    "title": "通知",
+    "subtitle": "错误、警告和信息提示",
+    "close": "关闭通知中心",
+    "clearAll": "全部清除",
+    "filtersAria": "按严重级别筛选",
+    "searchPlaceholder": "按标题或消息搜索…",
+    "clearSearch": "清除搜索",
+    "userBadge": "用户",
+    "dismissAria": "关闭通知:{{name}}",
+    "filter": {
+      "all": "全部",
+      "error": "错误",
+      "warning": "警告",
+      "info": "信息",
+      "success": "成功"
+    },
+    "stats": {
+      "total": "共 {{count}} 条",
+      "errors": "{{count}} 个错误",
+      "warnings": "{{count}} 个警告",
+      "info": "{{count}} 条信息",
+      "success": "{{count}} 个成功"
+    },
+    "empty": {
+      "title": "暂无通知",
+      "body": "活动中的错误、警告和提示会在此显示。",
+      "filteredTitle": "没有匹配此筛选的内容",
+      "searchTitle": "无匹配",
+      "searchBody": "没有通知匹配 \"{{query}}\"。"
+    }
+  },
+  "recents": {
+    "sectionAria": "最近位置",
+    "loading": "正在加载最近…",
+    "loadError": "加载最近失败。",
+    "empty": "没有最近位置。",
+    "listAria": "最近位置列表",
+    "showAll": "全部显示({{count}})",
+    "showLess": "显示更少",
+    "clear": "清空最近",
+    "validateTooltip": "验证此配置文件以使用此位置",
+    "validateToUse": "验证后可用"
+  },
+  "settings": {
+    "title": "设置",
+    "loading": "正在加载设置…",
+    "close": "关闭设置",
+    "resetAll": "全部重置",
+    "resetAllAria": "将所有设置重置为默认值",
+    "resetDefaults": "重置为默认值",
+    "saving": "保存中…",
+    "sectionsAria": "设置分类",
+    "tabs": {
+      "general": "常规",
+      "transfers": "传输",
+      "preview": "预览",
+      "shortcuts": "快捷键",
+      "notifications": "通知",
+      "endpoints": "端点",
+      "updates": "更新",
+      "diagnostics": "诊断",
+      "startup": "启动",
+      "proxy": "代理",
+      "cache": "缓存",
+      "fallback": "回退",
+      "confirmations": "确认",
+      "defaultView": "默认视图",
+      "multipart": "Multipart 清理"
+    },
+    "section": {
+      "appearance": "外观",
+      "language": "语言",
+      "proxy": "代理",
+      "transfers": "传输",
+      "cache": "缓存",
+      "diagnostics": "诊断"
+    },
+    "language": {
+      "label": "界面语言",
+      "description": "为菜单、按钮和对话框选择语言。",
+      "resetKeychain": "重置钥匙串密码提示"
+    },
+    "autoRefresh": {
+      "label": "自动验证",
+      "toggleLabel": "定期重新验证配置文件",
+      "description": "在后台刷新会话凭据(SSO 令牌、扮演角色),避免在使用之间过期。默认关闭。",
+      "cadenceLabel": "刷新间隔(分钟)"
+    },
+    "theme": {
+      "system": "跟随系统",
+      "light": "浅色",
+      "dark": "深色"
+    }
+  },
+  "keychain": {
+    "promptTitle": "钥匙串不可用",
+    "promptDescription": "系统钥匙串不可用。请输入密码以在本地加密您的凭据。我们会记住您的选择用于后续启动;您可以在设置中重置。",
+    "passphrase": "密码",
+    "confirmPassphrase": "确认密码",
+    "setPassphrase": "设置密码",
+    "unlocking": "解锁中…",
+    "errors": {
+      "empty": "密码不能为空。",
+      "mismatch": "两次输入的密码不一致。",
+      "generic": "解锁钥匙串失败,请重试。"
+    }
+  },
+  "errors": {
+    "loadFileFailed": "加载文件失败",
+    "saveFailed": "保存失败"
+  },
+  "activityCenter": {
+    "label": "活动中心",
+    "title": "活动",
+    "subtitle": "传输历史、筛选和会话统计",
+    "close": "关闭活动中心",
+    "filtersAria": "按状态筛选",
+    "statsAria": "会话总计",
+    "searchPlaceholder": "按文件名或路径搜索…",
+    "clearSearch": "清除搜索",
+    "sortBy": "排序",
+    "filter": {
+      "all": "全部",
+      "active": "进行中",
+      "completed": "已完成",
+      "failed": "失败"
+    },
+    "sort": {
+      "newest": "最新优先",
+      "oldest": "最旧优先",
+      "largest": "最大优先"
+    },
+    "stats": {
+      "active": "{{count}} 个进行中",
+      "completed": "{{count}} 个已完成",
+      "failed": "{{count}} 个失败",
+      "transferred": "本次会话已传输 {{bytes}}"
+    },
+    "empty": {
+      "title": "暂无传输",
+      "body": "下载和上传将在你开始时显示在此处。",
+      "filteredTitle": "没有匹配此筛选的内容",
+      "searchTitle": "无匹配",
+      "searchBody": "历史记录中没有匹配 \"{{query}}\" 的项。"
+    }
+  },
+  "transferManager": {
+    "label": "传输管理器",
+    "title": "传输",
+    "viewAll": "查看全部",
+    "empty": "无传输",
+    "expand": "展开传输管理器",
+    "minimize": "最小化传输管理器",
+    "close": "关闭传输管理器",
+    "clearCompleted": "清空已完成",
+    "pillCount": "{{count}} 个传输",
+    "activeCountTitle": "{{count}} 个活动",
+    "activeSection": "活动传输",
+    "completedSection": "已完成传输",
+    "completedCount": "已完成({{count}})",
+    "announce": {
+      "downloadDone": "下载完成:{{name}}",
+      "uploadDone": "上传完成:{{name}}",
+      "downloadFailed": "下载失败:{{name}}",
+      "uploadFailed": "上传失败:{{name}}",
+      "canceled": "传输已取消:{{name}}"
+    }
+  },
+  "transferGroup": {
+    "title": "{{name}}({{count}} 个文件)",
+    "files": "个文件",
+    "partial": "已完成 {{done}}/{{total}}",
+    "progressAria": "{{name}} 完成 {{pct}}%",
+    "cancelAll": "全部取消"
+  },
+  "transferRow": {
+    "upload": "上传",
+    "download": "下载",
+    "progressAria": "{{name}} 完成 {{pct}}%",
+    "eta": "预计:{{value}}",
+    "partsTitle": "分片",
+    "startedAt": "开始于 {{time}}",
+    "startedAgo": "开始于 {{ago}}",
+    "stateDone": "完成",
+    "stateFailed": "失败",
+    "stateCanceled": "已取消",
+    "cancel": "取消",
+    "retry": "重试",
+    "cancelAria": "取消 {{name}}",
+    "retryAria": "重试 {{name}}"
+  },
+  "transfers": {
+    "downloadComplete": {
+      "title": "下载完成",
+      "messageOne": "{{name}} 已保存。",
+      "messageMany": "已保存 {{count}} 个文件。",
+      "openFolder": "打开文件夹",
+      "revealFailed": "无法打开目标文件夹。"
+    }
+  },
+  "transfersStarted": {
+    "titleDownload": "下载已开始",
+    "titleUpload": "上传已开始",
+    "messageOne": "1 个文件已加入队列。在活动中心查看进度。",
+    "messageMany": "{{count}} 个文件已加入队列。在活动中心查看进度。",
+    "view": "查看"
+  },
+  "bulkDownload": {
+    "title": "确认下载",
+    "description": "S3 没有 zip/tar 快捷方式,每个对象需要单独下载。开始前请确认总数。",
+    "files": "文件",
+    "size": "总大小",
+    "eta": "预计时间",
+    "etaTooltip": "基于保守的 25 Mbps 连接估算。",
+    "destination": "目标",
+    "counting": "(计数中…)",
+    "riskWarning": "大型操作:下载将花费一段时间并占用大量磁盘空间和带宽。你可以随时在传输管理器中取消。",
+    "cancelHint": "每个传输都可以在传输管理器(⌘⇧J)中单独取消。",
+    "startDownload": "开始下载",
+    "startDownloadWithSummary": "开始下载({{files}} 个文件,{{size}})",
+    "emptyTitle": "没有要下载的内容",
+    "emptyMessage": "所选项中没有对象。"
+  }
+}

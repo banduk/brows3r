@@ -44,6 +44,7 @@ import {
   useObjects,
   useValidatedProfile,
 } from "@/query/hooks/useValidatedProfile";
+import { FileContextMenu } from "@/views/browser/ContextMenu";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -82,6 +83,7 @@ interface ColumnEntryProps {
   isActive: boolean;
   isCursor: boolean;
   onClick: (entry: ObjectEntry) => void;
+  onContextMenu: (entry: ObjectEntry) => void;
 }
 
 function ColumnEntry({
@@ -90,6 +92,7 @@ function ColumnEntry({
   isActive,
   isCursor,
   onClick,
+  onContextMenu,
 }: ColumnEntryProps) {
   const name = entryName(entry);
   const ext = entryExtension(entry);
@@ -103,10 +106,11 @@ function ColumnEntry({
         "hover:bg-accent/50",
         isSelected && "bg-accent text-accent-foreground",
         isActive && !isSelected && "bg-muted/40",
-        isCursor && !isSelected && "ring-1 ring-inset ring-ring",
+        isCursor && "ring-2 ring-inset ring-primary",
       )}
       style={{ height: 28 }}
       onClick={() => onClick(entry)}
+      onContextMenu={() => onContextMenu(entry)}
       data-testid={`col-entry-${entry.key}`}
     >
       <FileIcon
@@ -115,7 +119,9 @@ function ColumnEntry({
         className="shrink-0 text-muted-foreground"
         size={14}
       />
-      <span className="flex-1 truncate">{name}</span>
+      <span className="flex-1 truncate" title={name}>
+        {name}
+      </span>
       {entry.isPrefix && (
         <span className="shrink-0 text-[10px] text-muted-foreground">▶</span>
       )}
@@ -140,6 +146,7 @@ interface SingleColumnProps {
   /** Row index of the keyboard cursor inside this column. */
   cursorIndex: number;
   onEntryClick: (entry: ObjectEntry, colIndex: number) => void;
+  onEntryContextMenu: (entry: ObjectEntry, colIndex: number) => void;
   /** Reports the column's entries up so the parent can compute keyboard moves. */
   onEntriesReady: (colIndex: number, entries: ObjectEntry[]) => void;
 }
@@ -153,6 +160,7 @@ function SingleColumn({
   isFocusedColumn,
   cursorIndex,
   onEntryClick,
+  onEntryContextMenu,
   onEntriesReady,
 }: SingleColumnProps) {
   const { data: entries, isLoading } = useObjects(profileId, bucket, prefix);
@@ -206,6 +214,7 @@ function SingleColumn({
             isActive={entry.key === selectedKey && entry.isPrefix}
             isCursor={isFocusedColumn && i === cursorIndex}
             onClick={(e) => onEntryClick(e, columnIndex)}
+            onContextMenu={(e) => onEntryContextMenu(e, columnIndex)}
           />
         ))
       )}
@@ -321,10 +330,13 @@ export function ColumnView({
     [],
   );
 
-  const handleEntryClick = useCallback(
+  // Shared logic for click and right-click: select the entry, move the
+  // keyboard cursor, and make the column active. Files are now placed into
+  // columnPath at their column index so `selectedKey` reflects the click —
+  // without this the context menu always saw "no selection" for files
+  // because the previous code sliced files out of columnPath.
+  const selectEntry = useCallback(
     (entry: ObjectEntry, colIndex: number) => {
-      // Move the keyboard cursor onto the clicked row before mutating
-      // columnPath so the focus ring follows the user's intent.
       const colEntries = entriesByColumnRef.current.get(colIndex) ?? [];
       const rowIdx = colEntries.findIndex((e) => e.key === entry.key);
       if (rowIdx >= 0) {
@@ -335,17 +347,24 @@ export function ColumnView({
         });
       }
       setActiveColumn(colIndex);
-
-      if (entry.isPrefix) {
-        const newPath = [...columnPath.slice(0, colIndex), entry];
-        onColumnPathChange(newPath);
-      } else {
-        const newPath = columnPath.slice(0, colIndex);
-        onColumnPathChange(newPath);
-        onOpen?.(entry);
-      }
+      onColumnPathChange([...columnPath.slice(0, colIndex), entry]);
     },
-    [columnPath, onColumnPathChange, onOpen],
+    [columnPath, onColumnPathChange],
+  );
+
+  const handleEntryClick = useCallback(
+    (entry: ObjectEntry, colIndex: number) => {
+      selectEntry(entry, colIndex);
+      if (!entry.isPrefix) onOpen?.(entry);
+    },
+    [selectEntry, onOpen],
+  );
+
+  const handleEntryContextMenu = useCallback(
+    (entry: ObjectEntry, colIndex: number) => {
+      selectEntry(entry, colIndex);
+    },
+    [selectEntry],
   );
 
   // -- Keyboard handler -----------------------------------------------------
@@ -399,6 +418,8 @@ export function ColumnView({
           return;
         }
         case "ArrowRight":
+        case " ":
+
         case "Enter": {
           const entry = colEntries[cursor];
           if (!entry) return;
@@ -445,7 +466,24 @@ export function ColumnView({
     );
   }
 
-  return (
+  // Derive context-menu ctx from the active column. ColumnView is
+  // single-select per column, so `keys` is the active selectedKey (when
+  // present) or empty when the user right-clicks blank space.
+  const activeCol = columns[activeColumn];
+  const activeSelectedKey = activeCol?.selectedKey ?? null;
+  const activePrefix = activeCol?.prefix ?? prefix;
+  const fileMenuCtx =
+    profileId && bucket
+      ? {
+          profileId,
+          bucket,
+          prefix: activePrefix,
+          keys: activeSelectedKey ? [activeSelectedKey] : [],
+          isBlankArea: !activeSelectedKey,
+        }
+      : null;
+
+  const columnContent = (
     <div
       ref={scrollContainerRef}
       tabIndex={0}
@@ -478,9 +516,13 @@ export function ColumnView({
           isFocusedColumn={i === activeColumn}
           cursorIndex={cursorByColumn.get(i) ?? 0}
           onEntryClick={handleEntryClick}
+          onEntryContextMenu={handleEntryContextMenu}
           onEntriesReady={handleEntriesReady}
         />
       ))}
     </div>
   );
+
+  if (!fileMenuCtx) return columnContent;
+  return <FileContextMenu ctx={fileMenuCtx}>{columnContent}</FileContextMenu>;
 }

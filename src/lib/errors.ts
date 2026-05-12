@@ -296,6 +296,15 @@ export interface ToastNotification {
   title: string;
   message: string;
   severity: "info" | "warning" | "error" | "success";
+  /**
+   * Optional clickable action on the toast (e.g. "Open folder" after a
+   * download completes). The toast container renders this as a button and
+   * dismisses the toast when the callback runs.
+   */
+  action?: {
+    label: string;
+    onClick: () => void;
+  };
 }
 
 type ToastListener = (n: ToastNotification) => void;
@@ -315,6 +324,15 @@ function emitToast(n: ToastNotification): void {
   for (const l of toastListeners) {
     l(n);
   }
+}
+
+/**
+ * Public toast emitter for non-error flows (success confirmations,
+ * informational notices). Use `surfaceError` / `surfaceUnknownError` for
+ * error paths — those go through the presentation policy.
+ */
+export function notify(n: ToastNotification): void {
+  emitToast(n);
 }
 
 // ---------------------------------------------------------------------------

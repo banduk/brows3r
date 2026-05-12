@@ -13,8 +13,9 @@
  */
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { MoreHorizontalIcon, PlusIcon } from "lucide-react";
+import { Loader2Icon, MoreHorizontalIcon, PlusIcon } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   type ProfileSource,
   type ProfileSummary,
@@ -28,6 +29,7 @@ import { surfaceError, surfaceUnknownError } from "@/lib/errors";
 import { cn } from "@/lib/utils";
 import { keys } from "@/query/keys";
 import { usePanesStore } from "@/store/panes";
+import { selectStatus, useValidationStore } from "@/store/validation";
 import { ProfileEditor } from "@/views/settings/ProfileEditor";
 
 // ---------------------------------------------------------------------------
@@ -65,42 +67,63 @@ const SOURCE_BADGE: Record<
 // ValidationDot
 // ---------------------------------------------------------------------------
 
-/** Threshold below which a validation is considered "stale" (10 min). */
-const STALE_THRESHOLD_MS = 10 * 60 * 1_000;
-
-type ValidationStatus = "valid" | "stale" | "unvalidated";
-
-function getValidationStatus(validatedAt?: number): ValidationStatus {
-  if (validatedAt === undefined) return "unvalidated";
-  const age = Date.now() - validatedAt;
-  return age <= STALE_THRESHOLD_MS ? "valid" : "stale";
-}
-
+/**
+ * Validation indicator — replaces the previous "stale = red" semantics
+ * which gave a false sense of urgency. New behaviour:
+ *
+ * - Validating now → small spinner
+ * - Validated (any age, until the backend says otherwise) → discreet
+ *   green dot (subtle, no panic colour)
+ * - Validation error (this session) → red dot with the error message
+ * - Never validated, no in-flight attempt → neutral grey dot
+ *
+ * Age-based "staleness" no longer turns the dot red; the backend's
+ * session-scoped guard plus the lazy auto-validate keep things fresh,
+ * and a real auth failure surfaces as an error, not as a 10-minute
+ * timeout.
+ */
 interface ValidationDotProps {
+  profileId: string;
   validatedAt?: number;
 }
 
-function ValidationDot({ validatedAt }: ValidationDotProps) {
-  const status = getValidationStatus(validatedAt);
-  const dotClass =
-    status === "valid"
-      ? "bg-green-500"
-      : status === "stale"
-        ? "bg-gray-400"
-        : "bg-red-400";
-  const label =
-    status === "valid"
-      ? "Validated recently"
-      : status === "stale"
-        ? "Validation is stale"
-        : "Not validated";
+function ValidationDot({ profileId, validatedAt }: ValidationDotProps) {
+  const { t } = useTranslation();
+  const status = useValidationStore((s) => selectStatus(s, profileId));
+  const error = useValidationStore((s) => s.errors.get(profileId));
 
+  if (status === "validating") {
+    return (
+      <Loader2Icon
+        aria-label={t("profiles.validating")}
+        className="size-3 shrink-0 animate-spin text-muted-foreground"
+      />
+    );
+  }
+
+  if (status === "error" && error) {
+    return (
+      <span
+        role="img"
+        aria-label={t("profiles.errorWithReason", { reason: error.message })}
+        title={t("profiles.errorWithReason", { reason: error.message })}
+        className="inline-block size-2 shrink-0 rounded-full bg-red-500"
+      />
+    );
+  }
+
+  const isValid = validatedAt != null;
+  const label = isValid
+    ? t("profiles.validatedRecently")
+    : t("profiles.notValidated");
   return (
     <span
       role="img"
       aria-label={label}
       title={label}
-      className={`inline-block size-2 shrink-0 rounded-full ${dotClass}`}
+      className={`inline-block size-2 shrink-0 rounded-full ${
+        isValid ? "bg-green-500" : "bg-muted-foreground/40"
+      }`}
     />
   );
 }
@@ -123,15 +146,16 @@ function ProfileRowMenu({
   onDelete,
   onValidate,
 }: ProfileRowMenuProps) {
+  const { t } = useTranslation();
   return (
     <PopoverMenu
-      triggerLabel={`Actions for ${profile.displayName}`}
+      triggerLabel={t("profiles.rowActionsAria", { name: profile.displayName })}
       triggerIcon={<MoreHorizontalIcon />}
       items={[
-        { label: "Edit", onClick: () => onEdit(profile) },
-        { label: "Validate", onClick: () => onValidate(profile) },
+        { label: t("profiles.edit"), onClick: () => onEdit(profile) },
+        { label: t("profiles.validate"), onClick: () => onValidate(profile) },
         {
-          label: "Delete",
+          label: t("profiles.delete"),
           onClick: () => onDelete(profile),
           variant: "danger",
         },
@@ -145,6 +169,7 @@ function ProfileRowMenu({
 // ---------------------------------------------------------------------------
 
 export function Profiles() {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
 
   const activePaneId = usePanesStore((s) => s.activePaneId);
@@ -227,9 +252,7 @@ export function Profiles() {
 
   function handleDelete(profile: ProfileSummary) {
     if (
-      window.confirm(
-        `Delete profile "${profile.displayName}"? This cannot be undone.`,
-      )
+      window.confirm(t("profiles.deleteConfirm", { name: profile.displayName }))
     ) {
       deleteMutation.mutate(profile.id);
     }
@@ -261,7 +284,7 @@ export function Profiles() {
           onClick={() => setEditorMode({ kind: "create" })}
         >
           <PlusIcon className="size-4 shrink-0" />
-          <span className="truncate">Add profile</span>
+          <span className="truncate">{t("sidebar.addProfile")}</span>
         </Button>
       </div>
 
@@ -269,7 +292,7 @@ export function Profiles() {
       <div className="min-h-0 flex-1 overflow-y-auto">
         {isLoading && !profilesError && (
           <p className="px-3 py-4 text-sm text-muted-foreground">
-            Loading profiles…
+            {t("profiles.loading")}
           </p>
         )}
 
@@ -279,20 +302,20 @@ export function Profiles() {
             role="alert"
             data-testid="profiles-load-error"
           >
-            Failed to load profiles.{" "}
+            {t("profiles.loadError")}{" "}
             {profilesError instanceof Error
               ? profilesError.message
-              : "Check the notifications panel for details."}
+              : t("profiles.checkNotifications")}
           </p>
         )}
 
         {!isLoading && !profilesError && profiles.length === 0 && (
           <p className="px-3 py-4 text-sm text-muted-foreground">
-            No profiles found. Click "Add profile" to get started.
+            {t("profiles.empty")}
           </p>
         )}
 
-        <ul aria-label="Profile list">
+        <ul aria-label={t("profiles.listAria")}>
           {profiles.map((profile) => {
             const badge = SOURCE_BADGE[profile.source];
             const isActive = profile.id === activeProfileId;
@@ -310,7 +333,10 @@ export function Profiles() {
                   onClick={() => handleNavigate(profile)}
                   className="flex min-w-0 flex-1 cursor-pointer items-center gap-2 px-3 py-2 text-left"
                 >
-                  <ValidationDot validatedAt={profile.validatedAt} />
+                  <ValidationDot
+                    profileId={profile.id}
+                    validatedAt={profile.validatedAt}
+                  />
 
                   <span className="min-w-0 flex-1 truncate text-sm font-medium">
                     {profile.displayName}

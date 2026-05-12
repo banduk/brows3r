@@ -119,11 +119,16 @@ describe("FileContextMenu — rendering", () => {
     });
   });
 
-  it("shows Copy item in the menu", async () => {
+  it("shows Download item in the menu", async () => {
+    // Replaces the old "shows Copy" expectation — `file.copy` was
+    // hidden from the right-click menu in v0.2.6 because its underlying
+    // clipboard handler is not implemented. `file.download` covers the
+    // primary "get this file off S3" workflow users were trying to use
+    // Copy for.
     renderMenu();
     openMenu();
     await waitFor(() => {
-      expect(screen.getByText("Copy")).toBeInTheDocument();
+      expect(screen.getByText("Download")).toBeInTheDocument();
     });
   });
 

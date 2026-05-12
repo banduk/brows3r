@@ -44,6 +44,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { settingsGet } from "@/api/settings";
 import { extensionToLanguage } from "@/lib/shiki";
 import { useObjectHead } from "@/query/hooks/useObjectHead";
@@ -520,6 +521,7 @@ function extractExt(key: string): string {
 // ---------------------------------------------------------------------------
 
 export function PreviewPane(): React.ReactElement {
+  const { t } = useTranslation();
   const { panes, activePaneId } = usePanesStore();
   const activePane = panes.find((p) => p.id === activePaneId) ?? panes[0];
 
@@ -557,11 +559,11 @@ export function PreviewPane(): React.ReactElement {
   if (!firstKey || !profileId || !bucket) {
     return (
       <section
-        aria-label="Preview"
+        aria-label={t("preview.label")}
         className="flex h-full flex-col items-center justify-center gap-2 text-muted-foreground"
         data-testid="preview-pane"
       >
-        <p className="text-sm">Select a file to preview</p>
+        <p className="text-sm">{t("preview.empty")}</p>
       </section>
     );
   }
@@ -573,11 +575,11 @@ export function PreviewPane(): React.ReactElement {
   if (isGated) {
     return (
       <section
-        aria-label="Preview"
+        aria-label={t("preview.label")}
         className="flex h-full flex-col items-center justify-center gap-2 text-muted-foreground"
         data-testid="preview-pane"
       >
-        <p className="text-sm">Validate this profile to preview files</p>
+        <p className="text-sm">{t("preview.validateGate")}</p>
       </section>
     );
   }
@@ -589,7 +591,7 @@ export function PreviewPane(): React.ReactElement {
   if (headLoading) {
     return (
       <section
-        aria-label="Preview"
+        aria-label={t("preview.label")}
         aria-busy="true"
         className="flex h-full flex-col items-center justify-center"
         data-testid="preview-pane"
@@ -611,12 +613,12 @@ export function PreviewPane(): React.ReactElement {
     const sizeMb = (contentLength / 1024 / 1024).toFixed(1);
     return (
       <section
-        aria-label="Preview"
+        aria-label={t("preview.label")}
         className="flex h-full flex-col items-center justify-center gap-3 p-4 text-center text-muted-foreground"
         data-testid="preview-pane"
       >
         <p className="text-sm">
-          File is {sizeMb} MB — above the {limitMb} MB preview limit.
+          {t("preview.sizeLimit", { size: sizeMb, limit: limitMb })}
         </p>
         <button
           type="button"
@@ -624,7 +626,7 @@ export function PreviewPane(): React.ReactElement {
           className="rounded-md border px-3 py-1.5 text-xs hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           data-testid="preview-anyway-btn"
         >
-          Preview anyway
+          {t("preview.previewAnyway")}
         </button>
       </section>
     );
@@ -635,13 +637,13 @@ export function PreviewPane(): React.ReactElement {
   // ---------------------------------------------------------------------------
 
   const mime = head?.contentType ?? null;
-  const isTextFile = isTextMime(mime, firstKey);
+  const editable = isEditable(mime, firstKey);
 
-  // When in edit mode for a text file, render the Monaco editor.
-  if (editMode && isTextFile) {
+  // When in edit mode for any editable (non-binary) file, render Monaco.
+  if (editMode && editable) {
     return (
       <section
-        aria-label="Preview"
+        aria-label={t("preview.label")}
         className="flex h-full flex-col"
         data-testid="preview-pane"
       >
@@ -652,7 +654,7 @@ export function PreviewPane(): React.ReactElement {
             className="rounded-md border px-2 py-0.5 text-xs hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             data-testid="exit-edit-mode-btn"
           >
-            Exit edit mode
+            {t("preview.exitEdit")}
           </button>
         </div>
         <div className="min-h-0 flex-1">
@@ -668,11 +670,11 @@ export function PreviewPane(): React.ReactElement {
 
   return (
     <section
-      aria-label="Preview"
+      aria-label={t("preview.label")}
       className="flex h-full flex-col"
       data-testid="preview-pane"
     >
-      {isTextFile && (
+      {editable && (
         <div className="flex items-center justify-end border-b px-2 py-1">
           <button
             type="button"
@@ -680,13 +682,45 @@ export function PreviewPane(): React.ReactElement {
             className="rounded-md border px-2 py-0.5 text-xs hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             data-testid="edit-in-monaco-btn"
           >
-            Edit in Monaco
+            {t("preview.editInMonaco")}
           </button>
         </div>
       )}
       {renderContent(profileId, bucket, firstKey, mime)}
     </section>
   );
+}
+
+// ---------------------------------------------------------------------------
+// Editable detection
+// ---------------------------------------------------------------------------
+
+/**
+ * Returns true when a file is "text-derived" — anything we can safely round-trip
+ * through Monaco as UTF-8 (text, HTML, Markdown, JSON arrays, CSV, NDJSON…).
+ * The "Edit in Monaco" button is gated on this so users can edit HTML,
+ * Markdown, JSON, etc., not just files routed to TextPreview.
+ *
+ * Excludes: images, video, audio, PDF, archives, known-binary extensions.
+ */
+function isEditable(mime: string | null | undefined, key: string): boolean {
+  if (isImageMime(mime, key)) return false;
+  if (isVideoMime(mime, key)) return false;
+  if (isAudioMime(mime, key)) return false;
+  if (isPdfMime(mime, key)) return false;
+  if (isArchiveMime(mime, key)) return false;
+  if (isHexMime(mime, key)) return false;
+
+  // Text-derived: plain text, code, HTML, Markdown, JSON, CSV, NDJSON.
+  if (isTextMime(mime, key)) return true;
+  if (isHtmlMime(mime, key)) return true;
+  if (isMarkdownMime(mime, key)) return true;
+  if (tabularMode(mime, key) !== null) return true;
+  if (mime) {
+    const normalized = mime.toLowerCase().split(";")[0]?.trim() ?? "";
+    if (normalized === "application/json") return true;
+  }
+  return false;
 }
 
 // ---------------------------------------------------------------------------

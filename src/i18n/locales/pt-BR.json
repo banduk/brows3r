@@ -1,0 +1,379 @@
+{
+  "menu": {
+    "file": {
+      "open": "Abrir",
+      "download": "Baixar",
+      "copyPresignedUrl": "Copiar URL pré-assinada",
+      "delete": "Excluir",
+      "createFolder": "Criar pasta aqui",
+      "properties": "Propriedades",
+      "refresh": "Atualizar",
+      "bookmarkLocation": "Salvar este local",
+      "bookmarkFirst": "Salvar primeiro item selecionado",
+      "bookmarkItem": "Salvar este item",
+      "actions": "Ações"
+    },
+    "tooltip": {
+      "disabledLockSuffix": "em andamento"
+    }
+  },
+  "common": {
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "close": "Fechar",
+    "ok": "OK",
+    "retry": "Tentar de novo",
+    "reset": "Redefinir",
+    "edit": "Editar",
+    "select": "Selecionar",
+    "loading": "Carregando…",
+    "search": "Pesquisar",
+    "filter": "Filtrar",
+    "select_a_file_to_preview": "Selecione um arquivo para visualizar",
+    "select_all": "Selecionar tudo"
+  },
+  "sidebar": {
+    "label": "Barra lateral",
+    "profiles": "Perfis",
+    "addProfile": "Adicionar perfil",
+    "bookmarks": "Favoritos",
+    "recents": "Recentes"
+  },
+  "profiles": {
+    "loading": "Carregando perfis…",
+    "loadError": "Falha ao carregar perfis.",
+    "checkNotifications": "Veja o painel de notificações para detalhes.",
+    "empty": "Nenhum perfil encontrado. Clique em \"Adicionar perfil\" para começar.",
+    "listAria": "Lista de perfis",
+    "rowActionsAria": "Ações para {{name}}",
+    "edit": "Editar",
+    "validate": "Validar",
+    "delete": "Excluir",
+    "deleteConfirm": "Excluir o perfil \"{{name}}\"? Isso não pode ser desfeito.",
+    "validatedRecently": "Validado",
+    "validationStale": "Validação desatualizada",
+    "notValidated": "Não validado",
+    "validating": "Validando…",
+    "errorWithReason": "Falha na validação: {{reason}}"
+  },
+  "bookmarks": {
+    "loading": "Carregando favoritos…",
+    "loadError": "Falha ao carregar favoritos.",
+    "empty": "Nenhum favorito ainda.",
+    "listAria": "Lista de favoritos",
+    "rowActionsAria": "Ações para {{name}}",
+    "rename": "Renomear…",
+    "remove": "Remover favorito",
+    "removeConfirm": "Remover o favorito \"{{name}}\"?\n\nIsso apenas remove o atalho da barra lateral; o bucket/pasta/objeto no S3 não é alterado.",
+    "editAria": "Editar favorito",
+    "renameTitle": "Renomear favorito",
+    "labelPlaceholder": "Rótulo (vazio para usar o prefixo)",
+    "validateTooltip": "Valide este perfil para usar este favorito",
+    "validateToUse": "Validar para usar"
+  },
+  "breadcrumb": {
+    "label": "Trilha de navegação",
+    "editAria": "Ir para o caminho"
+  },
+  "buckets": {
+    "gateTitle": "Perfil não validado",
+    "gateBody": "Valide o perfil pela barra lateral antes de listar buckets.",
+    "loading": "Carregando buckets…",
+    "loadError": "Falha ao carregar buckets",
+    "emptyTitle": "Nenhum bucket encontrado",
+    "emptyBody": "Este perfil não tem acesso a nenhum bucket no S3.",
+    "filterNoMatch": "Nenhum bucket corresponde a \"{{filter}}\"",
+    "filterClearHint": "Limpe o filtro (Esc) ou refine sua busca.",
+    "listAria": "Lista de buckets"
+  },
+  "preview": {
+    "label": "Visualização",
+    "empty": "Selecione um arquivo para visualizar",
+    "validateGate": "Valide este perfil para visualizar arquivos",
+    "sizeLimit": "Arquivo tem {{size}} MB — acima do limite de {{limit}} MB.",
+    "previewAnyway": "Visualizar mesmo assim",
+    "editInMonaco": "Editar no Monaco",
+    "exitEdit": "Sair do modo de edição"
+  },
+  "toolbar": {
+    "label": "Barra de ferramentas do navegador",
+    "back": "Voltar",
+    "forward": "Avançar",
+    "up": "Subir um nível",
+    "refresh": "Atualizar",
+    "inspect": "Inspecionar seleção",
+    "upload": "Enviar arquivos",
+    "downloadFile": "Baixar arquivo selecionado",
+    "downloadBulk": "Baixar (pasta/bucket — buscado como objetos individuais)",
+    "newFolder": "Nova pasta",
+    "bookmarkRemove": "Remover favorito",
+    "bookmarkObject": "Favoritar objeto selecionado",
+    "bookmarkLocation": "Favoritar este local",
+    "filterAria": "Filtrar (fuzzy)",
+    "filterTooltip": "Filtre a visualização atual — pressione \"/\" para focar, Esc para limpar",
+    "filterPlaceholder": "Filtrar…  pressione \"/\"",
+    "viewModeAria": "Modo de visualização: {{label}}",
+    "viewModeMenuAria": "Modo de visualização",
+    "viewMode": {
+      "details": "Detalhes",
+      "icons": "Ícones",
+      "gallery": "Galeria",
+      "columns": "Colunas",
+      "tree": "Árvore",
+      "flatKey": "Chaves planas",
+      "dualPane": "Painel duplo"
+    }
+  },
+  "statusBar": {
+    "label": "Barra de status",
+    "noLocation": "Sem local",
+    "noProfile": "Sem perfil",
+    "validated": "validado",
+    "notValidated": "não validado",
+    "openSettings": "Abrir Configurações (⌘,)",
+    "shortcuts": {
+      "aria": "Atalhos de teclado",
+      "label": "Teclas",
+      "title": "Atalhos de teclado"
+    }
+  },
+  "activity": {
+    "label": "Downloads",
+    "titleActive": "{{count}} transferências ativas — {{pct}}%",
+    "titleCompleted": "{{count}} transferências concluídas",
+    "titleUnseen": "{{count}} novas desde a última visita",
+    "titleIdle": "Sem transferências"
+  },
+  "notificationsChip": {
+    "label": "Notificações",
+    "titleErrors": "{{count}} novos erros — clique para revisar",
+    "titleUnseen": "{{count}} notificações novas",
+    "titleTotal": "{{count}} notificações",
+    "titleIdle": "Sem notificações"
+  },
+  "notificationsCenter": {
+    "label": "Central de notificações",
+    "title": "Notificações",
+    "subtitle": "Erros, avisos e mensagens informativas",
+    "close": "Fechar central de notificações",
+    "clearAll": "Limpar tudo",
+    "filtersAria": "Filtrar por severidade",
+    "searchPlaceholder": "Buscar por título ou mensagem…",
+    "clearSearch": "Limpar busca",
+    "userBadge": "Usuário",
+    "dismissAria": "Descartar notificação: {{name}}",
+    "filter": {
+      "all": "Todas",
+      "error": "Erros",
+      "warning": "Avisos",
+      "info": "Info",
+      "success": "Sucesso"
+    },
+    "stats": {
+      "total": "{{count}} no total",
+      "errors": "{{count}} erros",
+      "warnings": "{{count}} avisos",
+      "info": "{{count}} info",
+      "success": "{{count}} sucessos"
+    },
+    "empty": {
+      "title": "Sem notificações ainda",
+      "body": "Erros, avisos e mensagens da sua atividade aparecem aqui.",
+      "filteredTitle": "Nada corresponde a este filtro",
+      "searchTitle": "Sem resultados",
+      "searchBody": "Nenhuma notificação corresponde a \"{{query}}\"."
+    }
+  },
+  "recents": {
+    "sectionAria": "Locais recentes",
+    "loading": "Carregando recentes…",
+    "loadError": "Falha ao carregar recentes.",
+    "empty": "Nenhum local recente.",
+    "listAria": "Lista de locais recentes",
+    "showAll": "Mostrar todos ({{count}})",
+    "showLess": "Mostrar menos",
+    "clear": "Limpar recentes",
+    "validateTooltip": "Valide este perfil para usar este local",
+    "validateToUse": "Validar para usar"
+  },
+  "settings": {
+    "title": "Configurações",
+    "loading": "Carregando configurações…",
+    "close": "Fechar configurações",
+    "resetAll": "Redefinir tudo",
+    "resetAllAria": "Redefinir todas as configurações para o padrão",
+    "resetDefaults": "Redefinir para o padrão",
+    "saving": "Salvando…",
+    "sectionsAria": "Seções de configurações",
+    "tabs": {
+      "general": "Geral",
+      "transfers": "Transferências",
+      "preview": "Visualização",
+      "shortcuts": "Atalhos",
+      "notifications": "Notificações",
+      "endpoints": "Endpoints",
+      "updates": "Atualizações",
+      "diagnostics": "Diagnóstico",
+      "startup": "Inicialização",
+      "proxy": "Proxy",
+      "cache": "Cache",
+      "fallback": "Fallback",
+      "confirmations": "Confirmações",
+      "defaultView": "Visualização padrão",
+      "multipart": "Limpeza multipart"
+    },
+    "section": {
+      "appearance": "Aparência",
+      "language": "Idioma",
+      "proxy": "Proxy",
+      "transfers": "Transferências",
+      "cache": "Cache",
+      "diagnostics": "Diagnóstico"
+    },
+    "language": {
+      "label": "Idioma da interface",
+      "description": "Escolha o idioma para menus, botões e diálogos.",
+      "resetKeychain": "Redefinir prompt de senha do keychain"
+    },
+    "autoRefresh": {
+      "label": "Validação automática",
+      "toggleLabel": "Revalidar perfis periodicamente",
+      "description": "Atualiza credenciais de sessão (tokens SSO, roles assumidas) em background pra não expirarem entre usos. Desligado por padrão.",
+      "cadenceLabel": "Atualizar a cada (minutos)"
+    },
+    "theme": {
+      "system": "Seguir o sistema",
+      "light": "Claro",
+      "dark": "Escuro"
+    }
+  },
+  "keychain": {
+    "promptTitle": "Keychain indisponível",
+    "promptDescription": "O keychain do sistema não está disponível. Informe uma senha para cifrar suas credenciais localmente. Vamos lembrar sua escolha nos próximos lançamentos; é possível resetar em Configurações.",
+    "passphrase": "Senha",
+    "confirmPassphrase": "Confirmar senha",
+    "setPassphrase": "Definir senha",
+    "unlocking": "Desbloqueando…",
+    "errors": {
+      "empty": "A senha não pode ser vazia.",
+      "mismatch": "As senhas não conferem.",
+      "generic": "Falha ao desbloquear o keychain. Tente novamente."
+    }
+  },
+  "errors": {
+    "loadFileFailed": "Falha ao carregar arquivo",
+    "saveFailed": "Falha ao salvar"
+  },
+  "activityCenter": {
+    "label": "Central de atividade",
+    "title": "Atividade",
+    "subtitle": "Histórico de transferências, filtros e estatísticas da sessão",
+    "close": "Fechar central de atividade",
+    "filtersAria": "Filtrar por estado",
+    "statsAria": "Totais da sessão",
+    "searchPlaceholder": "Buscar por nome ou caminho…",
+    "clearSearch": "Limpar busca",
+    "sortBy": "Ordenar",
+    "filter": {
+      "all": "Todas",
+      "active": "Ativas",
+      "completed": "Concluídas",
+      "failed": "Falharam"
+    },
+    "sort": {
+      "newest": "Mais recentes primeiro",
+      "oldest": "Mais antigas primeiro",
+      "largest": "Maiores primeiro"
+    },
+    "stats": {
+      "active": "{{count}} ativas",
+      "completed": "{{count}} concluídas",
+      "failed": "{{count}} falhas",
+      "transferred": "{{bytes}} transferidos nesta sessão"
+    },
+    "empty": {
+      "title": "Nenhuma transferência ainda",
+      "body": "Downloads e uploads aparecem aqui assim que você começa um.",
+      "filteredTitle": "Nada corresponde a este filtro",
+      "searchTitle": "Sem resultados",
+      "searchBody": "Nada no histórico corresponde a \"{{query}}\"."
+    }
+  },
+  "transferManager": {
+    "label": "Gerenciador de transferências",
+    "title": "Transferências",
+    "viewAll": "Ver todas",
+    "empty": "Sem transferências",
+    "expand": "Expandir gerenciador de transferências",
+    "minimize": "Minimizar gerenciador de transferências",
+    "close": "Fechar gerenciador de transferências",
+    "clearCompleted": "Limpar concluídas",
+    "pillCount": "{{count}} transferências",
+    "activeCountTitle": "{{count}} ativa(s)",
+    "activeSection": "Transferências ativas",
+    "completedSection": "Transferências concluídas",
+    "completedCount": "Concluídas ({{count}})",
+    "announce": {
+      "downloadDone": "Download concluído: {{name}}",
+      "uploadDone": "Upload concluído: {{name}}",
+      "downloadFailed": "Download falhou: {{name}}",
+      "uploadFailed": "Upload falhou: {{name}}",
+      "canceled": "Transferência cancelada: {{name}}"
+    }
+  },
+  "transferGroup": {
+    "title": "{{name}} ({{count}} arquivos)",
+    "files": "arquivos",
+    "partial": "{{done}}/{{total}} concluídos",
+    "progressAria": "{{name}} {{pct}}% concluído",
+    "cancelAll": "Cancelar tudo"
+  },
+  "transferRow": {
+    "upload": "Upload",
+    "download": "Download",
+    "progressAria": "{{name}} {{pct}}% concluído",
+    "eta": "ETA: {{value}}",
+    "partsTitle": "partes do multipart",
+    "startedAt": "Iniciado {{time}}",
+    "startedAgo": "iniciado {{ago}}",
+    "stateDone": "Concluído",
+    "stateFailed": "Falhou",
+    "stateCanceled": "Cancelado",
+    "cancel": "Cancelar",
+    "retry": "Tentar de novo",
+    "cancelAria": "Cancelar {{name}}",
+    "retryAria": "Tentar de novo {{name}}"
+  },
+  "transfers": {
+    "downloadComplete": {
+      "title": "Download concluído",
+      "messageOne": "{{name}} foi salvo.",
+      "messageMany": "{{count}} arquivos foram salvos.",
+      "openFolder": "Abrir pasta",
+      "revealFailed": "Não foi possível abrir a pasta de destino."
+    }
+  },
+  "transfersStarted": {
+    "titleDownload": "Download iniciado",
+    "titleUpload": "Upload iniciado",
+    "messageOne": "1 arquivo na fila. Acompanhe na Central de atividade.",
+    "messageMany": "{{count}} arquivos na fila. Acompanhe na Central de atividade.",
+    "view": "Ver"
+  },
+  "bulkDownload": {
+    "title": "Confirmar download",
+    "description": "O S3 não tem atalho zip/tar, então cada objeto é baixado individualmente. Confira os totais antes de iniciar.",
+    "files": "Arquivos",
+    "size": "Tamanho total",
+    "eta": "Tempo estimado",
+    "etaTooltip": "Estimativa baseada em uma conexão conservadora de 25 Mbps.",
+    "destination": "Destino",
+    "counting": "(contando…)",
+    "riskWarning": "Operação grande: o download vai demorar e consumir bastante espaço em disco e banda. Você pode cancelar a qualquer momento no gerenciador de transferências.",
+    "cancelHint": "Cada transferência pode ser cancelada individualmente no gerenciador (⌘⇧J).",
+    "startDownload": "Iniciar download",
+    "startDownloadWithSummary": "Iniciar download ({{files}} arquivos, {{size}})",
+    "emptyTitle": "Nada para baixar",
+    "emptyMessage": "A seleção não contém objetos."
+  }
+}

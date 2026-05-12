@@ -24,9 +24,61 @@
  */
 
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import type { Transfer } from "@/api/transfers";
 import { useTransfersStore } from "@/store/transfers";
+import { useUiStore } from "@/store/ui";
+import { TransferGroup } from "./TransferGroup";
 import { TransferRow } from "./TransferRow";
+
+// ---------------------------------------------------------------------------
+// Grouping
+// ---------------------------------------------------------------------------
+
+interface TransferGrouping {
+  /** Singleton transfers with no batch id or batches of size 1. */
+  singletons: Transfer[];
+  /** Ordered list of (batchId, transfers) pairs for batches ≥ 2. */
+  groups: Array<[string, Transfer[]]>;
+}
+
+/**
+ * Partition transfers by batchId. Preserves insertion order for both
+ * singletons and groups so the panel doesn't reshuffle as transfers
+ * complete.
+ */
+function groupByBatch(transfers: Transfer[]): TransferGrouping {
+  const groups = new Map<string, Transfer[]>();
+  const singletons: Transfer[] = [];
+  const order: string[] = [];
+  for (const tr of transfers) {
+    if (!tr.batchId) {
+      singletons.push(tr);
+      continue;
+    }
+    const existing = groups.get(tr.batchId);
+    if (existing) {
+      existing.push(tr);
+    } else {
+      groups.set(tr.batchId, [tr]);
+      order.push(tr.batchId);
+    }
+  }
+
+  const groupEntries: Array<[string, Transfer[]]> = [];
+  for (const id of order) {
+    const arr = groups.get(id);
+    if (!arr) continue;
+    if (arr.length === 1) {
+      // A batch of 1 collapses to a singleton row — no point showing a
+      // parent with a single child.
+      singletons.push(arr[0] as Transfer);
+    } else {
+      groupEntries.push([id, arr]);
+    }
+  }
+  return { singletons, groups: groupEntries };
+}
 
 // ---------------------------------------------------------------------------
 // Stable per-state-slice selectors
@@ -60,16 +112,15 @@ interface PillProps {
 }
 
 function TransferPill({ activeCount, overallPct, onExpand }: PillProps) {
+  const { t } = useTranslation();
   return (
     <button
       type="button"
       onClick={onExpand}
-      aria-label="Expand transfer manager"
+      aria-label={t("transferManager.expand")}
       className="fixed bottom-4 right-4 z-50 flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-lg hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
-      <span>
-        {activeCount} transfer{activeCount !== 1 ? "s" : ""}
-      </span>
+      <span>{t("transferManager.pillCount", { count: activeCount })}</span>
       <span>•</span>
       <span>{overallPct}%</span>
     </button>
@@ -89,6 +140,7 @@ function TransferPill({ activeCount, overallPct, onExpand }: PillProps) {
  * Returns the latest announcement string (empty when nothing new).
  */
 function useTransferAnnouncement(transfers: Map<string, Transfer>): string {
+  const { t: tr } = useTranslation();
   // Track previously seen states per transfer id.
   const prevStates = useRef<Map<string, Transfer["state"]>>(new Map());
   const [announcement, setAnnouncement] = useState("");
@@ -100,13 +152,21 @@ function useTransferAnnouncement(transfers: Map<string, Transfer>): string {
       if (prev !== t.state) {
         const label = t.key.split("/").pop() ?? t.key;
         if (t.state === "done") {
-          const verb = t.kind === "upload" ? "Upload" : "Download";
-          setAnnouncement(`${verb} completed: ${label}`);
+          const key =
+            t.kind === "upload"
+              ? "transferManager.announce.uploadDone"
+              : "transferManager.announce.downloadDone";
+          setAnnouncement(tr(key, { name: label }));
         } else if (t.state === "failed") {
-          const verb = t.kind === "upload" ? "Upload" : "Download";
-          setAnnouncement(`${verb} failed: ${label}`);
+          const key =
+            t.kind === "upload"
+              ? "transferManager.announce.uploadFailed"
+              : "transferManager.announce.downloadFailed";
+          setAnnouncement(tr(key, { name: label }));
         } else if (t.state === "canceled") {
-          setAnnouncement(`Transfer canceled: ${label}`);
+          setAnnouncement(
+            tr("transferManager.announce.canceled", { name: label }),
+          );
         }
         prevStates.current.set(id, t.state);
       }
@@ -117,7 +177,7 @@ function useTransferAnnouncement(transfers: Map<string, Transfer>): string {
         prevStates.current.delete(id);
       }
     }
-  }, [transfers]);
+  }, [transfers, tr]);
 
   return announcement;
 }
@@ -127,19 +187,26 @@ function useTransferAnnouncement(transfers: Map<string, Transfer>): string {
 // ---------------------------------------------------------------------------
 
 export function TransferManager() {
+  const { t } = useTranslation();
   const panelOpen = useTransfersStore((s) => s.panelOpen);
   const panelMinimized = useTransfersStore((s) => s.panelMinimized);
   const togglePanel = useTransfersStore((s) => s.togglePanel);
   const setMinimized = useTransfersStore((s) => s.setMinimized);
   const clearCompleted = useTransfersStore((s) => s.clearCompleted);
   const transfers = useTransfersStore((s) => s.transfers);
+  const setActivityCenterOpen = useUiStore((s) => s.setActivityCenterOpen);
+  const activityCenterOpen = useUiStore((s) => s.activityCenterOpen);
 
   const active = selectActive(transfers);
   const completed = selectCompleted(transfers);
 
   const [completedExpanded, setCompletedExpanded] = useState(false);
-
   const announcement = useTransferAnnouncement(transfers);
+
+  // When the Activity Center is open it owns the full pane; the floating
+  // popup would be redundant + cover content. Hide it.
+  // (Hook calls above must run unconditionally — React rules-of-hooks.)
+  if (activityCenterOpen) return null;
 
   // Compute aggregate progress for the minimized pill.
   const totalBytes = active.reduce((sum, t) => sum + (t.totalBytes ?? 0), 0);
@@ -167,7 +234,7 @@ export function TransferManager() {
 
   return (
     <section
-      aria-label="Transfer Manager"
+      aria-label={t("transferManager.label")}
       className="fixed bottom-4 right-4 z-50 flex w-96 max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-xl border bg-background shadow-2xl"
     >
       {/* Dedicated aria-live region — announces only terminal state changes.
@@ -184,10 +251,14 @@ export function TransferManager() {
       {/* Header */}
       <div className="flex items-center justify-between border-b px-4 py-3">
         <div className="flex items-center gap-2">
-          <h2 className="text-sm font-semibold">Transfers</h2>
+          <h2 className="text-sm font-semibold">
+            {t("transferManager.title")}
+          </h2>
           {active.length > 0 && (
             <span
-              title={`${active.length} active`}
+              title={t("transferManager.activeCountTitle", {
+                count: active.length,
+              })}
               className="rounded-full bg-primary px-2 py-0.5 text-xs font-medium text-primary-foreground"
             >
               {active.length}
@@ -196,20 +267,31 @@ export function TransferManager() {
         </div>
 
         <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={() => {
+              setActivityCenterOpen(true);
+            }}
+            className="rounded px-2 py-1 text-xs font-medium text-primary hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            data-testid="transfer-manager-view-all"
+          >
+            {t("transferManager.viewAll")}
+          </button>
+
           {completed.length > 0 && (
             <button
               type="button"
               onClick={clearCompleted}
               className="rounded px-2 py-1 text-xs text-muted-foreground hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
-              Clear completed
+              {t("transferManager.clearCompleted")}
             </button>
           )}
 
           <button
             type="button"
             onClick={() => setMinimized(true)}
-            aria-label="Minimize transfer manager"
+            aria-label={t("transferManager.minimize")}
             className="rounded p-1 text-muted-foreground hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <span aria-hidden="true">⌵</span>
@@ -218,7 +300,7 @@ export function TransferManager() {
           <button
             type="button"
             onClick={togglePanel}
-            aria-label="Close transfer manager"
+            aria-label={t("transferManager.close")}
             className="rounded p-1 text-muted-foreground hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <span aria-hidden="true">✕</span>
@@ -230,43 +312,75 @@ export function TransferManager() {
       <div className="max-h-[60vh] overflow-y-auto p-3">
         {!hasAny ? (
           <p className="py-4 text-center text-sm text-muted-foreground">
-            No transfers
+            {t("transferManager.empty")}
           </p>
         ) : (
           <>
-            {/* Active section */}
+            {/* Active section — grouped by batchId. */}
             {active.length > 0 && (
-              <section aria-label="Active transfers">
+              <section aria-label={t("transferManager.activeSection")}>
                 <ul className="flex flex-col gap-2">
-                  {active.map((t) => (
-                    <TransferRow key={t.id} transfer={t} />
-                  ))}
+                  {(() => {
+                    const { singletons, groups } = groupByBatch(active);
+                    return (
+                      <>
+                        {groups.map(([batchId, group]) => (
+                          <TransferGroup
+                            key={batchId}
+                            transfers={group}
+                            defaultExpanded={false}
+                          />
+                        ))}
+                        {singletons.map((tr) => (
+                          <TransferRow key={tr.id} transfer={tr} />
+                        ))}
+                      </>
+                    );
+                  })()}
                 </ul>
               </section>
             )}
 
             {/* Completed section */}
             {completed.length > 0 && (
-              <section aria-label="Completed transfers" className="mt-3">
+              <section
+                aria-label={t("transferManager.completedSection")}
+                className="mt-3"
+              >
                 <button
                   type="button"
                   onClick={() => setCompletedExpanded((v) => !v)}
                   aria-expanded={completedExpanded}
                   className="flex w-full items-center justify-between rounded px-1 py-0.5 text-xs font-medium text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
-                  <span>Completed ({completed.length})</span>
+                  <span>
+                    {t("transferManager.completedCount", {
+                      count: completed.length,
+                    })}
+                  </span>
                   <span aria-hidden="true">
                     {completedExpanded ? "▲" : "▼"}
                   </span>
                 </button>
 
-                {completedExpanded && (
-                  <ul className="mt-2 flex flex-col gap-2">
-                    {completed.map((t) => (
-                      <TransferRow key={t.id} transfer={t} />
-                    ))}
-                  </ul>
-                )}
+                {completedExpanded &&
+                  (() => {
+                    const { singletons, groups } = groupByBatch(completed);
+                    return (
+                      <ul className="mt-2 flex flex-col gap-2">
+                        {groups.map(([batchId, group]) => (
+                          <TransferGroup
+                            key={batchId}
+                            transfers={group}
+                            defaultExpanded={false}
+                          />
+                        ))}
+                        {singletons.map((tr) => (
+                          <TransferRow key={tr.id} transfer={tr} />
+                        ))}
+                      </ul>
+                    );
+                  })()}
               </section>
             )}
           </>

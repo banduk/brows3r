@@ -560,23 +560,60 @@ impl KeychainBackend for StubBackend {
 pub fn select_backend(
     fallback_dir: impl Into<std::path::PathBuf>,
     fallback_passphrase: &str,
-) -> Box<dyn KeychainBackend + Send + Sync> {
-    let probe_ok = keyring::Entry::new("brows3r", "probe")
-        .and_then(|e| e.set_password("test"))
-        .and_then(|_| keyring::Entry::new("brows3r", "probe").and_then(|e| e.delete_credential()))
-        .is_ok();
+) -> (Box<dyn KeychainBackend + Send + Sync>, bool) {
+    // Escape hatch for dev mode: skip the probe and trust the OS keychain.
+    // The keyring crate will still fail-loudly when an actual get/set runs
+    // against a broken keychain, so this is a safe override for the common
+    // case where the probe trips on macOS's per-binary security prompt.
+    if std::env::var("BROWS3R_FORCE_OS_KEYCHAIN").is_ok() {
+        return (Box::new(KeyringBackend::new()), false);
+    }
 
-    if probe_ok {
-        Box::new(KeyringBackend::new())
+    // Probe the OS keychain with a read-only lookup. Using a write+delete
+    // pair (the previous approach) was unreliable: on macOS the keyring
+    // crate's `set_password` and `delete_credential` use different lookup
+    // categories, so a freshly-written entry frequently could not be
+    // deleted via its own service/account pair — every dev launch fell
+    // back even though the keychain was perfectly healthy.
+    //
+    // A read for a probe entry that does not exist returns
+    // `keyring::Error::NoEntry`. We treat that — and any successful read
+    // — as "keychain works". Only other error variants (DBus refused,
+    // Security framework denied, init failed, …) trigger the fallback.
+    let probe_err: Option<String> = match keyring::Entry::new("brows3r", "__probe__") {
+        Ok(entry) => match entry.get_password() {
+            Ok(_) => None,
+            Err(keyring::Error::NoEntry) => None,
+            Err(e) => Some(format!("get: {e}")),
+        },
+        Err(e) => Some(format!("new: {e}")),
+    };
+
+    if probe_err.is_none() {
+        (Box::new(KeyringBackend::new()), false)
     } else {
         // OS keychain unavailable — use encrypted file fallback.
         // Per design.md §Cross-Platform Considerations: "off by default,
-        // surfaced via notification when used". The notification is emitted
-        // by the caller (task 18 Credential Manager UI).
-        Box::new(FileBackendWithPassphrase::new(
-            fallback_dir,
-            fallback_passphrase,
-        ))
+        // surfaced via notification when used". The boolean returned alongside
+        // the backend lets the caller emit `KeychainFallbackRequired` so the
+        // KeychainFallbackPrompt opens and the user can supply a real
+        // passphrase. Without that follow-up `secrets.enc` is encrypted with
+        // the placeholder passphrase that lib.rs passes here.
+        eprintln!(
+            "[brows3r] OS keychain unavailable — falling back to encrypted file backend. \
+             Probe error: {}. Until the user supplies a passphrase via the Credential \
+             Manager prompt, secrets.enc is encrypted with the empty placeholder passphrase. \
+             In dev mode this is often caused by macOS prompting per unsigned binary; \
+             set BROWS3R_FORCE_OS_KEYCHAIN=1 to bypass the probe and trust the OS keychain.",
+            probe_err.as_deref().unwrap_or("<unknown>"),
+        );
+        (
+            Box::new(FileBackendWithPassphrase::new(
+                fallback_dir,
+                fallback_passphrase,
+            )),
+            true,
+        )
     }
 }
 

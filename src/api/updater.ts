@@ -63,3 +63,19 @@ export async function updaterCheck(): Promise<UpdateStatus> {
 export async function updaterInstall(): Promise<void> {
   return invoke<void>("updater_install");
 }
+
+// ---------------------------------------------------------------------------
+// updaterRestart
+// ---------------------------------------------------------------------------
+
+/**
+ * Restart the application process so a staged update takes effect.
+ *
+ * Should be called after `updaterInstall` resolves (the backend emits
+ * `{ status: "ready" }` at that point). Calling this terminates the
+ * current process — the function never returns from the caller's
+ * perspective.
+ */
+export async function updaterRestart(): Promise<void> {
+  return invoke<void>("updater_restart");
+}

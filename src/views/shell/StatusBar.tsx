@@ -16,12 +16,26 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { openUrl } from "@tauri-apps/plugin-opener";
-import { ExternalLinkIcon, KeyboardIcon } from "lucide-react";
+import {
+  BellIcon,
+  DownloadIcon,
+  ExternalLinkIcon,
+  KeyboardIcon,
+  SettingsIcon,
+} from "lucide-react";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { profileGet } from "@/api/profiles";
+import { formatBytes } from "@/lib/format";
 import { useObjectHead } from "@/query/hooks/useObjectHead";
 import { useProfilesList } from "@/query/hooks/useValidatedProfile";
+import {
+  nonTransferEntries,
+  useNotificationsStore,
+} from "@/store/notifications";
 import type { Pane } from "@/store/panes";
+import { useTransfersStore } from "@/store/transfers";
+import { useUiStore } from "@/store/ui";
 
 /**
  * Concise list of the most-used shortcuts, rendered as a tooltip on the
@@ -32,14 +46,22 @@ const SHORTCUT_HINTS = [
   ["⌘K", "Command palette"],
   ["⌘F", "Search recursive"],
   ["/", "Filter current view"],
+  ["⌘A", "Select all"],
   ["⌘I", "Inspect selection"],
   ["⌘L", "Edit breadcrumb path"],
+  ["⌘R", "Refresh listing"],
   ["⌘[ / ⌘]", "Back / forward"],
   ["⌘↑", "Up one level"],
   ["↑ / ↓ / ← / →", "Move cursor (any view)"],
-  ["Enter", "Open / drill in"],
+  ["Enter / Space", "Open / drill in"],
   ["Backspace", "Up one level / back column"],
+  ["⌘B", "Toggle sidebar"],
+  ["⌘/", "Toggle preview"],
+  ["⌘⇧A", "Open Downloads (Activity Center)"],
+  ["⌘⇧N", "Open Notifications Center"],
+  ["⌘⇧J", "Toggle transfer popup"],
   ["⌘1‒7", "Switch view mode"],
+  ["⌘,", "Open Settings"],
 ] as const;
 
 interface StatusBarProps {
@@ -47,6 +69,7 @@ interface StatusBarProps {
 }
 
 export function StatusBar({ pane }: StatusBarProps) {
+  const { t } = useTranslation();
   const location = pane.location;
   const { profiles } = useProfilesList();
   const activeProfile = location
@@ -72,14 +95,30 @@ export function StatusBar({ pane }: StatusBarProps) {
 
   // Single selected key (the "focused object" in the pane). Drives the
   // "fetched Xs ago" indicator so the user can tell when the HEAD data
-  // they see may have drifted from the live object in S3.
-  const focusedKey = [...pane.selection][0] ?? null;
-  const { dataUpdatedAt } = useObjectHead(
+  // they see may have drifted from the live object in S3, AND feeds the
+  // selection chip that displays the *full* filename (file lists
+  // truncate them, the status bar is the lossless surface).
+  const selectionList = Array.from(pane.selection);
+  const selectionCount = selectionList.length;
+  const focusedKey = selectionList[0] ?? null;
+  const { data: focusedHead, dataUpdatedAt } = useObjectHead(
     location?.profileId,
     location?.bucket,
     focusedKey,
   );
   const fetchedLabel = useFetchedAgo(dataUpdatedAt);
+
+  const selectionLabel = (() => {
+    if (selectionCount === 0) return null;
+    if (selectionCount > 1) {
+      return `${selectionCount.toString()} items selected`;
+    }
+    if (!focusedKey) return null;
+    // Strip the prefix portion: the bucket-level path is already shown
+    // in the location chip; the user wants to see the *file name*.
+    const name = focusedKey.split("/").filter(Boolean).pop() ?? focusedKey;
+    return name;
+  })();
 
   /**
    * URL that the "open in browser" affordance points at, plus a label
@@ -145,15 +184,15 @@ export function StatusBar({ pane }: StatusBarProps) {
 
   const profileLabel = activeProfile
     ? activeProfile.validatedAt
-      ? `${activeProfile.displayName} • validated`
-      : `${activeProfile.displayName} • not validated`
-    : "No profile";
+      ? `${activeProfile.displayName} • ${t("statusBar.validated")}`
+      : `${activeProfile.displayName} • ${t("statusBar.notValidated")}`
+    : t("statusBar.noProfile");
 
   return (
     <footer className="border-t bg-muted/40 px-3 py-1 text-xs text-muted-foreground">
       <div
         role="status"
-        aria-label="Status bar"
+        aria-label={t("statusBar.label")}
         className="flex items-center gap-3"
       >
         {/* Path + adjacent "open in browser" icon. Grouped tight so the
@@ -162,7 +201,7 @@ export function StatusBar({ pane }: StatusBarProps) {
           <span className="truncate">
             {location?.bucket
               ? `s3://${location.bucket}/${location.prefix ?? ""}`
-              : "No location"}
+              : t("statusBar.noLocation")}
           </span>
           {target && (
             <button
@@ -176,6 +215,28 @@ export function StatusBar({ pane }: StatusBarProps) {
             </button>
           )}
         </div>
+        {selectionLabel && (
+          <span
+            className="min-w-0 max-w-[40%] shrink truncate text-foreground/80"
+            data-testid="status-selection-name"
+            title={
+              selectionCount > 1
+                ? selectionList.join("\n")
+                : (focusedKey ?? selectionLabel)
+            }
+          >
+            {selectionCount === 1 && focusedHead?.contentLength != null ? (
+              <>
+                {selectionLabel}
+                <span className="ml-1.5 text-[10px] uppercase tracking-wide opacity-70">
+                  {formatBytes(focusedHead.contentLength)}
+                </span>
+              </>
+            ) : (
+              selectionLabel
+            )}
+          </span>
+        )}
         {fetchedLabel && (
           <span
             className="shrink-0 text-[10px] uppercase tracking-wide opacity-75"
@@ -190,7 +251,10 @@ export function StatusBar({ pane }: StatusBarProps) {
           </span>
         )}
         <div className="ml-auto flex items-center gap-3">
+          <ActivityChip />
+          <NotificationsChip />
           <ShortcutHints />
+          <SettingsButton />
           <span className="truncate" title={profileLabel}>
             {profileLabel}
           </span>
@@ -237,22 +301,25 @@ function useFetchedAgo(dataUpdatedAt: number): string | null {
  * content area.
  */
 function ShortcutHints() {
+  const { t } = useTranslation();
   return (
     <div className="group relative">
       <button
         type="button"
-        aria-label="Keyboard shortcuts"
-        title="Keyboard shortcuts"
+        aria-label={t("statusBar.shortcuts.aria")}
+        title={t("statusBar.shortcuts.aria")}
         className="inline-flex items-center gap-1 rounded px-1 py-0.5 hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         <KeyboardIcon className="size-3" />
-        <span className="text-[10px] uppercase tracking-wide">Keys</span>
+        <span className="text-[10px] uppercase tracking-wide">
+          {t("statusBar.shortcuts.label")}
+        </span>
       </button>
       <div
         role="tooltip"
         className="pointer-events-none invisible absolute bottom-full right-0 z-50 mb-1 w-72 rounded-md border border-border bg-popover p-2 text-[11px] text-popover-foreground opacity-0 shadow-md transition-opacity group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100"
       >
-        <p className="mb-1 font-medium">Keyboard shortcuts</p>
+        <p className="mb-1 font-medium">{t("statusBar.shortcuts.title")}</p>
         <table className="w-full">
           <tbody>
             {SHORTCUT_HINTS.map(([keys, action]) => (
@@ -267,5 +334,201 @@ function ShortcutHints() {
         </table>
       </div>
     </div>
+  );
+}
+
+/**
+ * ActivityChip — status-bar affordance that opens the Transfer Manager
+ * panel. Always visible so the user can review history; pulses + shows
+ * aggregate progress while any transfer is queued or running.
+ */
+/** Window (ms) during which a fresh `activityFlashAt` lights the chip. */
+const ACTIVITY_FLASH_MS = 3_000;
+
+function ActivityChip() {
+  const { t } = useTranslation();
+  const transfers = useTransfersStore((s) => s.transfers);
+  const toggleActivityCenter = useUiStore((s) => s.toggleActivityCenter);
+  const lastSeenAt = useUiStore((s) => s.activityLastSeenAt);
+  const flashAt = useUiStore((s) => s.activityFlashAt);
+
+  // Re-render every 250ms while a flash is fading so the highlight
+  // visibly decays even when no transfer event arrives in that window.
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    if (flashAt === 0) return;
+    const id = window.setInterval(() => setTick((t) => t + 1), 250);
+    return () => window.clearInterval(id);
+  }, [flashAt]);
+
+  let activeCount = 0;
+  let totalBytes = 0;
+  let doneBytes = 0;
+  let unseenCompleted = 0;
+  for (const tr of transfers.values()) {
+    if (tr.state === "queued" || tr.state === "running") {
+      activeCount += 1;
+      totalBytes += tr.totalBytes ?? 0;
+      doneBytes += tr.transferredBytes;
+      continue;
+    }
+    if (
+      tr.finishedAt !== undefined &&
+      tr.finishedAt > lastSeenAt &&
+      (tr.state === "done" || tr.state === "failed" || tr.state === "canceled")
+    ) {
+      unseenCompleted += 1;
+    }
+  }
+  const overallPct =
+    totalBytes > 0
+      ? Math.min(100, Math.round((doneBytes / totalBytes) * 100))
+      : 0;
+
+  const isActive = activeCount > 0;
+  const hasUnseen = unseenCompleted > 0;
+  const isFlashing = flashAt > 0 && Date.now() - flashAt < ACTIVITY_FLASH_MS;
+
+  const title = isActive
+    ? t("activity.titleActive", { count: activeCount, pct: overallPct })
+    : hasUnseen
+      ? t("activity.titleUnseen", { count: unseenCompleted })
+      : transfers.size > 0
+        ? t("activity.titleCompleted", { count: transfers.size })
+        : t("activity.titleIdle");
+
+  // Visual priority: flash on a brand-new click wins over the persistent
+  // active glow, which wins over the unseen dot, which wins over idle.
+  const tone =
+    isFlashing || isActive ? "active" : hasUnseen ? "unseen" : "idle";
+
+  return (
+    <button
+      type="button"
+      title={title}
+      aria-label={title}
+      onClick={() => toggleActivityCenter()}
+      className={`relative inline-flex items-center gap-1 rounded px-1.5 py-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors ${
+        tone === "active"
+          ? "bg-green-500/15 text-green-700 dark:text-green-400 hover:bg-green-500/25"
+          : tone === "unseen"
+            ? "bg-blue-500/15 text-blue-700 dark:text-blue-400 hover:bg-blue-500/25"
+            : "hover:bg-accent hover:text-accent-foreground"
+      }`}
+      data-testid="activity-chip"
+    >
+      <DownloadIcon
+        className={`size-3.5 ${isFlashing || isActive ? "animate-pulse" : ""}`}
+        aria-hidden="true"
+      />
+      <span className="text-[10px] uppercase tracking-wide font-medium">
+        {t("activity.label")}
+        {isActive && <span className="ml-1 tabular-nums">{activeCount}</span>}
+      </span>
+      {/* Unseen-completion dot when nothing is currently active. */}
+      {hasUnseen && !isActive && !isFlashing && (
+        <span
+          aria-hidden="true"
+          className="absolute -right-0.5 -top-0.5 size-1.5 rounded-full bg-blue-500"
+        />
+      )}
+    </button>
+  );
+}
+
+/**
+ * NotificationsChip — companion to the Activity chip, dedicated to
+ * notifications/errors. Pulses red when there are unseen errors;
+ * shows a count when any notification exists. Click toggles the
+ * Notifications Center.
+ */
+function NotificationsChip() {
+  const { t } = useTranslation();
+  const allEntries = useNotificationsStore((s) => s.entries);
+  const toggle = useUiStore((s) => s.toggleNotificationsCenter);
+  const lastSeenAt = useUiStore((s) => s.notificationsLastSeenAt);
+
+  // The bell only surfaces non-transfer events — downloads and uploads
+  // have their own dedicated Activity chip + Center, so a completed
+  // file shouldn't also turn the bell red.
+  const entries = nonTransferEntries(allEntries);
+
+  let total = 0;
+  let unseenErrors = 0;
+  let unseenAny = 0;
+  for (const n of entries) {
+    total += 1;
+    if (n.timestamp > lastSeenAt) {
+      unseenAny += 1;
+      if (n.severity === "error") unseenErrors += 1;
+    }
+  }
+  const hasUnseen = unseenAny > 0;
+  const hasUnseenError = unseenErrors > 0;
+
+  const title = hasUnseenError
+    ? t("notificationsChip.titleErrors", { count: unseenErrors })
+    : hasUnseen
+      ? t("notificationsChip.titleUnseen", { count: unseenAny })
+      : total > 0
+        ? t("notificationsChip.titleTotal", { count: total })
+        : t("notificationsChip.titleIdle");
+
+  return (
+    <button
+      type="button"
+      title={title}
+      aria-label={title}
+      onClick={() => toggle()}
+      className={`relative inline-flex items-center gap-1 rounded px-1.5 py-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors ${
+        hasUnseenError
+          ? "bg-red-500/15 text-red-700 dark:text-red-400 hover:bg-red-500/25"
+          : hasUnseen
+            ? "bg-blue-500/15 text-blue-700 dark:text-blue-400 hover:bg-blue-500/25"
+            : "hover:bg-accent hover:text-accent-foreground"
+      }`}
+      data-testid="notifications-chip"
+    >
+      <BellIcon
+        className={`size-3.5 ${hasUnseenError ? "animate-pulse" : ""}`}
+        aria-hidden="true"
+      />
+      <span className="text-[10px] uppercase tracking-wide font-medium">
+        {t("notificationsChip.label")}
+        {total > 0 && <span className="ml-1 tabular-nums">{total}</span>}
+      </span>
+      {hasUnseen && (
+        <span
+          aria-hidden="true"
+          className={`absolute -right-0.5 -top-0.5 size-1.5 rounded-full ${
+            hasUnseenError ? "bg-red-500" : "bg-blue-500"
+          }`}
+        />
+      )}
+    </button>
+  );
+}
+
+/**
+ * SettingsButton — visible gear icon in the status bar that opens the
+ * Settings screen. The Cmd+, shortcut also opens it; the icon exists so
+ * the feature is discoverable for users who don't know the shortcut.
+ */
+function SettingsButton() {
+  const { t } = useTranslation();
+  const label = t("statusBar.openSettings");
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      title={label}
+      onClick={() => {
+        window.dispatchEvent(new CustomEvent("settings:open"));
+      }}
+      className="inline-flex items-center rounded p-0.5 hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      data-testid="open-settings"
+    >
+      <SettingsIcon className="size-3.5" />
+    </button>
   );
 }

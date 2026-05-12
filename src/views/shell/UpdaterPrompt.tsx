@@ -17,8 +17,13 @@
  */
 
 import { useCallback, useEffect, useState } from "react";
-import { type UpdateStatus, updaterInstall } from "@/api/updater";
+import {
+  type UpdateStatus,
+  updaterInstall,
+  updaterRestart,
+} from "@/api/updater";
 import { Button } from "@/components/ui/button";
+import { surfaceUnknownError } from "@/lib/errors";
 import { listen } from "@/lib/tauri";
 
 // ---------------------------------------------------------------------------
@@ -169,7 +174,24 @@ export function UpdaterPrompt({ status, onDismiss }: UpdaterPromptProps) {
               Update ready — restart to apply.
             </p>
             <div className="mt-2 flex gap-2">
-              <Button size="sm" onClick={() => window.location.reload()}>
+              <Button
+                size="sm"
+                onClick={() => {
+                  // `updaterRestart` invokes `app.restart()` on the backend,
+                  // which exits and re-execs the staged binary. The previous
+                  // `window.location.reload()` only refreshed the WebView in
+                  // the same (old) process so the update never took effect.
+                  // The promise typically never resolves — the process is
+                  // already gone — but on platforms where restart fails the
+                  // surfaceUnknownError pipeline catches it.
+                  void updaterRestart().catch((err) =>
+                    surfaceUnknownError(err, {
+                      operation: "updater_restart",
+                      title: "Failed to restart",
+                    }),
+                  );
+                }}
+              >
                 Restart now
               </Button>
               <Button size="sm" variant="ghost" onClick={onDismiss}>

@@ -44,6 +44,17 @@ export type TransferKind = "download" | "upload";
 export interface Transfer {
   /** UUID v4 request identifier. */
   id: string;
+  /**
+   * Optional group identifier. Every Transfer kicked off by the same
+   * user gesture (one click on Download, one drag-drop, one bulk
+   * Upload) shares the same `batchId`, so the Transfer Manager can
+   * render them under a single collapsible parent row instead of as
+   * dozens of flat rows.
+   *
+   * Frontend-only — generated client-side and never round-tripped to
+   * the backend.
+   */
+  batchId?: string;
   kind: TransferKind;
   profileId: string;
   bucket: string;

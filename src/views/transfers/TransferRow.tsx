@@ -13,9 +13,12 @@
  * This component is intentionally pure — it never reads the store directly.
  */
 
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import type { Transfer } from "@/api/transfers";
 import { transferCancel, transferRetry } from "@/api/transfers";
 import { surfaceUnknownError } from "@/lib/errors";
+import { formatBytes } from "@/lib/format";
 import { computeBytesPerSec, computeEtaSec } from "@/store/transfers";
 
 // ---------------------------------------------------------------------------
@@ -47,6 +50,40 @@ function keyToFilename(key: string): string {
   return parts[parts.length - 1] ?? key;
 }
 
+/** Humanise an elapsed-since timestamp (e.g. "2s ago" / "3m ago"). */
+function formatRelativeAge(timestampMs: number, nowMs: number): string {
+  const delta = Math.max(0, nowMs - timestampMs);
+  const s = Math.floor(delta / 1000);
+  if (s < 60) return `${s}s ago`;
+  const m = Math.floor(s / 60);
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  return `${h}h ago`;
+}
+
+/** Humanise a duration in ms (e.g. "1m 23s"). */
+function formatDuration(ms: number): string {
+  const s = Math.max(0, Math.floor(ms / 1000));
+  if (s < 60) return `${s}s`;
+  const m = Math.floor(s / 60);
+  if (m < 60) return `${m}m ${s % 60}s`;
+  const h = Math.floor(m / 60);
+  return `${h}h ${m % 60}m`;
+}
+
+/**
+ * Tick once per second to refresh "X ago" labels. Cheap because we read
+ * a single Date.now() per tick and the row count is bounded.
+ */
+function useNowTick(intervalMs = 1000): number {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const id = window.setInterval(() => setNow(Date.now()), intervalMs);
+    return () => window.clearInterval(id);
+  }, [intervalMs]);
+  return now;
+}
+
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
@@ -64,6 +101,7 @@ export function TransferRow({
   onCanceled,
   onRetried,
 }: TransferRowProps) {
+  const { t } = useTranslation();
   const isActive = transfer.state === "queued" || transfer.state === "running";
   const isFailed = transfer.state === "failed" || transfer.state === "canceled";
 
@@ -77,10 +115,28 @@ export function TransferRow({
 
   const rate = computeBytesPerSec(transfer);
   const eta = computeEtaSec(transfer);
+  const now = useNowTick();
 
   const filename = keyToFilename(transfer.key);
-  const kindLabel = transfer.kind === "upload" ? "Upload" : "Download";
+  const kindLabel =
+    transfer.kind === "upload"
+      ? t("transferRow.upload")
+      : t("transferRow.download");
   const kindIcon = transfer.kind === "upload" ? "↑" : "↓";
+
+  const totalKnown = transfer.totalBytes != null && transfer.totalBytes > 0;
+  const bytesLabel = totalKnown
+    ? `${formatBytes(transfer.transferredBytes)} / ${formatBytes(transfer.totalBytes ?? 0)}`
+    : formatBytes(transfer.transferredBytes);
+  const startedLabel = formatRelativeAge(transfer.startedAt, now);
+  const durationLabel =
+    transfer.finishedAt !== undefined
+      ? formatDuration(transfer.finishedAt - transfer.startedAt)
+      : null;
+  const partsLabel =
+    transfer.partsTotal > 1
+      ? `${transfer.partsDone}/${transfer.partsTotal} parts`
+      : null;
 
   async function handleCancel() {
     try {
@@ -138,7 +194,7 @@ export function TransferRow({
         aria-valuenow={pct}
         aria-valuemin={0}
         aria-valuemax={100}
-        aria-label={`${filename} ${pct}% complete`}
+        aria-label={t("transferRow.progressAria", { name: filename, pct })}
         className="h-1.5 w-full overflow-hidden rounded-full bg-muted"
       >
         <div
@@ -148,29 +204,42 @@ export function TransferRow({
       </div>
 
       {/* Stats + actions row */}
-      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-        <span>{pct}%</span>
+      <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-muted-foreground">
+        <span className="font-medium text-foreground/80">{pct}%</span>
+        <span title="bytes transferred / total">{bytesLabel}</span>
         {isActive && (
           <>
             <span>{formatRate(rate)}</span>
-            <span>ETA: {formatEta(eta)}</span>
+            <span>{t("transferRow.eta", { value: formatEta(eta) })}</span>
           </>
         )}
+        {partsLabel && (
+          <span title={t("transferRow.partsTitle")}>{partsLabel}</span>
+        )}
+        <span
+          title={t("transferRow.startedAt", {
+            time: new Date(transfer.startedAt).toLocaleString(),
+          })}
+        >
+          {isActive
+            ? t("transferRow.startedAgo", { ago: startedLabel })
+            : durationLabel}
+        </span>
 
         {/* State badge for terminal states */}
         {!isActive && !isFailed && (
           <span className="ml-auto rounded bg-green-100 px-1.5 py-0.5 text-green-700 dark:bg-green-900/30 dark:text-green-400">
-            Done
+            {t("transferRow.stateDone")}
           </span>
         )}
         {transfer.state === "failed" && (
           <span className="ml-auto rounded bg-red-100 px-1.5 py-0.5 text-red-700 dark:bg-red-900/30 dark:text-red-400">
-            Failed
+            {t("transferRow.stateFailed")}
           </span>
         )}
         {transfer.state === "canceled" && (
           <span className="ml-auto rounded bg-yellow-100 px-1.5 py-0.5 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400">
-            Canceled
+            {t("transferRow.stateCanceled")}
           </span>
         )}
 
@@ -180,20 +249,20 @@ export function TransferRow({
             <button
               type="button"
               onClick={handleCancel}
-              aria-label={`Cancel ${filename}`}
+              aria-label={t("transferRow.cancelAria", { name: filename })}
               className="rounded px-1.5 py-0.5 text-xs hover:bg-destructive/10 hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
-              Cancel
+              {t("transferRow.cancel")}
             </button>
           )}
           {isFailed && (
             <button
               type="button"
               onClick={handleRetry}
-              aria-label={`Retry ${filename}`}
+              aria-label={t("transferRow.retryAria", { name: filename })}
               className="rounded px-1.5 py-0.5 text-xs hover:bg-primary/10 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
-              Retry
+              {t("transferRow.retry")}
             </button>
           )}
         </div>

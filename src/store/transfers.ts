@@ -17,11 +17,11 @@
  */
 
 import { create } from "zustand";
-import type { Transfer, TransferState } from "@/api/transfers";
+import type { Transfer, TransferKind, TransferState } from "@/api/transfers";
 import type { AppError } from "@/lib/errors";
 
 // Re-export Transfer so consumers can import from one place.
-export type { Transfer, TransferState };
+export type { Transfer, TransferKind, TransferState };
 
 // ---------------------------------------------------------------------------
 // MB/s + ETA helpers — pure functions, easy to swap
@@ -83,6 +83,12 @@ export interface TransfersState {
   /** Toggle panel open/closed. */
   togglePanel(): void;
 
+  /** Open the panel (idempotent). */
+  openPanel(): void;
+
+  /** Open the panel in minimized (pill) mode without taking focus. */
+  openPanelMinimized(): void;
+
   /** Explicitly set the minimized state. */
   setMinimized(minimized: boolean): void;
 
@@ -140,6 +146,18 @@ export function createTransfersStore() {
       set((state) => ({ panelOpen: !state.panelOpen }));
     },
 
+    openPanel() {
+      set({ panelOpen: true, panelMinimized: false });
+    },
+
+    openPanelMinimized() {
+      // Don't override an already-expanded panel — only flip from closed
+      // to minimized so an in-progress browse isn't interrupted.
+      set((state) =>
+        state.panelOpen ? state : { panelOpen: true, panelMinimized: true },
+      );
+    },
+
     setMinimized(minimized: boolean) {
       set({ panelMinimized: minimized });
     },
@@ -174,6 +192,66 @@ export const useTransfersStore = createTransfersStore();
 // ---------------------------------------------------------------------------
 // Event bridge helpers — called from src/query/client.ts
 // ---------------------------------------------------------------------------
+
+/**
+ * Seed the store with full Transfer records the moment the backend returns
+ * request IDs from `transfer_download_many` / `transfer_upload_many`. Without
+ * this, the only data the store ever sees comes from `transfer:progress` —
+ * which carries no key / profileId / bucket — so TransferRow renders blank
+ * filenames and a "/" badge.
+ *
+ * Call right after the backend returns IDs and before any progress event
+ * has a chance to fire.
+ */
+export function seedTransfers(
+  ids: string[],
+  specs: Array<{
+    profileId: string;
+    bucket: string;
+    key: string;
+    destPath?: string;
+    sourcePath?: string;
+  }>,
+  kind: TransferKind,
+  batchId?: string,
+): void {
+  if (ids.length === 0) return;
+  const store = useTransfersStore.getState();
+  const now = Date.now();
+  // Auto-mint a batch id when the caller didn't supply one but more than
+  // one transfer is being seeded — the user is going to want to see
+  // them grouped regardless.
+  const effectiveBatchId =
+    batchId ?? (ids.length > 1 ? `auto-${now}-${ids[0] ?? "0"}` : undefined);
+  for (let i = 0; i < ids.length; i++) {
+    const id = ids[i];
+    const spec = specs[i];
+    if (!id || !spec) continue;
+    store.upsert({
+      id,
+      batchId: effectiveBatchId,
+      kind,
+      profileId: spec.profileId,
+      bucket: spec.bucket,
+      key: spec.key,
+      destPath: spec.destPath,
+      sourcePath: spec.sourcePath,
+      transferredBytes: 0,
+      partsDone: 0,
+      partsTotal: 0,
+      state: "queued",
+      startedAt: now,
+    });
+  }
+  // No toast — the Activity chip itself "flashes" briefly to draw the
+  // user's attention to the freshly-queued work. Click the chip (or
+  // Cmd+Shift+A) to open the Activity Center for details. This replaced
+  // the "Download started" nudge that felt redundant alongside the
+  // dedicated chip + center.
+  void import("@/store/ui").then(({ useUiStore }) => {
+    useUiStore.getState().flashActivity();
+  });
+}
 
 /**
  * Apply a `transfer:progress` event to the store.

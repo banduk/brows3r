@@ -22,6 +22,7 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useProfilesList } from "@/query/hooks/useValidatedProfile";
 import { usePanesStore } from "@/store/panes";
 import type { S3Location } from "@/store/ui";
@@ -137,6 +138,7 @@ export function Breadcrumb({
   location,
   profileDisplayName,
 }: BreadcrumbProps) {
+  const { t } = useTranslation();
   const setLocation = usePanesStore((s) => s.setLocation);
   // Look up the active profile's display name when the caller didn't pass
   // one explicitly. Without this the breadcrumb shows "No profile" even when
@@ -145,7 +147,7 @@ export function Breadcrumb({
   const resolvedProfileName =
     profileDisplayName ??
     profiles.find((p) => p.id === location?.profileId)?.displayName ??
-    "No profile";
+    t("statusBar.noProfile");
   const [editMode, setEditMode] = useState(false);
   const [editValue, setEditValue] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -222,7 +224,10 @@ export function Breadcrumb({
   const allSegmentsTooltip = segments.map((s) => s.label).join(" / ");
 
   return (
-    <nav aria-label="Breadcrumb" className="flex min-w-0 items-center">
+    <nav
+      aria-label={t("breadcrumb.label")}
+      className="flex min-w-0 items-center"
+    >
       {editMode ? (
         // ----- Edit mode -----
         <input
@@ -232,7 +237,7 @@ export function Breadcrumb({
           spellCheck={false}
           ref={inputRef}
           type="text"
-          aria-label="Navigate to path"
+          aria-label={t("breadcrumb.editAria")}
           value={editValue}
           onChange={(e) => setEditValue(e.currentTarget.value)}
           onKeyDown={handleEditKeyDown}

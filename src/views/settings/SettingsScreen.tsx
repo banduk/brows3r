@@ -12,6 +12,7 @@
 
 import { Tabs } from "radix-ui";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useSettingsStore } from "@/store/settings";
 import { CachePanel } from "./CachePanel";
 import { ConfirmationsPanel } from "./ConfirmationsPanel";
@@ -34,29 +35,57 @@ import { UpdaterPanel } from "./UpdaterPanel";
 // ---------------------------------------------------------------------------
 
 const PANELS = [
-  { id: "general", label: "General", Component: GeneralPanel },
-  { id: "transfers", label: "Transfers", Component: TransfersPanel },
-  { id: "preview", label: "Preview", Component: PreviewPanel },
-  { id: "shortcuts", label: "Shortcuts", Component: ShortcutsPanel },
+  { id: "general", labelKey: "settings.tabs.general", Component: GeneralPanel },
+  {
+    id: "transfers",
+    labelKey: "settings.tabs.transfers",
+    Component: TransfersPanel,
+  },
+  { id: "preview", labelKey: "settings.tabs.preview", Component: PreviewPanel },
+  {
+    id: "shortcuts",
+    labelKey: "settings.tabs.shortcuts",
+    Component: ShortcutsPanel,
+  },
   {
     id: "notifications",
-    label: "Notifications",
+    labelKey: "settings.tabs.notifications",
     Component: NotificationsPanel,
   },
-  { id: "endpoints", label: "Endpoints", Component: EndpointsPanel },
-  { id: "updater", label: "Updates", Component: UpdaterPanel },
-  { id: "diagnostics", label: "Diagnostics", Component: DiagnosticsPanel },
-  { id: "startup", label: "Startup", Component: StartupPanel },
-  { id: "proxy", label: "Proxy", Component: ProxyPanel },
-  { id: "cache", label: "Cache", Component: CachePanel },
-  { id: "fallback", label: "Fallback", Component: FallbackPanel },
+  {
+    id: "endpoints",
+    labelKey: "settings.tabs.endpoints",
+    Component: EndpointsPanel,
+  },
+  { id: "updater", labelKey: "settings.tabs.updates", Component: UpdaterPanel },
+  {
+    id: "diagnostics",
+    labelKey: "settings.tabs.diagnostics",
+    Component: DiagnosticsPanel,
+  },
+  { id: "startup", labelKey: "settings.tabs.startup", Component: StartupPanel },
+  { id: "proxy", labelKey: "settings.tabs.proxy", Component: ProxyPanel },
+  { id: "cache", labelKey: "settings.tabs.cache", Component: CachePanel },
+  {
+    id: "fallback",
+    labelKey: "settings.tabs.fallback",
+    Component: FallbackPanel,
+  },
   {
     id: "confirmations",
-    label: "Confirmations",
+    labelKey: "settings.tabs.confirmations",
     Component: ConfirmationsPanel,
   },
-  { id: "defaultView", label: "Default View", Component: DefaultViewPanel },
-  { id: "multipart", label: "Multipart cleanup", Component: MultipartPanel },
+  {
+    id: "defaultView",
+    labelKey: "settings.tabs.defaultView",
+    Component: DefaultViewPanel,
+  },
+  {
+    id: "multipart",
+    labelKey: "settings.tabs.multipart",
+    Component: MultipartPanel,
+  },
 ] as const;
 
 // ---------------------------------------------------------------------------
@@ -64,6 +93,7 @@ const PANELS = [
 // ---------------------------------------------------------------------------
 
 export function SettingsScreen() {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<string>(PANELS[0].id);
   const load = useSettingsStore((s) => s.load);
@@ -93,7 +123,7 @@ export function SettingsScreen() {
     <div
       role="dialog"
       aria-modal="true"
-      aria-label="Settings"
+      aria-label={t("settings.title")}
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
       onKeyDown={(e) => {
         if (e.key === "Escape") setOpen(false);
@@ -107,19 +137,19 @@ export function SettingsScreen() {
       >
         {/* Header */}
         <div className="flex items-center justify-between border-b px-5 py-4">
-          <h2 className="text-base font-semibold">Settings</h2>
+          <h2 className="text-base font-semibold">{t("settings.title")}</h2>
           <div className="flex items-center gap-2">
             <button
               type="button"
               className="text-xs text-muted-foreground underline-offset-2 hover:underline"
               onClick={() => void resetAll()}
-              aria-label="Reset all settings to defaults"
+              aria-label={t("settings.resetAllAria")}
             >
-              Reset all
+              {t("settings.resetAll")}
             </button>
             <button
               type="button"
-              aria-label="Close settings"
+              aria-label={t("settings.close")}
               className="rounded-md p-1 text-muted-foreground hover:text-foreground hover:bg-muted"
               onClick={() => setOpen(false)}
             >
@@ -144,7 +174,7 @@ export function SettingsScreen() {
         {/* Body */}
         {loading ? (
           <div className="flex flex-1 items-center justify-center p-8 text-sm text-muted-foreground">
-            Loading settings…
+            {t("settings.loading")}
           </div>
         ) : error !== null ? (
           <div className="flex flex-1 items-center justify-center p-8">
@@ -160,16 +190,16 @@ export function SettingsScreen() {
           >
             {/* Tab list — vertical sidebar */}
             <Tabs.List
-              aria-label="Settings sections"
+              aria-label={t("settings.sectionsAria")}
               className="flex flex-col gap-0.5 border-r w-44 shrink-0 p-2 overflow-y-auto"
             >
-              {PANELS.map(({ id, label }) => (
+              {PANELS.map(({ id, labelKey }) => (
                 <Tabs.Trigger
                   key={id}
                   value={id}
                   className="flex w-full items-center rounded-md px-3 py-1.5 text-sm text-left text-muted-foreground hover:bg-muted hover:text-foreground data-[state=active]:bg-muted data-[state=active]:text-foreground data-[state=active]:font-medium outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
-                  {label}
+                  {t(labelKey)}
                 </Tabs.Trigger>
               ))}
             </Tabs.List>

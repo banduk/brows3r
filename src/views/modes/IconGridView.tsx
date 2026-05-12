@@ -34,6 +34,7 @@ import {
   useValidatedProfile,
 } from "@/query/hooks/useValidatedProfile";
 import { usePanesStore } from "@/store/panes";
+import { FileContextMenu } from "@/views/browser/ContextMenu";
 import { ListingFooter } from "@/views/browser/ListingFooter";
 import { useFilteredEntries } from "./useFilteredEntries";
 
@@ -79,6 +80,11 @@ interface GridCardProps {
   isSelected: boolean;
   isCursor: boolean;
   onClick: (item: ObjectEntry, index: number, e: React.MouseEvent) => void;
+  onContextMenu: (
+    item: ObjectEntry,
+    index: number,
+    e: React.MouseEvent,
+  ) => void;
   onOpen?: (item: ObjectEntry) => void;
   width: number;
 }
@@ -89,6 +95,7 @@ function GridCard({
   isSelected,
   isCursor,
   onClick,
+  onContextMenu,
   onOpen,
   width,
 }: GridCardProps) {
@@ -104,10 +111,11 @@ function GridCard({
         "flex flex-col items-center justify-start gap-1 rounded-md p-2 cursor-default select-none text-center",
         "hover:bg-accent/50",
         isSelected && "bg-accent text-accent-foreground",
-        isCursor && !isSelected && "ring-1 ring-inset ring-ring",
+        isCursor && "ring-2 ring-inset ring-primary",
       )}
       style={{ width, height: CARD_HEIGHT }}
       onClick={(e) => onClick(entry, index, e)}
+      onContextMenu={(e) => onContextMenu(entry, index, e)}
       onDoubleClick={() => onOpen?.(entry)}
       data-testid={`icon-card-${index.toString()}`}
     >
@@ -238,8 +246,15 @@ export function IconGridView({
     return result;
   }, [items, cols]);
 
-  const { selection, isSelected, onClick, onKeyDown, cursor, setCursor } =
-    useSelection<ObjectEntry>(items, (e) => e.key);
+  const {
+    selection,
+    isSelected,
+    onClick,
+    onContextMenu,
+    onKeyDown,
+    cursor,
+    setCursor,
+  } = useSelection<ObjectEntry>(items, (e) => e.key);
 
   // Mirror the local selection into the panes store so cross-cutting
   // features (Preview, Inspector, Star bookmark) react to clicks here.
@@ -274,6 +289,8 @@ export function IconGridView({
           setCursor(Math.max(cursor - cols, 0));
           break;
         }
+        case " ":
+
         case "Enter": {
           e.preventDefault();
           const entry = items[cursor];
@@ -340,7 +357,19 @@ export function IconGridView({
     containerWidth > 0 ? Math.floor(containerWidth / cols) : CARD_MIN_WIDTH;
 
   // -- Grid -------------------------------------------------------------------
-  return (
+  const selectedKeys = selection.toArray();
+  const fileMenuCtx =
+    profileId && bucket
+      ? {
+          profileId,
+          bucket,
+          prefix,
+          keys: selectedKeys,
+          isBlankArea: selectedKeys.length === 0,
+        }
+      : null;
+
+  const gridContent = (
     <div
       ref={attachRef}
       className="flex h-full flex-col"
@@ -367,6 +396,7 @@ export function IconGridView({
                   isSelected={isSelected(entry.key)}
                   isCursor={cursor === flatIndex}
                   onClick={onClick}
+                  onContextMenu={onContextMenu}
                   onOpen={onOpen}
                   width={cardWidth}
                 />
@@ -387,4 +417,7 @@ export function IconGridView({
       />
     </div>
   );
+
+  if (!fileMenuCtx) return gridContent;
+  return <FileContextMenu ctx={fileMenuCtx}>{gridContent}</FileContextMenu>;
 }

@@ -33,6 +33,7 @@ import { cn } from "@/lib/utils";
 import { useValidatedProfile } from "@/query/hooks/useValidatedProfile";
 import { keys } from "@/query/keys";
 import { usePanesStore } from "@/store/panes";
+import { FileContextMenu } from "@/views/browser/ContextMenu";
 import { ListingFooter } from "@/views/browser/ListingFooter";
 import { useFilteredEntries } from "./useFilteredEntries";
 
@@ -116,6 +117,11 @@ interface FlatRowProps {
   isSelected: boolean;
   isCursor: boolean;
   onClick: (item: ObjectEntry, index: number, e: React.MouseEvent) => void;
+  onContextMenu: (
+    item: ObjectEntry,
+    index: number,
+    e: React.MouseEvent,
+  ) => void;
   onOpen?: (item: ObjectEntry) => void;
 }
 
@@ -125,6 +131,7 @@ function FlatRow({
   isSelected,
   isCursor,
   onClick,
+  onContextMenu,
   onOpen,
 }: FlatRowProps) {
   const ext = entryExtension(entry.key);
@@ -138,10 +145,11 @@ function FlatRow({
         "flex items-center gap-3 px-3 cursor-default select-none text-sm",
         "hover:bg-accent/50",
         isSelected && "bg-accent text-accent-foreground",
-        isCursor && !isSelected && "ring-1 ring-inset ring-ring",
+        isCursor && "ring-2 ring-inset ring-primary",
       )}
       style={{ height: ROW_HEIGHT }}
       onClick={(e) => onClick(entry, index, e)}
+      onContextMenu={(e) => onContextMenu(entry, index, e)}
       onDoubleClick={() => onOpen?.(entry)}
       data-testid={`flat-row-${index.toString()}`}
     >
@@ -153,7 +161,9 @@ function FlatRow({
           className="shrink-0 text-muted-foreground"
           size={14}
         />
-        <span className="truncate font-mono text-xs">{entry.key}</span>
+        <span className="truncate font-mono text-xs" title={entry.key}>
+          {entry.key}
+        </span>
       </div>
       {/* Size */}
       <span
@@ -297,8 +307,15 @@ export function FlatKeyView({
 
   const [_sort, _setSort] = useState<null>(null);
 
-  const { selection, isSelected, onClick, onKeyDown, cursor, setCursor } =
-    useSelection<ObjectEntry>(items, (e) => e.key);
+  const {
+    selection,
+    isSelected,
+    onClick,
+    onContextMenu,
+    onKeyDown,
+    cursor,
+    setCursor,
+  } = useSelection<ObjectEntry>(items, (e) => e.key);
 
   const activePaneIdForSync = usePanesStore((s) => s.activePaneId);
   const setStoreSelection = usePanesStore((s) => s.setSelection);
@@ -323,6 +340,8 @@ export function FlatKeyView({
           setCursor(prev);
           break;
         }
+        case " ":
+
         case "Enter": {
           e.preventDefault();
           const entry = items[cursor];
@@ -379,7 +398,19 @@ export function FlatKeyView({
   }
 
   // -- Table ------------------------------------------------------------------
-  return (
+  const selectedKeys = selection.toArray();
+  const fileMenuCtx =
+    profileId && bucket
+      ? {
+          profileId,
+          bucket,
+          prefix,
+          keys: selectedKeys,
+          isBlankArea: selectedKeys.length === 0,
+        }
+      : null;
+
+  const flatContent = (
     <div
       className="flex h-full flex-col"
       onKeyDown={handleKeyDown}
@@ -427,6 +458,7 @@ export function FlatKeyView({
             isSelected={isSelected(entry.key)}
             isCursor={cursor === index}
             onClick={onClick}
+            onContextMenu={onContextMenu}
             onOpen={onOpen}
           />
         )}
@@ -441,4 +473,7 @@ export function FlatKeyView({
       />
     </div>
   );
+
+  if (!fileMenuCtx) return flatContent;
+  return <FileContextMenu ctx={fileMenuCtx}>{flatContent}</FileContextMenu>;
 }

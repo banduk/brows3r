@@ -21,6 +21,7 @@
 
 import { DatabaseIcon } from "lucide-react";
 import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { formatRelative } from "@/lib/format";
 import { fuzzyFilter } from "@/lib/fuzzy";
 import { cn } from "@/lib/utils";
@@ -45,6 +46,7 @@ export function BucketListView({
   profileId,
   activeBucket,
 }: BucketListViewProps) {
+  const { t } = useTranslation();
   const activePaneId = usePanesStore((s) => s.activePaneId);
   const setLocation = usePanesStore((s) => s.setLocation);
   const filter = usePanesStore(
@@ -65,21 +67,18 @@ export function BucketListView({
 
   if (isGated) {
     return (
-      <Message
-        title="Profile not validated"
-        body="Validate the profile from the sidebar before listing its buckets."
-      />
+      <Message title={t("buckets.gateTitle")} body={t("buckets.gateBody")} />
     );
   }
 
   if (isLoading) {
-    return <Message title="Loading buckets…" />;
+    return <Message title={t("buckets.loading")} />;
   }
 
   if (error) {
     return (
       <Message
-        title="Failed to load buckets"
+        title={t("buckets.loadError")}
         body={error.message}
         tone="error"
       />
@@ -88,24 +87,24 @@ export function BucketListView({
 
   if (!buckets || buckets.length === 0) {
     return (
-      <Message
-        title="No buckets found"
-        body="This profile has access to zero buckets in S3."
-      />
+      <Message title={t("buckets.emptyTitle")} body={t("buckets.emptyBody")} />
     );
   }
 
   if (visibleBuckets && visibleBuckets.length === 0 && filter) {
     return (
       <Message
-        title={`No bucket matches "${filter}"`}
-        body="Clear the filter (Esc) or refine your query."
+        title={t("buckets.filterNoMatch", { filter })}
+        body={t("buckets.filterClearHint")}
       />
     );
   }
 
   return (
-    <ul aria-label="Bucket list" className="flex h-full flex-col overflow-auto">
+    <ul
+      aria-label={t("buckets.listAria")}
+      className="flex h-full flex-col overflow-auto"
+    >
       {(visibleBuckets ?? buckets).map((bucket) => {
         const isActive = bucket.name === activeBucket;
         return (

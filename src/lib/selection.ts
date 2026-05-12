@@ -92,6 +92,14 @@ export interface UseSelectionResult<T> {
   isSelected: (id: string) => boolean;
   /** Call from a row's onClick handler with the item and the event. */
   onClick: (item: T, index: number, e: React.MouseEvent) => void;
+  /**
+   * Call from a row's onContextMenu handler. Mirrors Finder/Explorer
+   * behaviour: right-clicking on an unselected row replaces selection with
+   * just that row so the context menu acts on a sensible target. Right-
+   * clicking on an already-selected row leaves the selection untouched
+   * (so multi-select operations work).
+   */
+  onContextMenu: (item: T, index: number, e: React.MouseEvent) => void;
   /** Bind to the list container's onKeyDown for Cmd/Ctrl+A. */
   onKeyDown: (e: React.KeyboardEvent) => void;
   /** Cursor index (highlighted row; moves with keyboard nav). */
@@ -143,6 +151,17 @@ export function useSelection<T>(
     }
   }
 
+  function onContextMenu(item: T, index: number, _e: React.MouseEvent): void {
+    const id = getId(item);
+    // If the right-click landed on a row that is already part of the
+    // selection, do nothing — the menu should act on whatever the user
+    // already picked. Otherwise replace selection with this one row.
+    if (selection.has(id)) return;
+    setSelection(new SelectionModel<T>([id]));
+    setAnchor(index);
+    setCursor(index);
+  }
+
   function onKeyDown(e: React.KeyboardEvent): void {
     const meta = e.metaKey || e.ctrlKey;
 
@@ -152,5 +171,13 @@ export function useSelection<T>(
     }
   }
 
-  return { selection, isSelected, onClick, onKeyDown, cursor, setCursor };
+  return {
+    selection,
+    isSelected,
+    onClick,
+    onContextMenu,
+    onKeyDown,
+    cursor,
+    setCursor,
+  };
 }

@@ -68,6 +68,27 @@ function getQueryClient(ctx: Record<string, unknown>): QueryClient | undefined {
     : undefined;
 }
 
+/**
+ * Local thin wrapper around the store's seedTransfers helper. Mints a
+ * batch id so every transfer initiated by the same Download click is
+ * grouped under one parent row in the Transfer Manager.
+ */
+async function seedTransfersFromSpecs(
+  ids: string[],
+  specs: Array<{
+    profileId: string;
+    bucket: string;
+    key: string;
+    destPath: string;
+  }>,
+): Promise<void> {
+  const { seedTransfers } = await import("@/store/transfers");
+  const batchId = `dl-${Date.now().toString(36)}-${Math.random()
+    .toString(36)
+    .slice(2, 8)}`;
+  seedTransfers(ids, specs, "download", batchId);
+}
+
 // ---------------------------------------------------------------------------
 // file.open
 // ---------------------------------------------------------------------------
@@ -423,11 +444,205 @@ registry.register({
     const bkt = bucket(ctx);
     const key = firstKey(ctx);
     if (!pid || !bkt) return;
-    window.dispatchEvent(
-      new CustomEvent("inspector:open", {
-        detail: { profileId: pid, bucket: bkt, key },
-      }),
-    );
+    // Direct store call — the previous `inspector:open` CustomEvent had
+    // no listener anywhere in production code, so the menu item was
+    // silently dead. The dynamic import keeps `file.ts` free of a
+    // direct `@/store/inspector` dep at module-load time (matters for
+    // the test seam — the registry is constructed before the store
+    // bundle is parsed).
+    void import("@/store/inspector").then(({ useInspectorStore }) => {
+      useInspectorStore.getState().openInspector({
+        profileId: pid,
+        bucket: bkt,
+        key,
+      });
+    });
+  },
+});
+
+// ---------------------------------------------------------------------------
+// file.download — save the selected object(s) locally
+// ---------------------------------------------------------------------------
+//
+// Mirrors the toolbar's Download button without duplicating UI state.
+// Three branches:
+//
+//   1. exactly one OBJECT key selected → native Save dialog → single
+//      `transferDownloadMany([{...}])`.
+//   2. exactly one FOLDER prefix selected → confirm + pick destination
+//      directory → enumerate via `objectsListFlat` → bulk transfer
+//      mirroring the S3 layout under the chosen dir.
+//   3. multiple keys (any mix of objects/folders) → same as (2) but
+//      enumerating *each* selected prefix + each object key.
+//
+// Errors at any step surface via `surfaceUnknownError` in the toolbar
+// pattern.
+
+registry.register({
+  id: "file.download",
+  title: "Download",
+  group: "File",
+  description: "Save the selected object(s) to a local path.",
+  async run(ctx) {
+    const pid = profileId(ctx);
+    const bkt = bucket(ctx);
+    const ks = selectedKeys(ctx);
+    if (!pid || !bkt || ks.length === 0) return;
+
+    // Resolve Tauri dialog + transfers API lazily so commandPalette
+    // tests do not need to mock the entire Tauri bridge to import
+    // this file.
+    const [
+      { save: saveDialog, open: openDialog },
+      { transferDownloadMany },
+      { objectsListFlat: listFlat },
+    ] = await Promise.all([
+      import("@tauri-apps/plugin-dialog"),
+      import("@/api/transfers"),
+      import("@/api/objects"),
+    ]);
+
+    const onlyKey = ks.length === 1 ? ks[0] : undefined;
+    const isSingleObject = onlyKey !== undefined && !onlyKey.endsWith("/");
+
+    try {
+      if (isSingleObject && onlyKey) {
+        const basename = onlyKey.split("/").pop() ?? onlyKey;
+        const dest = await saveDialog({ defaultPath: basename });
+        if (!dest) return;
+        const singleSpec = {
+          profileId: pid,
+          bucket: bkt,
+          key: onlyKey,
+          destPath: dest,
+        };
+        const ids = await transferDownloadMany([singleSpec]);
+        await seedTransfersFromSpecs(ids, [singleSpec]);
+        return;
+      }
+
+      // Bulk path: prompt for a destination directory, open the dialog
+      // in "Counting…" mode, run enumeration in parallel and push the
+      // final summary once it completes. The dialog gates Confirm until
+      // we report a non-null estimate, so there is no race between
+      // listing and the user clicking Start.
+      const root = await openDialog({ directory: true, multiple: false });
+      if (!root || Array.isArray(root)) return;
+
+      const specs: Array<{
+        profileId: string;
+        bucket: string;
+        key: string;
+        destPath: string;
+      }> = [];
+
+      const { openBulkDownloadDialog } = await import(
+        "@/views/transfers/BulkDownloadHost"
+      );
+      const dialog = openBulkDownloadDialog({
+        destination: root,
+        initialEstimate: null,
+      });
+
+      // Join base + relative path. S3 keys always use forward slashes;
+      // Tauri's backend create_dir_all handles both separators per
+      // platform, so we just use "/" here.
+      const joinPath = (base: string, rel: string): string =>
+        base.endsWith("/") || base.endsWith("\\")
+          ? `${base}${rel}`
+          : `${base}/${rel}`;
+
+      // Folder downloads must preserve the folder name itself, not just
+      // its contents. If the user right-clicks `photos/` and picks
+      // ~/Downloads, they expect ~/Downloads/photos/cat.jpg, NOT
+      // ~/Downloads/cat.jpg (which would also clobber same-named files
+      // across sibling folders).
+      const folderBasename = (prefix: string): string => {
+        const stripped = prefix.replace(/\/+$/, "");
+        const slash = stripped.lastIndexOf("/");
+        return slash >= 0 ? stripped.slice(slash + 1) : stripped;
+      };
+
+      let files = 0;
+      let bytes = 0;
+      try {
+        for (const k of ks) {
+          if (k.endsWith("/")) {
+            // Preserve the folder name in the destination.
+            const folderRoot = joinPath(root, folderBasename(k));
+            let cursor: string | undefined;
+            do {
+              const page = await listFlat(pid as string, bkt as string, k, {
+                continuationToken: cursor,
+              });
+              for (const entry of page.entries) {
+                if (entry.isPrefix) continue;
+                const rel = entry.key.startsWith(k)
+                  ? entry.key.slice(k.length)
+                  : entry.key;
+                specs.push({
+                  profileId: pid as string,
+                  bucket: bkt as string,
+                  key: entry.key,
+                  destPath: joinPath(folderRoot, rel),
+                });
+                files += 1;
+                bytes += entry.size ?? 0;
+              }
+              cursor = page.nextContinuationToken;
+            } while (cursor);
+          } else {
+            const basename = k.split("/").pop() ?? k;
+            specs.push({
+              profileId: pid as string,
+              bucket: bkt as string,
+              key: k,
+              destPath: joinPath(root, basename),
+            });
+            files += 1;
+          }
+        }
+        dialog.update({ estimate: { files, bytes }, error: null });
+      } catch (err) {
+        const msg =
+          err instanceof Error
+            ? err.message
+            : typeof err === "object" && err !== null && "message" in err
+              ? String((err as { message: unknown }).message)
+              : "Failed to list files.";
+        dialog.update({ estimate: { files, bytes }, error: msg });
+      }
+
+      const confirmed = await dialog.decision;
+      if (!confirmed) return;
+
+      if (specs.length === 0) {
+        const { notify } = await import("@/lib/errors");
+        const { default: i18n } = await import("@/i18n");
+        notify({
+          id: `bulk-download-empty-${Date.now().toString()}`,
+          title: i18n.t("bulkDownload.emptyTitle"),
+          message: i18n.t("bulkDownload.emptyMessage"),
+          severity: "info",
+        });
+        return;
+      }
+
+      const ids = await transferDownloadMany(specs);
+      // Seed the transfers store with the full records so the manager
+      // can render key/profileId/bucket immediately. Without this, only
+      // the empty placeholder created by applyProgressEvent gets shown.
+      await seedTransfersFromSpecs(ids, specs);
+      // Surface the transfer manager so the user can monitor + cancel.
+      const { useTransfersStore } = await import("@/store/transfers");
+      useTransfersStore.getState().openPanel();
+    } catch (err) {
+      await surfaceUnknownError(err, {
+        operation: "file.download",
+        resource: ks.length === 1 ? (ks[0] ?? null) : `${ks.length} items`,
+        title: "Failed to start download",
+      });
+    }
   },
 });
 

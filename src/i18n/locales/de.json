@@ -1,0 +1,379 @@
+{
+  "menu": {
+    "file": {
+      "open": "Öffnen",
+      "download": "Herunterladen",
+      "copyPresignedUrl": "Vorsignierte URL kopieren",
+      "delete": "Löschen",
+      "createFolder": "Ordner hier erstellen",
+      "properties": "Eigenschaften",
+      "refresh": "Aktualisieren",
+      "bookmarkLocation": "Diesen Ort als Lesezeichen speichern",
+      "bookmarkFirst": "Erstes ausgewähltes Element als Lesezeichen speichern",
+      "bookmarkItem": "Dieses Element als Lesezeichen speichern",
+      "actions": "Aktionen"
+    },
+    "tooltip": {
+      "disabledLockSuffix": "läuft"
+    }
+  },
+  "common": {
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "close": "Schließen",
+    "ok": "OK",
+    "retry": "Erneut versuchen",
+    "reset": "Zurücksetzen",
+    "edit": "Bearbeiten",
+    "select": "Auswählen",
+    "loading": "Lädt…",
+    "search": "Suchen",
+    "filter": "Filtern",
+    "select_a_file_to_preview": "Wählen Sie eine Datei zur Vorschau",
+    "select_all": "Alles auswählen"
+  },
+  "sidebar": {
+    "label": "Seitenleiste",
+    "profiles": "Profile",
+    "addProfile": "Profil hinzufügen",
+    "bookmarks": "Lesezeichen",
+    "recents": "Zuletzt verwendet"
+  },
+  "profiles": {
+    "loading": "Profile werden geladen…",
+    "loadError": "Profile konnten nicht geladen werden.",
+    "checkNotifications": "Details im Benachrichtigungsbereich.",
+    "empty": "Keine Profile gefunden. Klicken Sie auf \"Profil hinzufügen\", um zu beginnen.",
+    "listAria": "Profilliste",
+    "rowActionsAria": "Aktionen für {{name}}",
+    "edit": "Bearbeiten",
+    "validate": "Validieren",
+    "delete": "Löschen",
+    "deleteConfirm": "Profil \"{{name}}\" löschen? Dies kann nicht rückgängig gemacht werden.",
+    "validatedRecently": "Validiert",
+    "validationStale": "Validierung veraltet",
+    "notValidated": "Nicht validiert",
+    "validating": "Wird validiert…",
+    "errorWithReason": "Validierung fehlgeschlagen: {{reason}}"
+  },
+  "bookmarks": {
+    "loading": "Lesezeichen werden geladen…",
+    "loadError": "Lesezeichen konnten nicht geladen werden.",
+    "empty": "Noch keine Lesezeichen.",
+    "listAria": "Lesezeichenliste",
+    "rowActionsAria": "Aktionen für {{name}}",
+    "rename": "Umbenennen…",
+    "remove": "Lesezeichen entfernen",
+    "removeConfirm": "Lesezeichen \"{{name}}\" entfernen?\n\nDies entfernt nur die Verknüpfung in der Seitenleiste; der Bucket/Ordner/das Objekt in S3 bleibt unverändert.",
+    "editAria": "Lesezeichen bearbeiten",
+    "renameTitle": "Lesezeichen umbenennen",
+    "labelPlaceholder": "Bezeichnung (leer lassen, um Präfix zu verwenden)",
+    "validateTooltip": "Validieren Sie dieses Profil, um dieses Lesezeichen zu nutzen",
+    "validateToUse": "Zum Verwenden validieren"
+  },
+  "breadcrumb": {
+    "label": "Brotkrumen-Navigation",
+    "editAria": "Zu Pfad navigieren"
+  },
+  "buckets": {
+    "gateTitle": "Profil nicht validiert",
+    "gateBody": "Validieren Sie das Profil in der Seitenleiste, bevor Sie Buckets auflisten.",
+    "loading": "Buckets werden geladen…",
+    "loadError": "Buckets konnten nicht geladen werden",
+    "emptyTitle": "Keine Buckets gefunden",
+    "emptyBody": "Dieses Profil hat Zugriff auf keine Buckets in S3.",
+    "filterNoMatch": "Kein Bucket passt zu \"{{filter}}\"",
+    "filterClearHint": "Filter zurücksetzen (Esc) oder Abfrage verfeinern.",
+    "listAria": "Bucket-Liste"
+  },
+  "preview": {
+    "label": "Vorschau",
+    "empty": "Datei zur Vorschau auswählen",
+    "validateGate": "Validieren Sie dieses Profil, um Dateien anzuzeigen",
+    "sizeLimit": "Datei ist {{size}} MB — über dem Limit von {{limit}} MB.",
+    "previewAnyway": "Trotzdem anzeigen",
+    "editInMonaco": "In Monaco bearbeiten",
+    "exitEdit": "Bearbeitungsmodus verlassen"
+  },
+  "toolbar": {
+    "label": "Dateibrowser-Symbolleiste",
+    "back": "Zurück",
+    "forward": "Vorwärts",
+    "up": "Eine Ebene nach oben",
+    "refresh": "Aktualisieren",
+    "inspect": "Auswahl prüfen",
+    "upload": "Dateien hochladen",
+    "downloadFile": "Ausgewählte Datei herunterladen",
+    "downloadBulk": "Herunterladen (Ordner/Bucket — Objekt für Objekt)",
+    "newFolder": "Neuer Ordner",
+    "bookmarkRemove": "Lesezeichen entfernen",
+    "bookmarkObject": "Ausgewähltes Objekt als Lesezeichen",
+    "bookmarkLocation": "Diesen Ort als Lesezeichen",
+    "filterAria": "Filtern (unscharf)",
+    "filterTooltip": "Aktuelle Ansicht filtern — \"/\" zum Fokussieren, Esc zum Löschen",
+    "filterPlaceholder": "Filtern…  \"/\" drücken",
+    "viewModeAria": "Ansichtsmodus: {{label}}",
+    "viewModeMenuAria": "Ansichtsmodus",
+    "viewMode": {
+      "details": "Details",
+      "icons": "Symbole",
+      "gallery": "Galerie",
+      "columns": "Spalten",
+      "tree": "Baum",
+      "flatKey": "Flache Schlüssel",
+      "dualPane": "Doppelbereich"
+    }
+  },
+  "statusBar": {
+    "label": "Statusleiste",
+    "noLocation": "Kein Ort",
+    "noProfile": "Kein Profil",
+    "validated": "validiert",
+    "notValidated": "nicht validiert",
+    "openSettings": "Einstellungen öffnen (⌘,)",
+    "shortcuts": {
+      "aria": "Tastenkürzel",
+      "label": "Tasten",
+      "title": "Tastenkürzel"
+    }
+  },
+  "activity": {
+    "label": "Downloads",
+    "titleActive": "{{count}} aktive Übertragungen — {{pct}}%",
+    "titleCompleted": "{{count}} abgeschlossene Übertragungen",
+    "titleUnseen": "{{count}} neue seit dem letzten Besuch",
+    "titleIdle": "Keine Übertragungen"
+  },
+  "notificationsChip": {
+    "label": "Benachrichtigungen",
+    "titleErrors": "{{count}} neue Fehler — klicken zum Prüfen",
+    "titleUnseen": "{{count}} neue Benachrichtigungen",
+    "titleTotal": "{{count}} Benachrichtigungen",
+    "titleIdle": "Keine Benachrichtigungen"
+  },
+  "notificationsCenter": {
+    "label": "Benachrichtigungscenter",
+    "title": "Benachrichtigungen",
+    "subtitle": "Fehler, Warnungen und Hinweise",
+    "close": "Benachrichtigungscenter schließen",
+    "clearAll": "Alle löschen",
+    "filtersAria": "Nach Schweregrad filtern",
+    "searchPlaceholder": "Nach Titel oder Nachricht suchen…",
+    "clearSearch": "Suche löschen",
+    "userBadge": "Benutzer",
+    "dismissAria": "Benachrichtigung verwerfen: {{name}}",
+    "filter": {
+      "all": "Alle",
+      "error": "Fehler",
+      "warning": "Warnungen",
+      "info": "Info",
+      "success": "Erfolg"
+    },
+    "stats": {
+      "total": "Insgesamt {{count}}",
+      "errors": "{{count}} Fehler",
+      "warnings": "{{count}} Warnungen",
+      "info": "{{count}} Info",
+      "success": "{{count}} Erfolg"
+    },
+    "empty": {
+      "title": "Noch keine Benachrichtigungen",
+      "body": "Fehler, Warnungen und Hinweise aus Ihrer Aktivität erscheinen hier.",
+      "filteredTitle": "Nichts entspricht diesem Filter",
+      "searchTitle": "Keine Treffer",
+      "searchBody": "Keine Benachrichtigung entspricht \"{{query}}\"."
+    }
+  },
+  "recents": {
+    "sectionAria": "Zuletzt verwendete Orte",
+    "loading": "Wird geladen…",
+    "loadError": "Letzte konnten nicht geladen werden.",
+    "empty": "Keine zuletzt verwendeten Orte.",
+    "listAria": "Liste der zuletzt verwendeten Orte",
+    "showAll": "Alle anzeigen ({{count}})",
+    "showLess": "Weniger anzeigen",
+    "clear": "Letzte löschen",
+    "validateTooltip": "Validieren Sie dieses Profil, um diesen Ort zu nutzen",
+    "validateToUse": "Zum Verwenden validieren"
+  },
+  "settings": {
+    "title": "Einstellungen",
+    "loading": "Einstellungen werden geladen…",
+    "close": "Einstellungen schließen",
+    "resetAll": "Alles zurücksetzen",
+    "resetAllAria": "Alle Einstellungen auf Standard zurücksetzen",
+    "resetDefaults": "Auf Standard zurücksetzen",
+    "saving": "Wird gespeichert…",
+    "sectionsAria": "Einstellungsbereiche",
+    "tabs": {
+      "general": "Allgemein",
+      "transfers": "Übertragungen",
+      "preview": "Vorschau",
+      "shortcuts": "Tastenkürzel",
+      "notifications": "Benachrichtigungen",
+      "endpoints": "Endpunkte",
+      "updates": "Updates",
+      "diagnostics": "Diagnose",
+      "startup": "Start",
+      "proxy": "Proxy",
+      "cache": "Cache",
+      "fallback": "Fallback",
+      "confirmations": "Bestätigungen",
+      "defaultView": "Standardansicht",
+      "multipart": "Multipart-Bereinigung"
+    },
+    "section": {
+      "appearance": "Darstellung",
+      "language": "Sprache",
+      "proxy": "Proxy",
+      "transfers": "Übertragungen",
+      "cache": "Cache",
+      "diagnostics": "Diagnose"
+    },
+    "language": {
+      "label": "Anzeigesprache",
+      "description": "Wählen Sie die Sprache für Menüs, Schaltflächen und Dialoge.",
+      "resetKeychain": "Schlüsselbund-Passwortabfrage zurücksetzen"
+    },
+    "autoRefresh": {
+      "label": "Auto-Validierung",
+      "toggleLabel": "Profile regelmäßig erneut validieren",
+      "description": "Aktualisiert sitzungsgebundene Anmeldedaten (SSO-Token, übernommene Rollen) im Hintergrund, damit sie zwischen Verwendungen nicht ablaufen. Standardmäßig deaktiviert.",
+      "cadenceLabel": "Aktualisieren alle (Minuten)"
+    },
+    "theme": {
+      "system": "Systemeinstellung folgen",
+      "light": "Hell",
+      "dark": "Dunkel"
+    }
+  },
+  "keychain": {
+    "promptTitle": "Schlüsselbund nicht verfügbar",
+    "promptDescription": "Der System-Schlüsselbund ist nicht verfügbar. Geben Sie eine Passphrase ein, um Ihre Anmeldedaten lokal zu verschlüsseln. Wir merken uns Ihre Wahl für zukünftige Starts; Sie können sie in den Einstellungen zurücksetzen.",
+    "passphrase": "Passphrase",
+    "confirmPassphrase": "Passphrase bestätigen",
+    "setPassphrase": "Passphrase festlegen",
+    "unlocking": "Entsperrt…",
+    "errors": {
+      "empty": "Die Passphrase darf nicht leer sein.",
+      "mismatch": "Die Passphrasen stimmen nicht überein.",
+      "generic": "Schlüsselbund konnte nicht entsperrt werden. Bitte erneut versuchen."
+    }
+  },
+  "errors": {
+    "loadFileFailed": "Datei konnte nicht geladen werden",
+    "saveFailed": "Speichern fehlgeschlagen"
+  },
+  "activityCenter": {
+    "label": "Aktivitätscenter",
+    "title": "Aktivität",
+    "subtitle": "Übertragungsverlauf, Filter und Sitzungsstatistik",
+    "close": "Aktivitätscenter schließen",
+    "filtersAria": "Nach Zustand filtern",
+    "statsAria": "Sitzungssummen",
+    "searchPlaceholder": "Nach Dateiname oder Pfad suchen…",
+    "clearSearch": "Suche löschen",
+    "sortBy": "Sortieren",
+    "filter": {
+      "all": "Alle",
+      "active": "Aktiv",
+      "completed": "Abgeschlossen",
+      "failed": "Fehlgeschlagen"
+    },
+    "sort": {
+      "newest": "Neueste zuerst",
+      "oldest": "Älteste zuerst",
+      "largest": "Größte zuerst"
+    },
+    "stats": {
+      "active": "{{count}} aktiv",
+      "completed": "{{count}} abgeschlossen",
+      "failed": "{{count}} fehlgeschlagen",
+      "transferred": "{{bytes}} in dieser Sitzung übertragen"
+    },
+    "empty": {
+      "title": "Noch keine Übertragungen",
+      "body": "Downloads und Uploads erscheinen hier, sobald Sie einen starten.",
+      "filteredTitle": "Nichts entspricht diesem Filter",
+      "searchTitle": "Keine Treffer",
+      "searchBody": "Nichts im Verlauf entspricht \"{{query}}\"."
+    }
+  },
+  "transferManager": {
+    "label": "Übertragungsmanager",
+    "title": "Übertragungen",
+    "viewAll": "Alle anzeigen",
+    "empty": "Keine Übertragungen",
+    "expand": "Übertragungsmanager erweitern",
+    "minimize": "Übertragungsmanager minimieren",
+    "close": "Übertragungsmanager schließen",
+    "clearCompleted": "Abgeschlossene löschen",
+    "pillCount": "{{count}} Übertragungen",
+    "activeCountTitle": "{{count}} aktiv",
+    "activeSection": "Aktive Übertragungen",
+    "completedSection": "Abgeschlossene Übertragungen",
+    "completedCount": "Abgeschlossen ({{count}})",
+    "announce": {
+      "downloadDone": "Download abgeschlossen: {{name}}",
+      "uploadDone": "Upload abgeschlossen: {{name}}",
+      "downloadFailed": "Download fehlgeschlagen: {{name}}",
+      "uploadFailed": "Upload fehlgeschlagen: {{name}}",
+      "canceled": "Übertragung abgebrochen: {{name}}"
+    }
+  },
+  "transferGroup": {
+    "title": "{{name}} ({{count}} Dateien)",
+    "files": "Dateien",
+    "partial": "{{done}}/{{total}} fertig",
+    "progressAria": "{{name}} {{pct}}% abgeschlossen",
+    "cancelAll": "Alle abbrechen"
+  },
+  "transferRow": {
+    "upload": "Upload",
+    "download": "Download",
+    "progressAria": "{{name}} {{pct}}% abgeschlossen",
+    "eta": "ETA: {{value}}",
+    "partsTitle": "Multipart-Teile",
+    "startedAt": "Gestartet {{time}}",
+    "startedAgo": "gestartet {{ago}}",
+    "stateDone": "Fertig",
+    "stateFailed": "Fehlgeschlagen",
+    "stateCanceled": "Abgebrochen",
+    "cancel": "Abbrechen",
+    "retry": "Erneut versuchen",
+    "cancelAria": "{{name}} abbrechen",
+    "retryAria": "{{name}} erneut versuchen"
+  },
+  "transfers": {
+    "downloadComplete": {
+      "title": "Download abgeschlossen",
+      "messageOne": "{{name}} wurde gespeichert.",
+      "messageMany": "{{count}} Dateien wurden gespeichert.",
+      "openFolder": "Ordner öffnen",
+      "revealFailed": "Der Zielordner konnte nicht geöffnet werden."
+    }
+  },
+  "transfersStarted": {
+    "titleDownload": "Download gestartet",
+    "titleUpload": "Upload gestartet",
+    "messageOne": "1 Datei in der Warteschlange. Fortschritt im Aktivitätscenter verfolgen.",
+    "messageMany": "{{count}} Dateien in der Warteschlange. Fortschritt im Aktivitätscenter verfolgen.",
+    "view": "Anzeigen"
+  },
+  "bulkDownload": {
+    "title": "Download bestätigen",
+    "description": "S3 bietet keine zip/tar-Verknüpfung, daher wird jedes Objekt einzeln abgerufen. Prüfen Sie die Gesamtwerte vor dem Start.",
+    "files": "Dateien",
+    "size": "Gesamtgröße",
+    "eta": "Geschätzte Dauer",
+    "etaTooltip": "Schätzung basierend auf einer konservativen 25-Mbit/s-Verbindung.",
+    "destination": "Ziel",
+    "counting": "(zähle…)",
+    "riskWarning": "Großer Vorgang: Der Download wird einige Zeit dauern und erheblichen Speicherplatz sowie Bandbreite verbrauchen. Sie können ihn jederzeit im Übertragungsmanager abbrechen.",
+    "cancelHint": "Jede Übertragung kann einzeln im Übertragungsmanager abgebrochen werden (⌘⇧J).",
+    "startDownload": "Download starten",
+    "startDownloadWithSummary": "Download starten ({{files}} Dateien, {{size}})",
+    "emptyTitle": "Nichts zum Herunterladen",
+    "emptyMessage": "Die Auswahl enthält keine Objekte."
+  }
+}

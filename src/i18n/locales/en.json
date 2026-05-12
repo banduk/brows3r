@@ -1,0 +1,379 @@
+{
+  "menu": {
+    "file": {
+      "open": "Open",
+      "download": "Download",
+      "copyPresignedUrl": "Copy Presigned URL",
+      "delete": "Delete",
+      "createFolder": "Create Folder Here",
+      "properties": "Properties",
+      "refresh": "Refresh",
+      "bookmarkLocation": "Bookmark this location",
+      "bookmarkFirst": "Bookmark first selected item",
+      "bookmarkItem": "Bookmark this item",
+      "actions": "Actions"
+    },
+    "tooltip": {
+      "disabledLockSuffix": "in progress"
+    }
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "close": "Close",
+    "ok": "OK",
+    "retry": "Retry",
+    "reset": "Reset",
+    "edit": "Edit",
+    "select": "Select",
+    "loading": "Loading…",
+    "search": "Search",
+    "filter": "Filter",
+    "select_a_file_to_preview": "Select a file to preview",
+    "select_all": "Select all"
+  },
+  "sidebar": {
+    "label": "Sidebar",
+    "profiles": "Profiles",
+    "addProfile": "Add profile",
+    "bookmarks": "Bookmarks",
+    "recents": "Recents"
+  },
+  "profiles": {
+    "loading": "Loading profiles…",
+    "loadError": "Failed to load profiles.",
+    "checkNotifications": "Check the notifications panel for details.",
+    "empty": "No profiles found. Click \"Add profile\" to get started.",
+    "listAria": "Profile list",
+    "rowActionsAria": "Actions for {{name}}",
+    "edit": "Edit",
+    "validate": "Validate",
+    "delete": "Delete",
+    "deleteConfirm": "Delete profile \"{{name}}\"? This cannot be undone.",
+    "validatedRecently": "Validated",
+    "validationStale": "Validation is stale",
+    "notValidated": "Not validated",
+    "validating": "Validating…",
+    "errorWithReason": "Validation failed: {{reason}}"
+  },
+  "bookmarks": {
+    "loading": "Loading bookmarks…",
+    "loadError": "Failed to load bookmarks.",
+    "empty": "No bookmarks yet.",
+    "listAria": "Bookmark list",
+    "rowActionsAria": "Actions for {{name}}",
+    "rename": "Rename…",
+    "remove": "Remove bookmark",
+    "removeConfirm": "Remove bookmark \"{{name}}\"?\n\nThis only removes the sidebar shortcut; the bucket/folder/object in S3 is not touched.",
+    "editAria": "Edit bookmark",
+    "renameTitle": "Rename bookmark",
+    "labelPlaceholder": "Label (leave empty to use prefix)",
+    "validateTooltip": "Validate this profile to use this bookmark",
+    "validateToUse": "Validate to use"
+  },
+  "breadcrumb": {
+    "label": "Breadcrumb",
+    "editAria": "Navigate to path"
+  },
+  "buckets": {
+    "gateTitle": "Profile not validated",
+    "gateBody": "Validate the profile from the sidebar before listing its buckets.",
+    "loading": "Loading buckets…",
+    "loadError": "Failed to load buckets",
+    "emptyTitle": "No buckets found",
+    "emptyBody": "This profile has access to zero buckets in S3.",
+    "filterNoMatch": "No bucket matches \"{{filter}}\"",
+    "filterClearHint": "Clear the filter (Esc) or refine your query.",
+    "listAria": "Bucket list"
+  },
+  "preview": {
+    "label": "Preview",
+    "empty": "Select a file to preview",
+    "validateGate": "Validate this profile to preview files",
+    "sizeLimit": "File is {{size}} MB — above the {{limit}} MB preview limit.",
+    "previewAnyway": "Preview anyway",
+    "editInMonaco": "Edit in Monaco",
+    "exitEdit": "Exit edit mode"
+  },
+  "toolbar": {
+    "label": "File browser toolbar",
+    "back": "Navigate back",
+    "forward": "Navigate forward",
+    "up": "Navigate up",
+    "refresh": "Refresh",
+    "inspect": "Inspect selection",
+    "upload": "Upload files",
+    "downloadFile": "Download selected file",
+    "downloadBulk": "Download (folder/bucket — fetched as individual objects)",
+    "newFolder": "New folder",
+    "bookmarkRemove": "Remove bookmark",
+    "bookmarkObject": "Bookmark selected object",
+    "bookmarkLocation": "Bookmark this location",
+    "filterAria": "Filter (fuzzy)",
+    "filterTooltip": "Fuzzy filter the current view — press \"/\" to focus, Esc to clear",
+    "filterPlaceholder": "Filter…  press \"/\"",
+    "viewModeAria": "View mode: {{label}}",
+    "viewModeMenuAria": "View mode",
+    "viewMode": {
+      "details": "Details",
+      "icons": "Icons",
+      "gallery": "Gallery",
+      "columns": "Columns",
+      "tree": "Tree",
+      "flatKey": "Flat keys",
+      "dualPane": "Dual pane"
+    }
+  },
+  "statusBar": {
+    "label": "Status bar",
+    "noLocation": "No location",
+    "noProfile": "No profile",
+    "validated": "validated",
+    "notValidated": "not validated",
+    "openSettings": "Open Settings (⌘,)",
+    "shortcuts": {
+      "aria": "Keyboard shortcuts",
+      "label": "Keys",
+      "title": "Keyboard shortcuts"
+    }
+  },
+  "activity": {
+    "label": "Downloads",
+    "titleActive": "{{count}} active transfers — {{pct}}%",
+    "titleCompleted": "{{count}} completed transfers",
+    "titleUnseen": "{{count}} new since you last looked",
+    "titleIdle": "No transfers"
+  },
+  "notificationsChip": {
+    "label": "Notifications",
+    "titleErrors": "{{count}} new errors — click to review",
+    "titleUnseen": "{{count}} new notifications",
+    "titleTotal": "{{count}} notifications",
+    "titleIdle": "No notifications"
+  },
+  "notificationsCenter": {
+    "label": "Notifications Center",
+    "title": "Notifications",
+    "subtitle": "Errors, warnings and informational notices",
+    "close": "Close Notifications Center",
+    "clearAll": "Clear all",
+    "filtersAria": "Filter by severity",
+    "searchPlaceholder": "Search by title or message…",
+    "clearSearch": "Clear search",
+    "userBadge": "User",
+    "dismissAria": "Dismiss notification: {{name}}",
+    "filter": {
+      "all": "All",
+      "error": "Errors",
+      "warning": "Warnings",
+      "info": "Info",
+      "success": "Success"
+    },
+    "stats": {
+      "total": "{{count}} total",
+      "errors": "{{count}} errors",
+      "warnings": "{{count}} warnings",
+      "info": "{{count}} info",
+      "success": "{{count}} success"
+    },
+    "empty": {
+      "title": "No notifications yet",
+      "body": "Errors, warnings and notices from your activity will appear here.",
+      "filteredTitle": "Nothing matches this filter",
+      "searchTitle": "No matches",
+      "searchBody": "No notification matches \"{{query}}\"."
+    }
+  },
+  "recents": {
+    "sectionAria": "Recent locations",
+    "loading": "Loading recents…",
+    "loadError": "Failed to load recents.",
+    "empty": "No recent locations.",
+    "listAria": "Recent locations list",
+    "showAll": "Show all ({{count}})",
+    "showLess": "Show less",
+    "clear": "Clear recents",
+    "validateTooltip": "Validate this profile to use this location",
+    "validateToUse": "Validate to use"
+  },
+  "settings": {
+    "title": "Settings",
+    "loading": "Loading settings…",
+    "close": "Close settings",
+    "resetAll": "Reset all",
+    "resetAllAria": "Reset all settings to defaults",
+    "resetDefaults": "Reset to defaults",
+    "saving": "Saving…",
+    "sectionsAria": "Settings sections",
+    "tabs": {
+      "general": "General",
+      "transfers": "Transfers",
+      "preview": "Preview",
+      "shortcuts": "Shortcuts",
+      "notifications": "Notifications",
+      "endpoints": "Endpoints",
+      "updates": "Updates",
+      "diagnostics": "Diagnostics",
+      "startup": "Startup",
+      "proxy": "Proxy",
+      "cache": "Cache",
+      "fallback": "Fallback",
+      "confirmations": "Confirmations",
+      "defaultView": "Default View",
+      "multipart": "Multipart cleanup"
+    },
+    "section": {
+      "appearance": "Appearance",
+      "language": "Language",
+      "proxy": "Proxy",
+      "transfers": "Transfers",
+      "cache": "Cache",
+      "diagnostics": "Diagnostics"
+    },
+    "language": {
+      "label": "Display language",
+      "description": "Choose the language for menus, buttons, and dialogs.",
+      "resetKeychain": "Reset keychain passphrase prompt"
+    },
+    "autoRefresh": {
+      "label": "Auto-refresh validation",
+      "toggleLabel": "Re-validate profiles periodically",
+      "description": "Refreshes session-scoped credentials (SSO tokens, assumed roles) in the background so they don't expire between uses. Off by default.",
+      "cadenceLabel": "Refresh every (minutes)"
+    },
+    "theme": {
+      "system": "Follow system",
+      "light": "Light",
+      "dark": "Dark"
+    }
+  },
+  "keychain": {
+    "promptTitle": "Keychain Unavailable",
+    "promptDescription": "The OS keychain is not available on this system. Enter a passphrase to encrypt your credentials locally. We'll remember your choice for future launches; you can reset it from Settings if you change it.",
+    "passphrase": "Passphrase",
+    "confirmPassphrase": "Confirm passphrase",
+    "setPassphrase": "Set passphrase",
+    "unlocking": "Unlocking…",
+    "errors": {
+      "empty": "Passphrase must not be empty.",
+      "mismatch": "Passphrases do not match.",
+      "generic": "Failed to unlock keychain. Please try again."
+    }
+  },
+  "errors": {
+    "loadFileFailed": "Failed to load file",
+    "saveFailed": "Save failed"
+  },
+  "activityCenter": {
+    "label": "Activity Center",
+    "title": "Activity",
+    "subtitle": "Transfer history, filters and session stats",
+    "close": "Close Activity Center",
+    "filtersAria": "Filter by state",
+    "statsAria": "Session totals",
+    "searchPlaceholder": "Search by filename or path…",
+    "clearSearch": "Clear search",
+    "sortBy": "Sort",
+    "filter": {
+      "all": "All",
+      "active": "Active",
+      "completed": "Completed",
+      "failed": "Failed"
+    },
+    "sort": {
+      "newest": "Newest first",
+      "oldest": "Oldest first",
+      "largest": "Largest first"
+    },
+    "stats": {
+      "active": "{{count}} active",
+      "completed": "{{count}} completed",
+      "failed": "{{count}} failed",
+      "transferred": "{{bytes}} transferred this session"
+    },
+    "empty": {
+      "title": "No transfers yet",
+      "body": "Downloads and uploads will appear here as soon as you start one.",
+      "filteredTitle": "Nothing matches this filter",
+      "searchTitle": "No matches",
+      "searchBody": "Nothing in the transfer history matches \"{{query}}\"."
+    }
+  },
+  "transferManager": {
+    "label": "Transfer Manager",
+    "title": "Transfers",
+    "viewAll": "View all",
+    "empty": "No transfers",
+    "expand": "Expand transfer manager",
+    "minimize": "Minimize transfer manager",
+    "close": "Close transfer manager",
+    "clearCompleted": "Clear completed",
+    "pillCount": "{{count}} transfers",
+    "activeCountTitle": "{{count}} active",
+    "activeSection": "Active transfers",
+    "completedSection": "Completed transfers",
+    "completedCount": "Completed ({{count}})",
+    "announce": {
+      "downloadDone": "Download completed: {{name}}",
+      "uploadDone": "Upload completed: {{name}}",
+      "downloadFailed": "Download failed: {{name}}",
+      "uploadFailed": "Upload failed: {{name}}",
+      "canceled": "Transfer canceled: {{name}}"
+    }
+  },
+  "transferGroup": {
+    "title": "{{name}} ({{count}} files)",
+    "files": "files",
+    "partial": "{{done}}/{{total}} done",
+    "progressAria": "{{name}} {{pct}}% complete",
+    "cancelAll": "Cancel all"
+  },
+  "transferRow": {
+    "upload": "Upload",
+    "download": "Download",
+    "progressAria": "{{name}} {{pct}}% complete",
+    "eta": "ETA: {{value}}",
+    "partsTitle": "multipart parts",
+    "startedAt": "Started {{time}}",
+    "startedAgo": "started {{ago}}",
+    "stateDone": "Done",
+    "stateFailed": "Failed",
+    "stateCanceled": "Canceled",
+    "cancel": "Cancel",
+    "retry": "Retry",
+    "cancelAria": "Cancel {{name}}",
+    "retryAria": "Retry {{name}}"
+  },
+  "transfers": {
+    "downloadComplete": {
+      "title": "Download complete",
+      "messageOne": "{{name}} was saved.",
+      "messageMany": "{{count}} files were saved.",
+      "openFolder": "Open folder",
+      "revealFailed": "Could not open the destination folder."
+    }
+  },
+  "transfersStarted": {
+    "titleDownload": "Download started",
+    "titleUpload": "Upload started",
+    "messageOne": "1 file queued. Track progress in the Activity Center.",
+    "messageMany": "{{count}} files queued. Track progress in the Activity Center.",
+    "view": "View"
+  },
+  "bulkDownload": {
+    "title": "Confirm download",
+    "description": "S3 has no zip/tar shortcut, so each object is fetched individually. Review the totals before starting.",
+    "files": "Files",
+    "size": "Total size",
+    "eta": "Estimated time",
+    "etaTooltip": "Estimate based on a conservative 25 Mbps connection.",
+    "destination": "Destination",
+    "counting": "(counting…)",
+    "riskWarning": "Large operation: the download will take a while and consume significant disk space and bandwidth. You can cancel anytime from the transfer manager.",
+    "cancelHint": "Each transfer can be canceled individually from the transfer manager (⌘⇧J).",
+    "startDownload": "Start download",
+    "startDownloadWithSummary": "Start download ({{files}} files, {{size}})",
+    "emptyTitle": "Nothing to download",
+    "emptyMessage": "Selection contained no objects."
+  }
+}

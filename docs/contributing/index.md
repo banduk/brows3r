@@ -10,6 +10,7 @@ This page is the contributor's overview. The deeper pages are:
 - [Release process](/contributing/release) — how signed builds happen.
 - [Security](/contributing/security) — credential boundary, vuln disclosure.
 - [Release checklist](/contributing/checklist) — pre-release sanity.
+- [Adding a new language](/contributing/i18n) — three-step locale PR.
 
 ## Quick path
 

@@ -270,7 +270,12 @@ impl<'a> ClientBuilder<'a> {
 /// pool accepts the pool-wide proxy at construction time.
 pub struct ClientPool {
     /// Shared proxy configuration applied to every client built by this pool.
-    proxy: ProxyConfig,
+    ///
+    /// Wrapped in a `std::sync::RwLock` so `set_proxy` can hot-swap the value
+    /// when the user changes the Settings → Proxy mode. Reads clone the value
+    /// out of the lock before any `.await` to avoid holding a guard across an
+    /// async point.
+    proxy: std::sync::RwLock<ProxyConfig>,
 
     /// Per-profile compat flags registry.  Profiles must be registered before
     /// `get_or_build` is called for them.
@@ -301,7 +306,7 @@ impl ClientPool {
     /// Create a new pool with the given proxy configuration.
     pub fn new(proxy: ProxyConfig) -> Self {
         Self {
-            proxy,
+            proxy: std::sync::RwLock::new(proxy),
             flags: RwLock::new(HashMap::new()),
             credentials: RwLock::new(HashMap::new()),
             cache: RwLock::new(HashMap::new()),
@@ -309,6 +314,22 @@ impl ClientPool {
             #[cfg(test)]
             last_explicit_proxy: std::sync::Mutex::new(Option::None),
         }
+    }
+
+    /// Replace the proxy configuration and evict every cached client so the
+    /// next `get_or_build` rebuilds with the new connector.
+    ///
+    /// Wired to `settings_update` so the user can toggle proxy modes without
+    /// restarting the app. The connector itself is rebuilt per-client at
+    /// `get_or_build` time; evicting the cache is what makes the new value
+    /// visible to callers.
+    pub async fn set_proxy(&self, new_proxy: ProxyConfig) {
+        {
+            let mut guard = self.proxy.write().expect("ClientPool.proxy poisoned");
+            *guard = new_proxy;
+        }
+        let mut cache = self.cache.write().await;
+        cache.clear();
     }
 
     /// Attach a notification log so compat-flag warnings emitted during client
@@ -379,9 +400,15 @@ impl ClientPool {
             flags.get(profile_id)?.clone()
         };
 
+        // Clone the proxy config out of the lock before any await point.
+        let proxy_snapshot = {
+            let guard = self.proxy.read().expect("ClientPool.proxy poisoned");
+            guard.clone()
+        };
+
         // Record the explicit proxy URL for test observability.
         #[cfg(test)]
-        if let ProxyConfig::Explicit(ref url) = self.proxy {
+        if let ProxyConfig::Explicit(ref url) = proxy_snapshot {
             if let Ok(mut guard) = self.last_explicit_proxy.lock() {
                 *guard = Some(url.clone());
             }
@@ -397,7 +424,7 @@ impl ClientPool {
         // Build outside the write lock to avoid holding it across the async
         // aws_config loader.  Pass the notification log so compat-flag warnings
         // are surfaced to the user through the in-app notification system.
-        let mut cb = ClientBuilder::new(region, &compat, &self.proxy);
+        let mut cb = ClientBuilder::new(region, &compat, &proxy_snapshot);
         if let Some(creds) = explicit_creds {
             cb = cb.credentials_provider(creds);
         }
