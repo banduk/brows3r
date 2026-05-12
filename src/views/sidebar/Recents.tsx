@@ -19,6 +19,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ClockIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+// `useEffect` is also used to surface the recents-list fetch error.
 import type { RecentLocation } from "@/api/bookmarks";
 import { recentsClear, recentsList, recentTrack } from "@/api/bookmarks";
 import { Button } from "@/components/ui/button";
@@ -108,10 +109,25 @@ export function Recents() {
 
   const [showAll, setShowAll] = useState(false);
 
-  const { data: recents = [], isLoading } = useQuery({
+  const {
+    data: recents = [],
+    isLoading,
+    error: recentsError,
+  } = useQuery({
     queryKey: keys.recents(),
     queryFn: recentsList,
   });
+
+  // Surface persistent recents fetch failures so the sidebar does not
+  // silently stick on "Loading recents…" when the backend keeps failing.
+  useEffect(() => {
+    if (!recentsError) return;
+    void surfaceUnknownError(recentsError, {
+      operation: "recents_list",
+      context: "background",
+      title: "Failed to load recents",
+    });
+  }, [recentsError]);
 
   const clearMutation = useMutation({
     mutationFn: recentsClear,
@@ -138,13 +154,26 @@ export function Recents() {
 
   return (
     <section aria-label="Recent locations">
-      {isLoading && (
+      {isLoading && !recentsError && (
         <p className="px-3 py-2 text-xs text-muted-foreground">
           Loading recents…
         </p>
       )}
 
-      {!isLoading && recents.length === 0 && (
+      {recentsError && (
+        <p
+          className="px-3 py-2 text-xs text-destructive"
+          role="alert"
+          data-testid="recents-load-error"
+        >
+          Failed to load recents.{" "}
+          {recentsError instanceof Error
+            ? recentsError.message
+            : "Check the notifications panel for details."}
+        </p>
+      )}
+
+      {!isLoading && !recentsError && recents.length === 0 && (
         <p className="px-3 py-2 text-xs text-muted-foreground">
           No recent locations.
         </p>

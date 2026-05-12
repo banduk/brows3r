@@ -144,10 +144,14 @@ pub async fn recent_track(
 // ---------------------------------------------------------------------------
 
 /// Clear all recent locations and flush the empty list to disk.
+///
+/// Propagates the flush failure so the frontend's `clearMutation.onError`
+/// can surface it. Previously the flush was swallowed and a disk error
+/// would silently leave the on-disk list intact — the next launch would
+/// reload the "cleared" entries.
 #[tauri::command]
 pub async fn recents_clear(handle: State<'_, RecentsHandle>) -> Result<(), AppError> {
     let mut guard = handle.write().await;
     guard.clear();
-    guard.flush();
-    Ok(())
+    guard.flush()
 }

@@ -260,13 +260,25 @@ function AppContent() {
       const name = window.prompt("New folder name:")?.trim();
       if (!name) return;
       const cmd = registry.lookupById("file.create_folder");
-      await cmd?.run({
-        profileId: detail.profileId,
-        bucket: detail.bucket,
-        prefix: detail.prefix,
-        folderName: name,
-        queryClient,
-      });
+      // `cmd.run` itself surfaces its own errors via surfaceUnknownError, but
+      // if the registry lookup fails or run throws unexpectedly (mis-wired
+      // command, internal bug) the listener used to silently die. Wrap so
+      // the user at least sees that the action did not work.
+      try {
+        await cmd?.run({
+          profileId: detail.profileId,
+          bucket: detail.bucket,
+          prefix: detail.prefix,
+          folderName: name,
+          queryClient,
+        });
+      } catch (err) {
+        await surfaceUnknownError(err, {
+          operation: "file.create_folder.dispatch",
+          resource: `${detail.bucket}/${detail.prefix}${name}/`,
+          title: "Failed to create folder",
+        });
+      }
     }
     window.addEventListener("file:open-create-folder", onOpenCreateFolder);
     return () =>

@@ -18,6 +18,7 @@
 
 import { create } from "zustand";
 import type { Transfer, TransferState } from "@/api/transfers";
+import type { AppError } from "@/lib/errors";
 
 // Re-export Transfer so consumers can import from one place.
 export type { Transfer, TransferState };
@@ -228,6 +229,7 @@ export function applyProgressEvent(payload: {
 export function applyStateEvent(payload: {
   requestId: string;
   state: TransferState;
+  error?: AppError;
 }): void {
   const store = useTransfersStore.getState();
   const existing = store.transfers.get(payload.requestId);
@@ -237,6 +239,13 @@ export function applyStateEvent(payload: {
     ...existing,
     state: payload.state,
   };
+
+  // Hydrate the failure reason onto the transfer so TransferRow can show
+  // *why* the transfer failed instead of just a red "Failed" badge. The
+  // backend emits this on `Failed` transitions via `emit_state_with_error`.
+  if (payload.error !== undefined) {
+    update.error = payload.error;
+  }
 
   if (
     payload.state === "done" ||

@@ -49,11 +49,17 @@ pub struct TransferProgressPayload {
 }
 
 /// Payload for `transfer:state`.
+///
+/// Carries the AppError when the transition is to `Failed`. The frontend
+/// stores this on the transfer record so TransferRow can render the
+/// failure reason inline instead of just a red badge.
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TransferStatePayload {
     pub request_id: String,
     pub state: TransferState,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub error: Option<AppError>,
 }
 
 // ---------------------------------------------------------------------------
@@ -155,11 +161,28 @@ pub fn emit_progress<E: EventEmitter>(
 // emit_state
 // ---------------------------------------------------------------------------
 
-/// Emit a `transfer:state` event (unthrottled).
+/// Emit a `transfer:state` event (unthrottled). Use
+/// [`emit_state_with_error`] on `Failed` transitions to attach the
+/// underlying `AppError` to the payload so the frontend can render the
+/// failure reason.
 pub fn emit_state<E: EventEmitter>(
     channel: &E,
     request_id: &str,
     state: TransferState,
+) -> Result<(), AppError> {
+    emit_state_with_error(channel, request_id, state, None)
+}
+
+/// Emit a `transfer:state` event with an optional `AppError` attached.
+///
+/// Intended for `Failed` transitions: pass the underlying error so the
+/// frontend's `applyStateEvent` can hydrate the failure reason onto the
+/// transfer record. Non-Failed callers should keep using `emit_state`.
+pub fn emit_state_with_error<E: EventEmitter>(
+    channel: &E,
+    request_id: &str,
+    state: TransferState,
+    error: Option<AppError>,
 ) -> Result<(), AppError> {
     crate::events::emit(
         channel,
@@ -167,6 +190,7 @@ pub fn emit_state<E: EventEmitter>(
         TransferStatePayload {
             request_id: request_id.to_owned(),
             state,
+            error,
         },
     )
 }

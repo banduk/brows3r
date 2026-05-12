@@ -45,7 +45,7 @@ use crate::{
     s3::multipart::{MultipartRecord, MultipartTable},
     transfers::{
         notify::notify_terminal,
-        progress::{emit_progress, emit_state, ProgressThrottle},
+        progress::{emit_progress, emit_state, emit_state_with_error, ProgressThrottle},
         TransferRegistryHandle, TransferState,
     },
 };
@@ -282,7 +282,8 @@ where
                     t.error = Some(e.clone());
                 });
             }
-            let _ = emit_state(channel, &request_id, TransferState::Failed);
+            let _ =
+                emit_state_with_error(channel, &request_id, TransferState::Failed, Some(e.clone()));
 
             if let Ok(lock) = lock_registry.release(&lock_id) {
                 let _ = crate::locks::emit_released(channel, &lock, ReleaseReason::Failure);
@@ -649,6 +650,7 @@ async fn cleanup_on_error<E, C>(
     C: OsNotifyChannel,
 {
     let finished_at = now_ms();
+    let error_for_emit = error.clone();
     {
         let mut reg = registry.0.write().await;
         let _ = reg.update(request_id, |t| {
@@ -658,7 +660,12 @@ async fn cleanup_on_error<E, C>(
         });
     }
 
-    let _ = emit_state(channel, request_id, TransferState::Failed);
+    let _ = emit_state_with_error(
+        channel,
+        request_id,
+        TransferState::Failed,
+        Some(error_for_emit),
+    );
 
     if let Ok(lock) = lock_registry.release(lock_id) {
         let _ = crate::locks::emit_released(channel, &lock, ReleaseReason::Failure);

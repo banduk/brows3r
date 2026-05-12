@@ -46,6 +46,9 @@ export interface TauriEventMap {
   "transfer:state": {
     requestId: string;
     state: "queued" | "running" | "done" | "failed" | "canceled";
+    /** Populated when state === "failed"; carries the AppError so the
+     *  frontend can render the failure reason on the transfer row. */
+    error?: import("@/lib/errors").AppError;
   };
   "lock:acquired": {
     lockId: string;

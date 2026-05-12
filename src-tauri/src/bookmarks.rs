@@ -310,18 +310,31 @@ impl RecentsStore {
         self.buffer.clear();
     }
 
-    /// Flush to disk (best-effort; errors are non-fatal).
-    pub fn flush(&self) {
+    /// Flush to disk atomically (tmp + rename).
+    ///
+    /// Returns `AppError::Internal` on serialization, mkdir, write, or rename
+    /// failure so callers (e.g. `recents_clear`) can surface the failure to
+    /// the user. Previously this used `let _ = ...` everywhere and silently
+    /// dropped failures, which meant a "Clear recents" click could leave the
+    /// stale on-disk list intact and reappear on the next launch.
+    pub fn flush(&self) -> Result<(), AppError> {
         let entries: Vec<&RecentLocation> = self.buffer.iter().collect();
-        if let Ok(json) = serde_json::to_string_pretty(&entries) {
-            if let Some(parent) = self.path.parent() {
-                let _ = std::fs::create_dir_all(parent);
-            }
-            let tmp = self.path.with_extension("json.tmp");
-            if std::fs::write(&tmp, json.as_bytes()).is_ok() {
-                let _ = std::fs::rename(&tmp, &self.path);
-            }
+        let json = serde_json::to_string_pretty(&entries).map_err(|e| AppError::Internal {
+            trace_id: format!("recents_flush_serialize: {e}"),
+        })?;
+        if let Some(parent) = self.path.parent() {
+            std::fs::create_dir_all(parent).map_err(|e| AppError::Internal {
+                trace_id: format!("recents_flush_mkdir: {e}"),
+            })?;
         }
+        let tmp = self.path.with_extension("json.tmp");
+        std::fs::write(&tmp, json.as_bytes()).map_err(|e| AppError::Internal {
+            trace_id: format!("recents_flush_write: {e}"),
+        })?;
+        std::fs::rename(&tmp, &self.path).map_err(|e| AppError::Internal {
+            trace_id: format!("recents_flush_rename: {e}"),
+        })?;
+        Ok(())
     }
 }
 
@@ -564,7 +577,7 @@ mod tests {
         {
             let mut store = RecentsStore::new(path.clone());
             store.track(pid("p1"), bid("b"), "persisted/".to_string());
-            store.flush();
+            store.flush().expect("flush must succeed in tmpdir");
         }
         let store2 = RecentsStore::load(path);
         let list = store2.list();

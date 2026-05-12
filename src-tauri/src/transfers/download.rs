@@ -36,7 +36,7 @@ use crate::{
     notifications::{os::OsNotifyChannel, NotificationLogHandle},
     transfers::{
         notify::notify_terminal,
-        progress::{emit_progress, emit_state, ProgressThrottle},
+        progress::{emit_progress, emit_state, emit_state_with_error, ProgressThrottle},
         TransferRegistryHandle, TransferState,
     },
 };
@@ -478,7 +478,12 @@ async fn cleanup_on_error<E, C>(
         });
     }
 
-    let _ = emit_state(channel, request_id, TransferState::Failed);
+    let _ = emit_state_with_error(
+        channel,
+        request_id,
+        TransferState::Failed,
+        Some(error.clone()),
+    );
 
     if let Ok(lock) = lock_registry.release(lock_id) {
         let _ = crate::locks::emit_released(channel, &lock, ReleaseReason::Failure);
