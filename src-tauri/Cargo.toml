@@ -45,6 +45,23 @@ aws-config = { version = "1", default-features = false, features = [
     "credentials-process",
     "rt-tokio",
     "sso",
+    # default-https-client is REQUIRED for SSO to work even though we pass
+    # a custom http_client via `aws_config::defaults(...).http_client(...)`.
+    # The SSO credentials provider builds its own SSO/SSOOIDC sub-clients
+    # internally (see `aws_config::sso::credentials::load_sso_credentials`)
+    # and those sub-clients do not inherit the loader's http_client in
+    # 1.8.16. Without this feature, debug builds panic at
+    # `aws-smithy-runtime/orchestrator/operation.rs:408` with
+    # "a http_client is required" the moment the SDK tries to fetch SSO
+    # role credentials, and release builds silently drop the call.
+    #
+    # The feature pulls `aws-smithy-runtime/default-https-client` →
+    # `aws-smithy-http-client/rustls-aws-lc` — the MODERN hyper-1 +
+    # rustls 0.23 + aws-lc-rs stack. It does NOT bring back the legacy
+    # `hyper-rustls 0.24` + `rustls 0.21` stack that #29 dropped (that
+    # came from a different transitive: `connector-hyper-0-14-x` /
+    # `legacy-rustls-ring`). `cargo audit` stays at zero vulnerabilities.
+    "default-https-client",
 ] }
 aws-sdk-s3 = { version = "1", default-features = false, features = [
     "sigv4a",
