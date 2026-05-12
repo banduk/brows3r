@@ -142,6 +142,36 @@ pub fn open_or_recreate_redb(path: &std::path::Path) -> Result<Database, redb::D
     }
 }
 
+/// Open a redb `Database`, returning an in-memory backend as the final
+/// fallback so callers never have to panic during app startup.
+///
+/// First tries [`open_or_recreate_redb`]. On any error that
+/// `open_or_recreate_redb` cannot itself recover from (permissions, full
+/// disk, locked file, corrupt header that isn't a stale-schema marker),
+/// switches to redb's `InMemoryBackend`. The app keeps running with a
+/// non-persistent state for this session.
+///
+/// Returns `(db, was_in_memory)` so callers can surface a one-shot
+/// startup notification explaining that, e.g., the multipart upload
+/// bookkeeping is not persisting this session.
+pub fn open_redb_or_in_memory(path: &std::path::Path) -> (Database, bool) {
+    match open_or_recreate_redb(path) {
+        Ok(db) => (db, false),
+        Err(_) => {
+            // `InMemoryBackend` is purely in-process state with no IO of its
+            // own to fail; the only way `create_with_backend` errors here is
+            // if redb changes the invariant — be loud so we catch it.
+            let db = Database::builder()
+                .create_with_backend(redb::backends::InMemoryBackend::new())
+                .expect(
+                    "redb InMemoryBackend create cannot fail in current crate \
+                     version; audit this call if it ever does",
+                );
+            (db, true)
+        }
+    }
+}
+
 // ---------------------------------------------------------------------------
 // CacheStore
 // ---------------------------------------------------------------------------

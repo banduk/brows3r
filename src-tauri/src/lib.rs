@@ -92,6 +92,46 @@ fn recents_path(app: &tauri::App) -> PathBuf {
         .join("recents.json")
 }
 
+/// Build the `MultipartTableHandle` used during `tauri::Builder::setup`,
+/// guaranteeing a usable table no matter how broken the on-disk state is.
+///
+/// Cascade:
+///   1. Share the SWR cache's redb database (best — single file handle).
+///   2. Open `$TMPDIR/brows3r_multipart_fallback.redb`, auto-recreated on
+///      stale-schema bumps and finally backed by `InMemoryBackend` if all
+///      filesystem paths fail.
+///   3. If `MultipartTable::new` still rejects the database (corrupt
+///      enough that even `begin_write`/`open_table` fails), spin up a
+///      pristine in-memory redb and call `MultipartTable::new` on it.
+///
+/// Step 3 is the load-bearing change vs. the previous `.expect()` chain:
+/// the app keeps starting and the multipart panel surfaces orphans by
+/// scanning S3 directly.
+fn init_multipart_table(cache_handle: &CacheHandle) -> MultipartTableHandle {
+    if let Some(db) = cache_handle.db() {
+        if let Ok(table) = MultipartTable::new(db) {
+            return MultipartTableHandle::new(table);
+        }
+    }
+
+    let fallback_path = std::env::temp_dir().join("brows3r_multipart_fallback.redb");
+    let (fallback_db, _was_in_memory) = cache::store::open_redb_or_in_memory(&fallback_path);
+
+    if let Ok(table) = MultipartTable::new(Arc::new(fallback_db)) {
+        return MultipartTableHandle::new(table);
+    }
+
+    // Final fallback: brand-new in-memory redb that has never seen any prior
+    // state. If `MultipartTable::new` still fails on this, redb itself is
+    // broken — surface loudly via panic so the cause shows up in stderr.
+    let pristine_in_memory = redb::Database::builder()
+        .create_with_backend(redb::backends::InMemoryBackend::new())
+        .expect("pristine in-memory redb cannot fail");
+    let table = MultipartTable::new(Arc::new(pristine_in_memory))
+        .expect("MultipartTable::new must succeed on a pristine in-memory redb");
+    MultipartTableHandle::new(table)
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -132,10 +172,29 @@ pub fn run() {
                 .parent()
                 .map(|p| p.to_path_buf())
                 .unwrap_or_else(std::env::temp_dir);
-            let store = ProfileStore::load(&profiles_path).unwrap_or_else(|_| {
-                ProfileStore::load(std::env::temp_dir().join("profiles.json"))
-                    .expect("fallback profile store must succeed")
-            });
+            // Three-tier fallback so a corrupt/unreadable profiles.json
+            // never aborts startup: primary path → temp-dir copy → empty
+            // store anchored at the temp-dir path. The empty-store branch
+            // is genuinely safe — the user sees the "No profiles yet"
+            // empty state and can re-add profiles; their
+            // `~/.aws/{credentials,config}` are still discovered live by
+            // `ProfileStore::list` each call.
+            let temp_profiles_path = std::env::temp_dir().join("profiles.json");
+            let store = ProfileStore::load(&profiles_path)
+                .or_else(|_| ProfileStore::load(&temp_profiles_path))
+                .unwrap_or_else(|_| {
+                    // Last resort: empty store backed by the temp path. Any
+                    // mutating commands the user runs in this session will
+                    // try to flush to /tmp; if even that fails the flush
+                    // error surfaces via the existing AppError pipeline.
+                    eprintln!(
+                        "profile store failed to load from {} and {} — starting empty",
+                        profiles_path.display(),
+                        temp_profiles_path.display(),
+                    );
+                    ProfileStore::load(&temp_profiles_path)
+                        .unwrap_or_else(|_| ProfileStore::empty(temp_profiles_path.clone()))
+                });
             // Snapshot every known profile's (id, compat_flags) so we can
             // pre-register them with the S3 client pool below. Without this,
             // a profile validated in a previous session has validated_at
@@ -180,33 +239,13 @@ pub fn run() {
 
             // Multipart bookkeeping table: shares the same redb Database as the
             // SWR cache to avoid holding two file handles on cache.redb.
-            // Falls back to a temp-file redb if the shared DB is unavailable.
-            let multipart_table_handle = if let Some(db) = cache_handle.db() {
-                MultipartTable::new(db)
-                    .map(MultipartTableHandle::new)
-                    .unwrap_or_else(|_| {
-                        let fallback_db = std::sync::Arc::new(
-                            cache::store::open_or_recreate_redb(
-                                &std::env::temp_dir().join("brows3r_multipart_fallback.redb"),
-                            )
-                            .expect("fallback multipart db must open"),
-                        );
-                        MultipartTableHandle::new(
-                            MultipartTable::new(fallback_db)
-                                .expect("fallback multipart table must open"),
-                        )
-                    })
-            } else {
-                let fallback_db = std::sync::Arc::new(
-                    redb::Database::create(
-                        std::env::temp_dir().join("brows3r_multipart_fallback.redb"),
-                    )
-                    .expect("fallback multipart db must open"),
-                );
-                MultipartTableHandle::new(
-                    MultipartTable::new(fallback_db).expect("fallback multipart table must open"),
-                )
-            };
+            // Falls back to a temp-file redb (auto-recreated on stale schema
+            // via `open_redb_or_in_memory`) and ultimately to a fully
+            // in-memory redb so this branch never panics during startup.
+            // Worst case: this session does not persist multipart bookkeeping
+            // — orphan uploads in S3 can still be reconciled via the
+            // MultipartPanel.
+            let multipart_table_handle = init_multipart_table(&cache_handle);
             app.manage(multipart_table_handle);
 
             app.manage(cache_handle);
@@ -261,15 +300,28 @@ pub fn run() {
             // Loopback media server: binds to 127.0.0.1:0 at startup.
             // A session UUID tags all tokens so they can be swept on exit via
             // revoke_session.
+            //
+            // Failure here is *not* fatal — features that need media previews
+            // (Gallery/Detail PDF/image previews via `media:get-url`) will
+            // report `AppError::Internal` when the handle is missing. The
+            // browser, transfers, profiles, etc. all still work. Eat the
+            // panic so the window opens; an stderr log captures the cause.
             let media_session_id = uuid::Uuid::new_v4().to_string();
             let media_registry: TokenRegistryHandle = std::sync::Arc::new(TokenRegistry::new());
-            let media_handle = tauri::async_runtime::block_on(start_on_localhost(
+            match tauri::async_runtime::block_on(start_on_localhost(
                 pool_handle_for_media,
                 media_registry,
                 media_session_id,
-            ))
-            .expect("media server must start");
-            app.manage(media_handle);
+            )) {
+                Ok(media_handle) => {
+                    app.manage(media_handle);
+                }
+                Err(e) => {
+                    eprintln!(
+                        "media server failed to start: {e:?} — media previews disabled this session"
+                    );
+                }
+            }
 
             // Native menu: build and attach.
             // Errors here are non-fatal — the app still works without a menu
