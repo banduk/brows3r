@@ -526,11 +526,24 @@ registry.register({
           ? `${base}${rel}`
           : `${base}/${rel}`;
 
+      // Folder downloads must preserve the folder name itself, not just
+      // its contents. If the user right-clicks `photos/` and picks
+      // ~/Downloads, they expect ~/Downloads/photos/cat.jpg, NOT
+      // ~/Downloads/cat.jpg (which would also clobber same-named files
+      // across sibling folders).
+      const folderBasename = (prefix: string): string => {
+        const stripped = prefix.replace(/\/+$/, "");
+        const slash = stripped.lastIndexOf("/");
+        return slash >= 0 ? stripped.slice(slash + 1) : stripped;
+      };
+
       let files = 0;
       let bytes = 0;
       try {
         for (const k of ks) {
           if (k.endsWith("/")) {
+            // Preserve the folder name in the destination.
+            const folderRoot = joinPath(root, folderBasename(k));
             let cursor: string | undefined;
             do {
               const page = await listFlat(pid as string, bkt as string, k, {
@@ -545,7 +558,7 @@ registry.register({
                   profileId: pid as string,
                   bucket: bkt as string,
                   key: entry.key,
-                  destPath: joinPath(root, rel),
+                  destPath: joinPath(folderRoot, rel),
                 });
                 files += 1;
                 bytes += entry.size ?? 0;
