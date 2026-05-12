@@ -30,7 +30,10 @@ import { useTranslation } from "react-i18next";
 import { formatRelative } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { Notification, Severity } from "@/store/notifications";
-import { useNotificationsStore } from "@/store/notifications";
+import {
+  nonTransferEntries,
+  useNotificationsStore,
+} from "@/store/notifications";
 import { useUiStore } from "@/store/ui";
 
 // ---------------------------------------------------------------------------
@@ -95,13 +98,17 @@ const SEVERITY_BORDER_CLASS: Record<Severity, string> = {
 
 export function NotificationsCenter() {
   const { t } = useTranslation();
-  const entries = useNotificationsStore((s) => s.entries);
+  const allEntries = useNotificationsStore((s) => s.entries);
   const dismiss = useNotificationsStore((s) => s.dismiss);
   const clearAll = useNotificationsStore((s) => s.clearAll);
   const close = useUiStore((s) => s.setNotificationsCenterOpen);
 
   const [filter, setFilter] = useState<FilterId>("all");
   const [query, setQuery] = useState("");
+
+  // Bell only surfaces non-transfer events — transfers have their own
+  // dedicated Activity Center.
+  const entries = useMemo(() => nonTransferEntries(allEntries), [allEntries]);
 
   const filtered = useMemo(
     () =>

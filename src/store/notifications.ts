@@ -21,6 +21,21 @@ export type Notification = TauriEventMap["notification:new"];
 
 export type Severity = Notification["severity"];
 
+/**
+ * True when a notification was emitted by a transfer (download / upload)
+ * terminal-state event. The Notifications Center / bell chip filter
+ * these out — transfers have their own dedicated surface (Activity
+ * Center) so they don't double-surface as "alerts" in the bell.
+ */
+export function isTransferNotification(n: Notification): boolean {
+  return n.operation === "upload" || n.operation === "download";
+}
+
+/** Notifications that should surface in the bell chip + center. */
+export function nonTransferEntries(entries: Notification[]): Notification[] {
+  return entries.filter((n) => !isTransferNotification(n));
+}
+
 export interface NotificationsState {
   entries: Notification[];
 

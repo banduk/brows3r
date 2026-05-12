@@ -29,7 +29,10 @@ import { profileGet } from "@/api/profiles";
 import { formatBytes } from "@/lib/format";
 import { useObjectHead } from "@/query/hooks/useObjectHead";
 import { useProfilesList } from "@/query/hooks/useValidatedProfile";
-import { useNotificationsStore } from "@/store/notifications";
+import {
+  nonTransferEntries,
+  useNotificationsStore,
+} from "@/store/notifications";
 import type { Pane } from "@/store/panes";
 import { useTransfersStore } from "@/store/transfers";
 import { useUiStore } from "@/store/ui";
@@ -339,11 +342,24 @@ function ShortcutHints() {
  * panel. Always visible so the user can review history; pulses + shows
  * aggregate progress while any transfer is queued or running.
  */
+/** Window (ms) during which a fresh `activityFlashAt` lights the chip. */
+const ACTIVITY_FLASH_MS = 3_000;
+
 function ActivityChip() {
   const { t } = useTranslation();
   const transfers = useTransfersStore((s) => s.transfers);
   const toggleActivityCenter = useUiStore((s) => s.toggleActivityCenter);
   const lastSeenAt = useUiStore((s) => s.activityLastSeenAt);
+  const flashAt = useUiStore((s) => s.activityFlashAt);
+
+  // Re-render every 250ms while a flash is fading so the highlight
+  // visibly decays even when no transfer event arrives in that window.
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    if (flashAt === 0) return;
+    const id = window.setInterval(() => setTick((t) => t + 1), 250);
+    return () => window.clearInterval(id);
+  }, [flashAt]);
 
   let activeCount = 0;
   let totalBytes = 0;
@@ -356,8 +372,6 @@ function ActivityChip() {
       doneBytes += tr.transferredBytes;
       continue;
     }
-    // A terminal-state transfer finished AFTER the user last opened the
-    // Activity Center counts as "unseen" and lights the dot.
     if (
       tr.finishedAt !== undefined &&
       tr.finishedAt > lastSeenAt &&
@@ -373,6 +387,8 @@ function ActivityChip() {
 
   const isActive = activeCount > 0;
   const hasUnseen = unseenCompleted > 0;
+  const isFlashing = flashAt > 0 && Date.now() - flashAt < ACTIVITY_FLASH_MS;
+
   const title = isActive
     ? t("activity.titleActive", { count: activeCount, pct: overallPct })
     : hasUnseen
@@ -381,37 +397,39 @@ function ActivityChip() {
         ? t("activity.titleCompleted", { count: transfers.size })
         : t("activity.titleIdle");
 
+  // Visual priority: flash on a brand-new click wins over the persistent
+  // active glow, which wins over the unseen dot, which wins over idle.
+  const tone =
+    isFlashing || isActive ? "active" : hasUnseen ? "unseen" : "idle";
+
   return (
     <button
       type="button"
       title={title}
       aria-label={title}
       onClick={() => toggleActivityCenter()}
-      className={`relative inline-flex items-center gap-1 rounded px-1.5 py-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors ${
-        isActive
+      className={`relative inline-flex items-center justify-center rounded p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors ${
+        tone === "active"
           ? "bg-green-500/15 text-green-700 dark:text-green-400 hover:bg-green-500/25"
-          : hasUnseen
+          : tone === "unseen"
             ? "bg-blue-500/15 text-blue-700 dark:text-blue-400 hover:bg-blue-500/25"
             : "hover:bg-accent hover:text-accent-foreground"
       }`}
       data-testid="activity-chip"
     >
       <ActivityIcon
-        className={`size-3 ${isActive ? "animate-pulse" : ""}`}
+        className={`size-4 ${isFlashing || isActive ? "animate-pulse" : ""}`}
         aria-hidden="true"
       />
-      {isActive ? (
-        <span className="text-[10px] uppercase tracking-wide font-medium">
-          {activeCount} • {overallPct}%
-        </span>
-      ) : (
-        <span className="text-[10px] uppercase tracking-wide">
-          {t("activity.label")}
+      {/* Live count badge while transfers are running. Compact — chip
+          stays icon-first (no "ACTIVITY" label) per design direction. */}
+      {isActive && (
+        <span className="ml-1 text-[10px] font-medium tabular-nums">
+          {activeCount}
         </span>
       )}
-      {/* New-activity dot — flashes when there's an unseen completion
-          and the chip itself isn't already glowing for active work. */}
-      {hasUnseen && !isActive && (
+      {/* Unseen-completion dot when nothing is currently active. */}
+      {hasUnseen && !isActive && !isFlashing && (
         <span
           aria-hidden="true"
           className="absolute -right-0.5 -top-0.5 size-1.5 rounded-full bg-blue-500"
@@ -429,9 +447,14 @@ function ActivityChip() {
  */
 function NotificationsChip() {
   const { t } = useTranslation();
-  const entries = useNotificationsStore((s) => s.entries);
+  const allEntries = useNotificationsStore((s) => s.entries);
   const toggle = useUiStore((s) => s.toggleNotificationsCenter);
   const lastSeenAt = useUiStore((s) => s.notificationsLastSeenAt);
+
+  // The bell only surfaces non-transfer events — downloads and uploads
+  // have their own dedicated Activity chip + Center, so a completed
+  // file shouldn't also turn the bell red.
+  const entries = nonTransferEntries(allEntries);
 
   let total = 0;
   let unseenErrors = 0;
@@ -460,7 +483,7 @@ function NotificationsChip() {
       title={title}
       aria-label={title}
       onClick={() => toggle()}
-      className={`relative inline-flex items-center gap-1 rounded px-1.5 py-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors ${
+      className={`relative inline-flex items-center justify-center rounded p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors ${
         hasUnseenError
           ? "bg-red-500/15 text-red-700 dark:text-red-400 hover:bg-red-500/25"
           : hasUnseen
@@ -470,16 +493,14 @@ function NotificationsChip() {
       data-testid="notifications-chip"
     >
       <BellIcon
-        className={`size-3 ${hasUnseenError ? "animate-pulse" : ""}`}
+        className={`size-4 ${hasUnseenError ? "animate-pulse" : ""}`}
         aria-hidden="true"
       />
-      {total > 0 ? (
-        <span className="text-[10px] uppercase tracking-wide font-medium">
+      {/* Compact total count next to the bell when ≥ 1. Stays subtle
+          when zero so the chip remains icon-only at rest. */}
+      {total > 0 && (
+        <span className="ml-1 text-[10px] font-medium tabular-nums">
           {total}
-        </span>
-      ) : (
-        <span className="text-[10px] uppercase tracking-wide">
-          {t("notificationsChip.label")}
         </span>
       )}
       {hasUnseen && (

@@ -137,6 +137,14 @@ interface UiState {
    * Notifications Center.
    */
   notificationsLastSeenAt: number;
+  /**
+   * Unix-ms timestamp of the last time a new download/upload was kicked
+   * off. Drives a short attention-grabbing flash on the Activity chip
+   * — the chip is "highlighted" while `Date.now() - activityFlashAt`
+   * is below the flash window. Resets to 0 once the user opens the
+   * Activity Center.
+   */
+  activityFlashAt: number;
 
   setTheme(theme: UiState["theme"]): void;
   toggleSidebar(): void;
@@ -163,6 +171,8 @@ interface UiState {
   toggleNotificationsCenter(): void;
   /** Explicitly set the Notifications Center state. */
   setNotificationsCenterOpen(open: boolean): void;
+  /** Stamp the activity chip "flash" timestamp to now. */
+  flashActivity(): void;
 }
 
 // ---------------------------------------------------------------------------
@@ -187,6 +197,7 @@ export const useUiStore = create<UiState>()(
       notificationsCenterOpen: false,
       activityLastSeenAt: 0,
       notificationsLastSeenAt: 0,
+      activityFlashAt: 0,
 
       // ---- actions ----
       setTheme: (theme) => set({ theme }),
@@ -234,8 +245,10 @@ export const useUiStore = create<UiState>()(
             notificationsCenterOpen: nextOpen
               ? false
               : s.notificationsCenterOpen,
-            // Opening counts as "seen".
+            // Opening counts as "seen" — clears the unseen dot AND the
+            // attention flash from a new download.
             activityLastSeenAt: nextOpen ? Date.now() : s.activityLastSeenAt,
+            activityFlashAt: nextOpen ? 0 : s.activityFlashAt,
           };
         }),
       setActivityCenterOpen: (open) =>
@@ -243,6 +256,7 @@ export const useUiStore = create<UiState>()(
           activityCenterOpen: open,
           notificationsCenterOpen: open ? false : s.notificationsCenterOpen,
           activityLastSeenAt: open ? Date.now() : s.activityLastSeenAt,
+          activityFlashAt: open ? 0 : s.activityFlashAt,
         })),
       toggleNotificationsCenter: () =>
         set((s) => {
@@ -263,6 +277,7 @@ export const useUiStore = create<UiState>()(
             ? Date.now()
             : s.notificationsLastSeenAt,
         })),
+      flashActivity: () => set({ activityFlashAt: Date.now() }),
     }),
     {
       // Bumped from "brows3r-ui" → "brows3r-ui-v2" so any old localStorage
