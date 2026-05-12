@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.4](https://github.com/banduk/brows3r/compare/v0.2.3...v0.2.4) (2026-05-12)
+
+
+### Bug Fixes
+
+* **startup:** never panic during setup — graceful fallbacks for every store ([#31](https://github.com/banduk/brows3r/issues/31)) ([cf352a8](https://github.com/banduk/brows3r/commit/cf352a88479a36ea0ba6ac72270f0dc940ef6df5))
+
 ## [0.2.3](https://github.com/banduk/brows3r/compare/v0.2.2...v0.2.3) (2026-05-12)
 
 
