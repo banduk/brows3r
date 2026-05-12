@@ -243,6 +243,14 @@ export function seedTransfers(
       startedAt: now,
     });
   }
+  // Fire a single "Started" toast for this click. The toast carries a
+  // "View" action that opens the Activity Center; the per-file completion
+  // toast was removed in favour of the chip + center surfaces.
+  void import("@/query/notifyTransferStarted").then(
+    ({ notifyTransferStarted }) => {
+      notifyTransferStarted(ids.length, kind);
+    },
+  );
 }
 
 /**

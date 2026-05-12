@@ -312,6 +312,13 @@
       "revealFailed": "Could not open the destination folder."
     }
   },
+  "transfersStarted": {
+    "titleDownload": "Download started",
+    "titleUpload": "Upload started",
+    "messageOne": "1 file queued. Track progress in the Activity Center.",
+    "messageMany": "{{count}} files queued. Track progress in the Activity Center.",
+    "view": "View"
+  },
   "bulkDownload": {
     "title": "Confirm download",
     "description": "S3 has no zip/tar shortcut, so each object is fetched individually. Review the totals before starting.",

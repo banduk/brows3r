@@ -369,11 +369,16 @@ function ActivityChip() {
       title={title}
       aria-label={title}
       onClick={() => toggleActivityCenter()}
-      className="inline-flex items-center gap-1 rounded px-1 py-0.5 hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors ${
+        isActive
+          ? "bg-green-500/15 text-green-700 dark:text-green-400 hover:bg-green-500/25"
+          : "hover:bg-accent hover:text-accent-foreground"
+      }`}
       data-testid="activity-chip"
     >
       <ActivityIcon
-        className={`size-3 ${isActive ? "text-primary animate-pulse" : ""}`}
+        className={`size-3 ${isActive ? "animate-pulse" : ""}`}
+        aria-hidden="true"
       />
       {isActive ? (
         <span className="text-[10px] uppercase tracking-wide font-medium">

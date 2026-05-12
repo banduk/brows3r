@@ -312,6 +312,13 @@
       "revealFailed": "No se pudo abrir la carpeta de destino."
     }
   },
+  "transfersStarted": {
+    "titleDownload": "Descarga iniciada",
+    "titleUpload": "Subida iniciada",
+    "messageOne": "1 archivo en cola. Sigue el progreso en el Centro de actividad.",
+    "messageMany": "{{count}} archivos en cola. Sigue el progreso en el Centro de actividad.",
+    "view": "Ver"
+  },
   "bulkDownload": {
     "title": "Confirmar descarga",
     "description": "S3 no tiene atajo zip/tar, por lo que cada objeto se descarga individualmente. Revisa los totales antes de iniciar.",

@@ -312,6 +312,13 @@
       "revealFailed": "Der Zielordner konnte nicht geöffnet werden."
     }
   },
+  "transfersStarted": {
+    "titleDownload": "Download gestartet",
+    "titleUpload": "Upload gestartet",
+    "messageOne": "1 Datei in der Warteschlange. Fortschritt im Aktivitätscenter verfolgen.",
+    "messageMany": "{{count}} Dateien in der Warteschlange. Fortschritt im Aktivitätscenter verfolgen.",
+    "view": "Anzeigen"
+  },
   "bulkDownload": {
     "title": "Download bestätigen",
     "description": "S3 bietet keine zip/tar-Verknüpfung, daher wird jedes Objekt einzeln abgerufen. Prüfen Sie die Gesamtwerte vor dem Start.",

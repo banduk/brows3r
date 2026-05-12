@@ -201,17 +201,10 @@ export async function installEventBridge(
           }
         },
       );
-      // Side-effect: surface a "Download complete" toast with a clickable
-      // "Open folder" action when a download finishes successfully. Kept
-      // inline (rather than inside applyStateEvent) so the store stays a
-      // pure reducer.
-      if (payload.state === "done") {
-        import("./notifyDownloadComplete").then(
-          ({ notifyDownloadComplete }) => {
-            notifyDownloadComplete(payload.requestId);
-          },
-        );
-      }
+      // Per-file completion toasts were removed: a single "Transfer
+      // started" toast fires when seedTransfers runs, and the StatusBar
+      // Activity chip + the Activity Center take over from there. See
+      // notifyTransferStarted.ts for the rationale.
     }),
 
     // Lock events → push into the Zustand locks store so context menus and

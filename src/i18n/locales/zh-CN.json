@@ -312,6 +312,13 @@
       "revealFailed": "无法打开目标文件夹。"
     }
   },
+  "transfersStarted": {
+    "titleDownload": "下载已开始",
+    "titleUpload": "上传已开始",
+    "messageOne": "1 个文件已加入队列。在活动中心查看进度。",
+    "messageMany": "{{count}} 个文件已加入队列。在活动中心查看进度。",
+    "view": "查看"
+  },
   "bulkDownload": {
     "title": "确认下载",
     "description": "S3 没有 zip/tar 快捷方式,每个对象需要单独下载。开始前请确认总数。",

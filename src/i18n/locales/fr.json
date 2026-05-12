@@ -312,6 +312,13 @@
       "revealFailed": "Impossible d'ouvrir le dossier de destination."
     }
   },
+  "transfersStarted": {
+    "titleDownload": "Téléchargement démarré",
+    "titleUpload": "Téléversement démarré",
+    "messageOne": "1 fichier en file d'attente. Suivez la progression dans le Centre d'activité.",
+    "messageMany": "{{count}} fichiers en file d'attente. Suivez la progression dans le Centre d'activité.",
+    "view": "Voir"
+  },
   "bulkDownload": {
     "title": "Confirmer le téléchargement",
     "description": "S3 n'a pas de raccourci zip/tar, chaque objet est donc récupéré individuellement. Vérifiez les totaux avant de démarrer.",

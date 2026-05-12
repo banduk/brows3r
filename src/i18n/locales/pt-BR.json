@@ -312,6 +312,13 @@
       "revealFailed": "Não foi possível abrir a pasta de destino."
     }
   },
+  "transfersStarted": {
+    "titleDownload": "Download iniciado",
+    "titleUpload": "Upload iniciado",
+    "messageOne": "1 arquivo na fila. Acompanhe na Central de atividade.",
+    "messageMany": "{{count}} arquivos na fila. Acompanhe na Central de atividade.",
+    "view": "Ver"
+  },
   "bulkDownload": {
     "title": "Confirmar download",
     "description": "O S3 não tem atalho zip/tar, então cada objeto é baixado individualmente. Confira os totais antes de iniciar.",
