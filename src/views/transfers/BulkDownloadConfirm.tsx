@@ -111,12 +111,14 @@ export function BulkDownloadConfirm({
     bytes: 0,
     done: false,
   });
+  const [error, setError] = useState<string | null>(null);
 
   // Drive the enumerator while the dialog is mounted + open.
   useEffect(() => {
     if (!open) return;
     let cancelled = false;
     setEstimate({ files: 0, bytes: 0, done: false });
+    setError(null);
 
     (async () => {
       try {
@@ -125,11 +127,20 @@ export function BulkDownloadConfirm({
           setEstimate(e);
           if (e.done) return;
         }
-      } catch {
-        // Enumeration failed — fall through to let the user confirm
-        // anyway with whatever count we had. Failure-mode messaging
-        // happens at the transfer layer, not here.
-        if (!cancelled) setEstimate((prev) => ({ ...prev, done: true }));
+      } catch (err) {
+        if (cancelled) return;
+        // Surface the enumeration error inline so the user knows the
+        // count is incomplete. Previously this was silently absorbed
+        // which left the dialog showing a stale running count with no
+        // hint that listing had failed.
+        const msg =
+          err instanceof Error
+            ? err.message
+            : typeof err === "object" && err !== null && "message" in err
+              ? String((err as { message: unknown }).message)
+              : "Failed to list files.";
+        setError(msg);
+        setEstimate((prev) => ({ ...prev, done: true }));
       }
     })();
 
@@ -143,6 +154,24 @@ export function BulkDownloadConfirm({
     estimate.files >= RISK_FILE_THRESHOLD;
 
   const wallClock = estimateWallClock(estimate.bytes);
+
+  // Confirm is gated on the enumeration being complete AND finding at
+  // least one file. Without this gate the user could click Start before
+  // the first page came back, and `specs` would still be empty.
+  const confirmDisabled = !estimate.done || estimate.files === 0;
+
+  // Button label gives the user a clear sense of state:
+  //   • before enumeration finishes → "Counting…"
+  //   • after, when something to download → "Start download (5 files, 12 MB)"
+  //   • after, when nothing found → "Nothing to download"
+  const confirmLabel = !estimate.done
+    ? t("bulkDownload.counting")
+    : estimate.files === 0
+      ? t("bulkDownload.emptyTitle")
+      : t("bulkDownload.startDownloadWithSummary", {
+          files: estimate.files.toLocaleString(),
+          size: formatBytes(estimate.bytes),
+        });
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onCancel()}>
@@ -200,6 +229,18 @@ export function BulkDownloadConfirm({
             </p>
           )}
 
+          {/* Enumeration error — surfaces e.g. "Access denied" so the user
+              isn't left staring at a stale 0-file count without a clue. */}
+          {error !== null && (
+            <p
+              role="alert"
+              className="rounded-md border-l-4 border-red-500 bg-red-50 px-3 py-2 text-xs text-red-900 dark:bg-red-950/40 dark:text-red-200"
+              data-testid="bulk-download-error"
+            >
+              {error}
+            </p>
+          )}
+
           <p className="text-xs text-muted-foreground">
             {t("bulkDownload.cancelHint")}
           </p>
@@ -211,10 +252,10 @@ export function BulkDownloadConfirm({
           </Button>
           <Button
             onClick={onConfirm}
-            disabled={estimate.files === 0 && estimate.done}
+            disabled={confirmDisabled}
             data-testid="bulk-download-confirm"
           >
-            {t("bulkDownload.startDownload")}
+            {confirmLabel}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -97,6 +97,7 @@
     "riskWarning": "Operación grande: la descarga tardará y consumirá bastante espacio en disco y ancho de banda. Puedes cancelarla en cualquier momento desde el gestor de transferencias.",
     "cancelHint": "Cada transferencia se puede cancelar individualmente desde el gestor (⌘⇧J).",
     "startDownload": "Iniciar descarga",
+    "startDownloadWithSummary": "Iniciar descarga ({{files}} archivos, {{size}})",
     "emptyTitle": "Nada que descargar",
     "emptyMessage": "La selección no contiene objetos."
   }

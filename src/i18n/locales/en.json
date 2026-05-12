@@ -97,6 +97,7 @@
     "riskWarning": "Large operation: the download will take a while and consume significant disk space and bandwidth. You can cancel anytime from the transfer manager.",
     "cancelHint": "Each transfer can be canceled individually from the transfer manager (⌘⇧J).",
     "startDownload": "Start download",
+    "startDownloadWithSummary": "Start download ({{files}} files, {{size}})",
     "emptyTitle": "Nothing to download",
     "emptyMessage": "Selection contained no objects."
   }

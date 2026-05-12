@@ -97,6 +97,7 @@
     "riskWarning": "Opération volumineuse : le téléchargement prendra du temps et consommera beaucoup d'espace disque et de bande passante. Vous pouvez l'annuler à tout moment depuis le gestionnaire de transferts.",
     "cancelHint": "Chaque transfert peut être annulé individuellement depuis le gestionnaire (⌘⇧J).",
     "startDownload": "Démarrer le téléchargement",
+    "startDownloadWithSummary": "Démarrer le téléchargement ({{files}} fichiers, {{size}})",
     "emptyTitle": "Rien à télécharger",
     "emptyMessage": "La sélection ne contient aucun objet."
   }

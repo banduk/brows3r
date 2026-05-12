@@ -97,6 +97,7 @@
     "riskWarning": "Großer Vorgang: Der Download wird einige Zeit dauern und erheblichen Speicherplatz sowie Bandbreite verbrauchen. Sie können ihn jederzeit im Übertragungsmanager abbrechen.",
     "cancelHint": "Jede Übertragung kann einzeln im Übertragungsmanager abgebrochen werden (⌘⇧J).",
     "startDownload": "Download starten",
+    "startDownloadWithSummary": "Download starten ({{files}} Dateien, {{size}})",
     "emptyTitle": "Nichts zum Herunterladen",
     "emptyMessage": "Die Auswahl enthält keine Objekte."
   }
