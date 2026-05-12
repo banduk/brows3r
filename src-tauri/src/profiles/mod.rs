@@ -231,6 +231,19 @@ pub struct ProfileStore {
     path: PathBuf,
     /// In-memory set of manual profiles.
     manual: Vec<Profile>,
+    /// Session-scoped `validated_at` cache for AWS-discovered / env profiles.
+    ///
+    /// These profiles are re-read from `~/.aws/*` on every `list()` call so
+    /// any `validated_at` we mark on the in-memory representation would be
+    /// dropped on the next call. Persisting it to disk is wrong (the user's
+    /// `~/.aws/config` is theirs and we shouldn't write to it), so the
+    /// cache lives here, in memory, for the lifetime of the session and is
+    /// merged into the freshly-rebuilt profiles by `list()`.
+    ///
+    /// Without this, the validation gate (`useValidatedProfile`) blocks
+    /// every action on a discovered profile because its `validated_at`
+    /// stays `None` even after a successful `profile_validate`.
+    discovered_validated_at: HashMap<ProfileId, i64>,
 }
 
 impl ProfileStore {
@@ -246,6 +259,7 @@ impl ProfileStore {
         Self {
             path,
             manual: Vec::new(),
+            discovered_validated_at: HashMap::new(),
         }
     }
 
@@ -260,7 +274,11 @@ impl ProfileStore {
         } else {
             Vec::new()
         };
-        Ok(Self { path, manual })
+        Ok(Self {
+            path,
+            manual,
+            discovered_validated_at: HashMap::new(),
+        })
     }
 
     fn read_from_disk(path: &Path) -> Result<Vec<Profile>, AppError> {
@@ -358,12 +376,17 @@ impl ProfileStore {
             };
             let id = Self::discovered_id(&source, &display_name);
             let key = (format!("{source:?}"), display_name.clone());
+            // Merge the session-scoped `validated_at` for this discovered
+            // profile so the validation gate stays open across `list()`
+            // calls (which rebuild the discovered profiles from disk each
+            // time and would otherwise reset `validated_at` to `None`).
+            let validated_at = self.discovered_validated_at.get(&id).copied();
             let profile = Profile {
                 id,
                 display_name,
                 source,
                 default_region: entry.region.clone(),
-                validated_at: None,
+                validated_at,
                 compat_flags: CompatFlags::default(),
                 source_profile: entry.source_profile.clone(),
                 role_arn: entry.role_arn.clone(),
@@ -510,20 +533,23 @@ impl ProfileStore {
 
     /// Mark a profile as validated at the given Unix-millisecond timestamp.
     ///
-    /// For manual profiles the timestamp is also persisted to disk. For
-    /// discovered/env profiles it is updated only in memory (they are
-    /// re-created from source on every `list()` call, so in-memory state is
-    /// the sole authoritative store for their `validated_at`).
+    /// For manual profiles the timestamp is persisted to `profiles.json`.
+    /// For discovered/env profiles it is recorded in the session-scoped
+    /// `discovered_validated_at` map and merged back into the freshly
+    /// rebuilt profiles on every [`list`](Self::list) call. Persisting
+    /// discovered timestamps to disk would mean writing to the user's
+    /// `~/.aws/*` files, which we deliberately do not do.
     pub fn mark_validated(&mut self, id: &ProfileId, ts: i64) {
-        // Update manual profiles in the persisted set.
         if let Some(p) = self.manual.iter_mut().find(|p| &p.id == id) {
             p.validated_at = Some(ts);
             // Best-effort flush — validation is advisory; ignore errors.
             let _ = self.flush();
+            return;
         }
-        // Discovered / env profiles are not persisted — their validated_at is
-        // session-only. Task 13 (validation) may cache this in a separate
-        // session map if needed.
+        // Discovered / env profile: cache in the session map. The next
+        // `list()` will merge this in so the frontend's
+        // `useValidatedProfile` gate opens.
+        self.discovered_validated_at.insert(id.clone(), ts);
     }
 }
 
