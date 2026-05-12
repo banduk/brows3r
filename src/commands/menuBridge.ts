@@ -25,37 +25,46 @@ type MenuEventKey = {
 
 // The menu item ids the bridge subscribes to.
 const MENU_EVENTS: MenuEventKey[] = [
-  "menu:file.new-folder",
-  "menu:file.open",
-  "menu:file.save",
-  "menu:edit.find",
-  "menu:view.refresh",
-  "menu:view.toggle-sidebar",
-  "menu:view.toggle-preview",
-  "menu:view.mode.details",
-  "menu:view.mode.icon-grid",
-  "menu:view.mode.gallery",
-  "menu:view.mode.column",
-  "menu:view.mode.tree",
-  "menu:view.mode.flat-key",
-  "menu:view.mode.dual-pane",
-  "menu:go.back",
-  "menu:go.forward",
-  "menu:go.up",
-  "menu:go.bookmarks",
-  "menu:help.docs",
-  "menu:help.report-bug",
+  "menu:file/new-folder",
+  "menu:file/open",
+  "menu:file/save",
+  "menu:edit/find",
+  "menu:view/refresh",
+  "menu:view/toggle-sidebar",
+  "menu:view/toggle-preview",
+  "menu:view/mode/details",
+  "menu:view/mode/icon-grid",
+  "menu:view/mode/gallery",
+  "menu:view/mode/column",
+  "menu:view/mode/tree",
+  "menu:view/mode/flat-key",
+  "menu:view/mode/dual-pane",
+  "menu:go/back",
+  "menu:go/forward",
+  "menu:go/up",
+  "menu:go/bookmarks",
+  "menu:help/docs",
+  "menu:help/report-bug",
 ];
 
 /**
- * Strip the `menu:` prefix to derive the registry command id.
+ * Strip the `menu:` prefix and convert the path separator to derive the
+ * registry command id.
+ *
+ * Tauri's event-name validator only accepts `[A-Za-z0-9_\-/:]`, so the
+ * menu items use `/` between path segments (`menu:file/new-folder`) while
+ * the registry keeps `.`-separated ids (`file.new-folder`). This bridge
+ * is the only place that translates between the two encodings.
  *
  * Examples:
- *   "menu:file.new-folder" → "file.new-folder"
- *   "menu:view.refresh"    → "view.refresh"
+ *   "menu:file/new-folder" → "file.new-folder"
+ *   "menu:view/refresh"    → "view.refresh"
+ *   "menu:view/mode/details" → "view.mode.details"
  */
 function menuEventToCommandId(event: MenuEventKey): string {
-  return event.slice("menu:".length);
+  // tsconfig target is ES2020 → use the regex `.replace` form rather than
+  // `String.prototype.replaceAll` (ES2021).
+  return event.slice("menu:".length).replace(/\//g, ".");
 }
 
 /**

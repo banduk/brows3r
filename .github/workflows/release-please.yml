@@ -87,7 +87,19 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - run: pnpm tauri build --target universal-apple-darwin
+      # `pnpm tauri build` on macOS occasionally fails inside `bundle_dmg.sh`
+      # — the script wraps `hdiutil` + Finder AppleScript and is known to
+      # flake on GitHub Actions runners (Finder automation timing out, etc).
+      # v0.2.4 hit this once and a re-run on the exact same runner image
+      # succeeded with zero code changes. Wrap the build in a retry so a
+      # single flake does not require manual re-trigger.
+      - name: Build universal macOS app (retry on bundle_dmg.sh flake)
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 30
+          max_attempts: 2
+          retry_on: error
+          command: pnpm tauri build --target universal-apple-darwin
 
       - name: Upload .dmg to release
         env:
