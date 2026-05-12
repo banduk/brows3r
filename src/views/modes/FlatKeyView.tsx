@@ -33,6 +33,7 @@ import { cn } from "@/lib/utils";
 import { useValidatedProfile } from "@/query/hooks/useValidatedProfile";
 import { keys } from "@/query/keys";
 import { usePanesStore } from "@/store/panes";
+import { FileContextMenu } from "@/views/browser/ContextMenu";
 import { ListingFooter } from "@/views/browser/ListingFooter";
 import { useFilteredEntries } from "./useFilteredEntries";
 
@@ -383,7 +384,19 @@ export function FlatKeyView({
   }
 
   // -- Table ------------------------------------------------------------------
-  return (
+  const selectedKeys = selection.toArray();
+  const fileMenuCtx =
+    profileId && bucket
+      ? {
+          profileId,
+          bucket,
+          prefix,
+          keys: selectedKeys,
+          isBlankArea: selectedKeys.length === 0,
+        }
+      : null;
+
+  const flatContent = (
     <div
       className="flex h-full flex-col"
       onKeyDown={handleKeyDown}
@@ -445,4 +458,7 @@ export function FlatKeyView({
       />
     </div>
   );
+
+  if (!fileMenuCtx) return flatContent;
+  return <FileContextMenu ctx={fileMenuCtx}>{flatContent}</FileContextMenu>;
 }

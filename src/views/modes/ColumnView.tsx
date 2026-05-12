@@ -44,6 +44,7 @@ import {
   useObjects,
   useValidatedProfile,
 } from "@/query/hooks/useValidatedProfile";
+import { FileContextMenu } from "@/views/browser/ContextMenu";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -449,7 +450,24 @@ export function ColumnView({
     );
   }
 
-  return (
+  // Derive context-menu ctx from the active column. ColumnView is
+  // single-select per column, so `keys` is the active selectedKey (when
+  // present) or empty when the user right-clicks blank space.
+  const activeCol = columns[activeColumn];
+  const activeSelectedKey = activeCol?.selectedKey ?? null;
+  const activePrefix = activeCol?.prefix ?? prefix;
+  const fileMenuCtx =
+    profileId && bucket
+      ? {
+          profileId,
+          bucket,
+          prefix: activePrefix,
+          keys: activeSelectedKey ? [activeSelectedKey] : [],
+          isBlankArea: !activeSelectedKey,
+        }
+      : null;
+
+  const columnContent = (
     <div
       ref={scrollContainerRef}
       tabIndex={0}
@@ -487,4 +505,7 @@ export function ColumnView({
       ))}
     </div>
   );
+
+  if (!fileMenuCtx) return columnContent;
+  return <FileContextMenu ctx={fileMenuCtx}>{columnContent}</FileContextMenu>;
 }

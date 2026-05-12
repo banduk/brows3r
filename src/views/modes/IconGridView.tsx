@@ -34,6 +34,7 @@ import {
   useValidatedProfile,
 } from "@/query/hooks/useValidatedProfile";
 import { usePanesStore } from "@/store/panes";
+import { FileContextMenu } from "@/views/browser/ContextMenu";
 import { ListingFooter } from "@/views/browser/ListingFooter";
 import { useFilteredEntries } from "./useFilteredEntries";
 
@@ -342,7 +343,19 @@ export function IconGridView({
     containerWidth > 0 ? Math.floor(containerWidth / cols) : CARD_MIN_WIDTH;
 
   // -- Grid -------------------------------------------------------------------
-  return (
+  const selectedKeys = selection.toArray();
+  const fileMenuCtx =
+    profileId && bucket
+      ? {
+          profileId,
+          bucket,
+          prefix,
+          keys: selectedKeys,
+          isBlankArea: selectedKeys.length === 0,
+        }
+      : null;
+
+  const gridContent = (
     <div
       ref={attachRef}
       className="flex h-full flex-col"
@@ -389,4 +402,7 @@ export function IconGridView({
       />
     </div>
   );
+
+  if (!fileMenuCtx) return gridContent;
+  return <FileContextMenu ctx={fileMenuCtx}>{gridContent}</FileContextMenu>;
 }

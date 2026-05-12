@@ -561,12 +561,33 @@ pub fn select_backend(
     fallback_dir: impl Into<std::path::PathBuf>,
     fallback_passphrase: &str,
 ) -> (Box<dyn KeychainBackend + Send + Sync>, bool) {
-    let probe_ok = keyring::Entry::new("brows3r", "probe")
-        .and_then(|e| e.set_password("test"))
-        .and_then(|_| keyring::Entry::new("brows3r", "probe").and_then(|e| e.delete_credential()))
-        .is_ok();
+    // Escape hatch for dev mode: skip the probe and trust the OS keychain.
+    // The keyring crate will still fail-loudly when an actual get/set runs
+    // against a broken keychain, so this is a safe override for the common
+    // case where the probe trips on macOS's per-binary security prompt.
+    if std::env::var("BROWS3R_FORCE_OS_KEYCHAIN").is_ok() {
+        return (Box::new(KeyringBackend::new()), false);
+    }
 
-    if probe_ok {
+    // Probe the OS keychain with a temporary entry. Capture the actual error
+    // so we can surface it in the fallback warning — silent fallback was
+    // confusing in dev mode where the macOS Security framework prompts the
+    // user per binary signature and a missed prompt looks identical to a
+    // "keychain unavailable" failure.
+    let probe_err: Option<String> = (|| {
+        let entry = keyring::Entry::new("brows3r", "probe").map_err(|e| format!("new: {e}"))?;
+        entry
+            .set_password("test")
+            .map_err(|e| format!("set: {e}"))?;
+        let entry2 = keyring::Entry::new("brows3r", "probe").map_err(|e| format!("new2: {e}"))?;
+        entry2
+            .delete_credential()
+            .map_err(|e| format!("delete: {e}"))?;
+        Ok::<(), String>(())
+    })()
+    .err();
+
+    if probe_err.is_none() {
         (Box::new(KeyringBackend::new()), false)
     } else {
         // OS keychain unavailable — use encrypted file fallback.
@@ -578,8 +599,11 @@ pub fn select_backend(
         // the placeholder passphrase that lib.rs passes here.
         eprintln!(
             "[brows3r] OS keychain unavailable — falling back to encrypted file backend. \
-             Until the user supplies a passphrase via the Credential Manager prompt, \
-             secrets.enc is encrypted with the empty placeholder passphrase."
+             Probe error: {}. Until the user supplies a passphrase via the Credential \
+             Manager prompt, secrets.enc is encrypted with the empty placeholder passphrase. \
+             In dev mode this is often caused by macOS prompting per unsigned binary; \
+             set BROWS3R_FORCE_OS_KEYCHAIN=1 to bypass the probe and trust the OS keychain.",
+            probe_err.as_deref().unwrap_or("<unknown>"),
         );
         (
             Box::new(FileBackendWithPassphrase::new(

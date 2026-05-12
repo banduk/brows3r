@@ -34,6 +34,7 @@ import {
   useObjects,
   useValidatedProfile,
 } from "@/query/hooks/useValidatedProfile";
+import { FileContextMenu } from "@/views/browser/ContextMenu";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -368,7 +369,7 @@ export function TreeView({
     return acc;
   }, [profileId, bucket, prefix, expanded, mapWithRoot]);
 
-  const { isSelected, onClick, onKeyDown, cursor, setCursor } =
+  const { selection, isSelected, onClick, onKeyDown, cursor, setCursor } =
     useSelection<ObjectEntry>(
       flatNodes.map((n) => n.entry),
       (e) => e.key,
@@ -500,7 +501,19 @@ export function TreeView({
   }
 
   // -- Tree -------------------------------------------------------------------
-  return (
+  const selectedKeys = selection.toArray();
+  const fileMenuCtx =
+    profileId && bucket
+      ? {
+          profileId,
+          bucket,
+          prefix,
+          keys: selectedKeys,
+          isBlankArea: selectedKeys.length === 0,
+        }
+      : null;
+
+  const treeContent = (
     <div
       className="flex h-full flex-col"
       onKeyDown={handleKeyDown}
@@ -539,4 +552,7 @@ export function TreeView({
       />
     </div>
   );
+
+  if (!fileMenuCtx) return treeContent;
+  return <FileContextMenu ctx={fileMenuCtx}>{treeContent}</FileContextMenu>;
 }

@@ -31,6 +31,7 @@ import {
   useValidatedProfile,
 } from "@/query/hooks/useValidatedProfile";
 import { usePanesStore } from "@/store/panes";
+import { FileContextMenu } from "@/views/browser/ContextMenu";
 import { ListingFooter } from "@/views/browser/ListingFooter";
 import { useFilteredEntries } from "./useFilteredEntries";
 
@@ -414,7 +415,19 @@ export function GalleryView({
     containerWidth > 0 ? Math.floor(containerWidth / cols) : TILE_SIZE;
 
   // -- Gallery ----------------------------------------------------------------
-  return (
+  const selectedKeys = selection.toArray();
+  const fileMenuCtx =
+    profileId && bucket
+      ? {
+          profileId,
+          bucket,
+          prefix,
+          keys: selectedKeys,
+          isBlankArea: selectedKeys.length === 0,
+        }
+      : null;
+
+  const galleryContent = (
     <div
       ref={attachRef}
       className="flex h-full flex-col"
@@ -461,4 +474,7 @@ export function GalleryView({
       />
     </div>
   );
+
+  if (!fileMenuCtx) return galleryContent;
+  return <FileContextMenu ctx={fileMenuCtx}>{galleryContent}</FileContextMenu>;
 }

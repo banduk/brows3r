@@ -20,8 +20,14 @@ import { emitEvent, mockInvoke } from "@/test/mocks/tauri";
 // ---------------------------------------------------------------------------
 
 async function renderWithHook() {
-  // Reset Zustand store between tests
-  useKeychainFallbackStore.setState({ hasShownKeychainFallback: false });
+  // Reset Zustand store between tests — both the per-session and the
+  // persisted "unlocked" flag (otherwise a successful unlock in one test
+  // sticks via localStorage and blocks every subsequent prompt).
+  useKeychainFallbackStore.setState({
+    hasShownKeychainFallback: false,
+    hasUnlockedKeychainFallback: false,
+  });
+  localStorage.removeItem("brows3r:keychain-fallback");
 
   const { KeychainFallbackPrompt, useKeychainFallback } = await import(
     "@/views/shell/KeychainFallbackPrompt"
@@ -43,8 +49,12 @@ describe("KeychainFallbackPrompt", () => {
   afterEach(() => {
     cleanup();
     vi.clearAllMocks();
-    // Reset session state between tests.
-    useKeychainFallbackStore.setState({ hasShownKeychainFallback: false });
+    // Reset both gates and the persisted store between tests.
+    useKeychainFallbackStore.setState({
+      hasShownKeychainFallback: false,
+      hasUnlockedKeychainFallback: false,
+    });
+    localStorage.removeItem("brows3r:keychain-fallback");
   });
 
   it("is initially hidden", async () => {

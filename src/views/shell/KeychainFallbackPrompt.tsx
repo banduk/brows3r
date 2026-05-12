@@ -48,9 +48,15 @@ export function useKeychainFallback(): {
 
     listen("keychain:fallback-required", () => {
       // Read the current store state directly (not from a stale closure) so
-      // the once-per-session gate is always evaluated against the live value.
-      const { hasShownKeychainFallback, markShown } =
-        useKeychainFallbackStore.getState();
+      // the gates are always evaluated against the live value.
+      const {
+        hasShownKeychainFallback,
+        hasUnlockedKeychainFallback,
+        markShown,
+      } = useKeychainFallbackStore.getState();
+      // Sticky gate: if the user has already configured a passphrase in a
+      // previous session, don't prompt again. They can reset via Settings.
+      if (hasUnlockedKeychainFallback) return;
       if (!hasShownKeychainFallback) {
         markShown();
         setOpen(true);
@@ -117,6 +123,8 @@ export function KeychainFallbackPrompt({
     setSubmitting(true);
     try {
       await keychainFallbackUnlock(passphrase);
+      // Persist the "unlocked" marker so future launches don't re-prompt.
+      useKeychainFallbackStore.getState().markUnlocked();
       onClose();
     } catch (err: unknown) {
       const msg =
@@ -139,8 +147,8 @@ export function KeychainFallbackPrompt({
           <DialogTitle>Keychain Unavailable</DialogTitle>
           <DialogDescription id="kfp-description">
             The OS keychain is not available on this system. Enter a passphrase
-            to encrypt your credentials locally. You will need to enter it every
-            time the app starts.
+            to encrypt your credentials locally. We'll remember your choice for
+            future launches; you can reset it from Settings if you change it.
           </DialogDescription>
         </DialogHeader>
 
