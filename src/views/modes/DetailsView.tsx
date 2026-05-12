@@ -297,6 +297,11 @@ interface RowProps {
   isSelected: boolean;
   isCursor: boolean;
   onClick: (item: ObjectEntry, index: number, e: React.MouseEvent) => void;
+  onContextMenu: (
+    item: ObjectEntry,
+    index: number,
+    e: React.MouseEvent,
+  ) => void;
   onOpen?: (item: ObjectEntry) => void;
   /**
    * Pixel widths for the size/modified/storageClass cells. Mirrors the
@@ -318,6 +323,7 @@ function EntryRow({
   isSelected,
   isCursor,
   onClick,
+  onContextMenu,
   onOpen,
   columnWidths,
 }: RowProps) {
@@ -333,10 +339,11 @@ function EntryRow({
         "flex items-center px-3 cursor-default select-none text-sm",
         "hover:bg-accent/50",
         isSelected && "bg-accent text-accent-foreground",
-        isCursor && !isSelected && "ring-1 ring-inset ring-ring",
+        isCursor && "ring-2 ring-inset ring-primary",
       )}
       style={{ height: ROW_HEIGHT }}
       onClick={(e) => onClick(entry, index, e)}
+      onContextMenu={(e) => onContextMenu(entry, index, e)}
       onDoubleClick={() => onOpen?.(entry)}
       data-testid={`entry-row-${index.toString()}`}
     >
@@ -493,8 +500,15 @@ export function DetailsView({
   );
   const entries = useFilteredEntries(sortedEntries, prefix);
 
-  const { selection, isSelected, onClick, onKeyDown, cursor, setCursor } =
-    useSelection<ObjectEntry>(entries, (e) => e.key);
+  const {
+    selection,
+    isSelected,
+    onClick,
+    onContextMenu,
+    onKeyDown,
+    cursor,
+    setCursor,
+  } = useSelection<ObjectEntry>(entries, (e) => e.key);
 
   // Sync the local selection set into the panes store so cross-cutting
   // features (Toolbar star button, context menus, transfer/upload helpers)
@@ -691,6 +705,7 @@ export function DetailsView({
               isSelected={isSelected(entry.key)}
               isCursor={cursor === index}
               onClick={onClick}
+              onContextMenu={onContextMenu}
               onOpen={onOpen}
               columnWidths={columnWidths}
             />

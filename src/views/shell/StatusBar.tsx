@@ -33,13 +33,17 @@ const SHORTCUT_HINTS = [
   ["⌘K", "Command palette"],
   ["⌘F", "Search recursive"],
   ["/", "Filter current view"],
+  ["⌘A", "Select all"],
   ["⌘I", "Inspect selection"],
   ["⌘L", "Edit breadcrumb path"],
+  ["⌘R", "Refresh listing"],
   ["⌘[ / ⌘]", "Back / forward"],
   ["⌘↑", "Up one level"],
   ["↑ / ↓ / ← / →", "Move cursor (any view)"],
-  ["Enter", "Open / drill in"],
+  ["Enter / Space", "Open / drill in"],
   ["Backspace", "Up one level / back column"],
+  ["⌘B", "Toggle sidebar"],
+  ["⌘J", "Toggle preview"],
   ["⌘1‒7", "Switch view mode"],
 ] as const;
 

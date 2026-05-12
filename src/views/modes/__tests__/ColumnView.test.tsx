@@ -190,7 +190,7 @@ describe("ColumnView — clicking a folder appends a column", () => {
 });
 
 describe("ColumnView — clicking a file", () => {
-  it("clicking a file in the root column calls onOpen and truncates path", async () => {
+  it("clicking a file in the root column calls onOpen and places the file in column 0", async () => {
     const user = userEvent.setup();
     const docsFolder: ObjectEntry = { key: "docs/", size: 0, isPrefix: true };
 
@@ -213,8 +213,12 @@ describe("ColumnView — clicking a file", () => {
     expect(onOpen).toHaveBeenCalledWith(
       expect.objectContaining({ key: "readme.md", isPrefix: false }),
     );
-    // slice(0, 0) → [] (truncates deeper path)
-    expect(onColumnPathChange).toHaveBeenCalledWith([]);
+    // The file is placed at column 0 so it becomes the column's
+    // selectedKey — without this the context menu can never act on a file
+    // because no selection is recorded. Deeper columns (docs/) are dropped.
+    expect(onColumnPathChange).toHaveBeenCalledWith([
+      expect.objectContaining({ key: "readme.md", isPrefix: false }),
+    ]);
   });
 });
 

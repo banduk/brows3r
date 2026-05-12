@@ -104,6 +104,11 @@ interface TreeRowProps {
   isSelected: boolean;
   isCursor: boolean;
   onClick: (item: ObjectEntry, index: number, e: React.MouseEvent) => void;
+  onContextMenu: (
+    item: ObjectEntry,
+    index: number,
+    e: React.MouseEvent,
+  ) => void;
   onExpand: (key: string) => void;
   onCollapse: (key: string) => void;
 }
@@ -114,6 +119,7 @@ function TreeRow({
   isSelected,
   isCursor,
   onClick,
+  onContextMenu,
   onExpand,
   onCollapse,
 }: TreeRowProps) {
@@ -145,10 +151,11 @@ function TreeRow({
         "flex items-center gap-1 pr-3 cursor-default select-none text-sm",
         "hover:bg-accent/50",
         isSelected && "bg-accent text-accent-foreground",
-        isCursor && !isSelected && "ring-1 ring-inset ring-ring",
+        isCursor && "ring-2 ring-inset ring-primary",
       )}
       style={{ height: ROW_HEIGHT, paddingLeft: indent + 4 }}
       onClick={(e) => onClick(entry, flatIndex, e)}
+      onContextMenu={(e) => onContextMenu(entry, flatIndex, e)}
       data-testid={`tree-row-${flatIndex.toString()}`}
     >
       {/* Chevron (folders only) */}
@@ -369,11 +376,18 @@ export function TreeView({
     return acc;
   }, [profileId, bucket, prefix, expanded, mapWithRoot]);
 
-  const { selection, isSelected, onClick, onKeyDown, cursor, setCursor } =
-    useSelection<ObjectEntry>(
-      flatNodes.map((n) => n.entry),
-      (e) => e.key,
-    );
+  const {
+    selection,
+    isSelected,
+    onClick,
+    onContextMenu,
+    onKeyDown,
+    cursor,
+    setCursor,
+  } = useSelection<ObjectEntry>(
+    flatNodes.map((n) => n.entry),
+    (e) => e.key,
+  );
 
   // Collect expanded prefixes so we can mount ChildLoaders.
   const expandedPrefixes = useMemo(() => Array.from(expanded), [expanded]);
@@ -545,6 +559,7 @@ export function TreeView({
             isSelected={isSelected(node.entry.key)}
             isCursor={cursor === index}
             onClick={onClick}
+            onContextMenu={onContextMenu}
             onExpand={onExpand}
             onCollapse={onCollapse}
           />

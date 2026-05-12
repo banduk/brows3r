@@ -117,6 +117,11 @@ interface FlatRowProps {
   isSelected: boolean;
   isCursor: boolean;
   onClick: (item: ObjectEntry, index: number, e: React.MouseEvent) => void;
+  onContextMenu: (
+    item: ObjectEntry,
+    index: number,
+    e: React.MouseEvent,
+  ) => void;
   onOpen?: (item: ObjectEntry) => void;
 }
 
@@ -126,6 +131,7 @@ function FlatRow({
   isSelected,
   isCursor,
   onClick,
+  onContextMenu,
   onOpen,
 }: FlatRowProps) {
   const ext = entryExtension(entry.key);
@@ -139,10 +145,11 @@ function FlatRow({
         "flex items-center gap-3 px-3 cursor-default select-none text-sm",
         "hover:bg-accent/50",
         isSelected && "bg-accent text-accent-foreground",
-        isCursor && !isSelected && "ring-1 ring-inset ring-ring",
+        isCursor && "ring-2 ring-inset ring-primary",
       )}
       style={{ height: ROW_HEIGHT }}
       onClick={(e) => onClick(entry, index, e)}
+      onContextMenu={(e) => onContextMenu(entry, index, e)}
       onDoubleClick={() => onOpen?.(entry)}
       data-testid={`flat-row-${index.toString()}`}
     >
@@ -300,8 +307,15 @@ export function FlatKeyView({
 
   const [_sort, _setSort] = useState<null>(null);
 
-  const { selection, isSelected, onClick, onKeyDown, cursor, setCursor } =
-    useSelection<ObjectEntry>(items, (e) => e.key);
+  const {
+    selection,
+    isSelected,
+    onClick,
+    onContextMenu,
+    onKeyDown,
+    cursor,
+    setCursor,
+  } = useSelection<ObjectEntry>(items, (e) => e.key);
 
   const activePaneIdForSync = usePanesStore((s) => s.activePaneId);
   const setStoreSelection = usePanesStore((s) => s.setSelection);
@@ -444,6 +458,7 @@ export function FlatKeyView({
             isSelected={isSelected(entry.key)}
             isCursor={cursor === index}
             onClick={onClick}
+            onContextMenu={onContextMenu}
             onOpen={onOpen}
           />
         )}

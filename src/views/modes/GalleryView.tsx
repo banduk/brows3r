@@ -111,6 +111,11 @@ interface TileProps {
   isSelected: boolean;
   isCursor: boolean;
   onClick: (item: ObjectEntry, index: number, e: React.MouseEvent) => void;
+  onContextMenu: (
+    item: ObjectEntry,
+    index: number,
+    e: React.MouseEvent,
+  ) => void;
   onOpen?: (item: ObjectEntry) => void;
   size: number;
   /** Profile ID used to mint thumbnail URLs via the media server. */
@@ -125,6 +130,7 @@ function GalleryTile({
   isSelected,
   isCursor,
   onClick,
+  onContextMenu,
   onOpen,
   size,
   profileId,
@@ -146,10 +152,11 @@ function GalleryTile({
         "flex flex-col rounded-md overflow-hidden cursor-default select-none",
         "hover:ring-1 hover:ring-ring",
         isSelected && "ring-2 ring-primary",
-        isCursor && !isSelected && "ring-1 ring-inset ring-ring",
+        isCursor && "ring-2 ring-inset ring-primary",
       )}
       style={{ width: size, height: size }}
       onClick={(e) => onClick(entry, index, e)}
+      onContextMenu={(e) => onContextMenu(entry, index, e)}
       onDoubleClick={() => onOpen?.(entry)}
       data-testid={`gallery-tile-${index.toString()}`}
     >
@@ -313,8 +320,15 @@ export function GalleryView({
     return result;
   }, [items, cols]);
 
-  const { selection, isSelected, onClick, onKeyDown, cursor, setCursor } =
-    useSelection<ObjectEntry>(items, (e) => e.key);
+  const {
+    selection,
+    isSelected,
+    onClick,
+    onContextMenu,
+    onKeyDown,
+    cursor,
+    setCursor,
+  } = useSelection<ObjectEntry>(items, (e) => e.key);
 
   const activePaneIdForSync = usePanesStore((s) => s.activePaneId);
   const setStoreSelection = usePanesStore((s) => s.setSelection);
@@ -454,6 +468,7 @@ export function GalleryView({
                   isSelected={isSelected(entry.key)}
                   isCursor={cursor === flatIndex}
                   onClick={onClick}
+                  onContextMenu={onContextMenu}
                   onOpen={onOpen}
                   size={tileSize}
                   profileId={profileId}
