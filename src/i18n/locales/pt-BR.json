@@ -69,6 +69,30 @@
     "validateTooltip": "Valide este perfil para usar este favorito",
     "validateToUse": "Validar para usar"
   },
+  "breadcrumb": {
+    "label": "Trilha de navegação",
+    "editAria": "Ir para o caminho"
+  },
+  "buckets": {
+    "gateTitle": "Perfil não validado",
+    "gateBody": "Valide o perfil pela barra lateral antes de listar buckets.",
+    "loading": "Carregando buckets…",
+    "loadError": "Falha ao carregar buckets",
+    "emptyTitle": "Nenhum bucket encontrado",
+    "emptyBody": "Este perfil não tem acesso a nenhum bucket no S3.",
+    "filterNoMatch": "Nenhum bucket corresponde a \"{{filter}}\"",
+    "filterClearHint": "Limpe o filtro (Esc) ou refine sua busca.",
+    "listAria": "Lista de buckets"
+  },
+  "preview": {
+    "label": "Visualização",
+    "empty": "Selecione um arquivo para visualizar",
+    "validateGate": "Valide este perfil para visualizar arquivos",
+    "sizeLimit": "Arquivo tem {{size}} MB — acima do limite de {{limit}} MB.",
+    "previewAnyway": "Visualizar mesmo assim",
+    "editInMonaco": "Editar no Monaco",
+    "exitEdit": "Sair do modo de edição"
+  },
   "toolbar": {
     "label": "Barra de ferramentas do navegador",
     "back": "Voltar",
@@ -131,6 +155,30 @@
   },
   "settings": {
     "title": "Configurações",
+    "loading": "Carregando configurações…",
+    "close": "Fechar configurações",
+    "resetAll": "Redefinir tudo",
+    "resetAllAria": "Redefinir todas as configurações para o padrão",
+    "resetDefaults": "Redefinir para o padrão",
+    "saving": "Salvando…",
+    "sectionsAria": "Seções de configurações",
+    "tabs": {
+      "general": "Geral",
+      "transfers": "Transferências",
+      "preview": "Visualização",
+      "shortcuts": "Atalhos",
+      "notifications": "Notificações",
+      "endpoints": "Endpoints",
+      "updates": "Atualizações",
+      "diagnostics": "Diagnóstico",
+      "startup": "Inicialização",
+      "proxy": "Proxy",
+      "cache": "Cache",
+      "fallback": "Fallback",
+      "confirmations": "Confirmações",
+      "defaultView": "Visualização padrão",
+      "multipart": "Limpeza multipart"
+    },
     "section": {
       "appearance": "Aparência",
       "language": "Idioma",

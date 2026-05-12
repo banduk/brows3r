@@ -69,6 +69,30 @@
     "validateTooltip": "Validieren Sie dieses Profil, um dieses Lesezeichen zu nutzen",
     "validateToUse": "Zum Verwenden validieren"
   },
+  "breadcrumb": {
+    "label": "Brotkrumen-Navigation",
+    "editAria": "Zu Pfad navigieren"
+  },
+  "buckets": {
+    "gateTitle": "Profil nicht validiert",
+    "gateBody": "Validieren Sie das Profil in der Seitenleiste, bevor Sie Buckets auflisten.",
+    "loading": "Buckets werden geladen…",
+    "loadError": "Buckets konnten nicht geladen werden",
+    "emptyTitle": "Keine Buckets gefunden",
+    "emptyBody": "Dieses Profil hat Zugriff auf keine Buckets in S3.",
+    "filterNoMatch": "Kein Bucket passt zu \"{{filter}}\"",
+    "filterClearHint": "Filter zurücksetzen (Esc) oder Abfrage verfeinern.",
+    "listAria": "Bucket-Liste"
+  },
+  "preview": {
+    "label": "Vorschau",
+    "empty": "Datei zur Vorschau auswählen",
+    "validateGate": "Validieren Sie dieses Profil, um Dateien anzuzeigen",
+    "sizeLimit": "Datei ist {{size}} MB — über dem Limit von {{limit}} MB.",
+    "previewAnyway": "Trotzdem anzeigen",
+    "editInMonaco": "In Monaco bearbeiten",
+    "exitEdit": "Bearbeitungsmodus verlassen"
+  },
   "toolbar": {
     "label": "Dateibrowser-Symbolleiste",
     "back": "Zurück",
@@ -131,6 +155,30 @@
   },
   "settings": {
     "title": "Einstellungen",
+    "loading": "Einstellungen werden geladen…",
+    "close": "Einstellungen schließen",
+    "resetAll": "Alles zurücksetzen",
+    "resetAllAria": "Alle Einstellungen auf Standard zurücksetzen",
+    "resetDefaults": "Auf Standard zurücksetzen",
+    "saving": "Wird gespeichert…",
+    "sectionsAria": "Einstellungsbereiche",
+    "tabs": {
+      "general": "Allgemein",
+      "transfers": "Übertragungen",
+      "preview": "Vorschau",
+      "shortcuts": "Tastenkürzel",
+      "notifications": "Benachrichtigungen",
+      "endpoints": "Endpunkte",
+      "updates": "Updates",
+      "diagnostics": "Diagnose",
+      "startup": "Start",
+      "proxy": "Proxy",
+      "cache": "Cache",
+      "fallback": "Fallback",
+      "confirmations": "Bestätigungen",
+      "defaultView": "Standardansicht",
+      "multipart": "Multipart-Bereinigung"
+    },
     "section": {
       "appearance": "Darstellung",
       "language": "Sprache",

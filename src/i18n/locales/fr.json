@@ -69,6 +69,30 @@
     "validateTooltip": "Validez ce profil pour utiliser ce favori",
     "validateToUse": "Valider pour utiliser"
   },
+  "breadcrumb": {
+    "label": "Fil d'Ariane",
+    "editAria": "Aller au chemin"
+  },
+  "buckets": {
+    "gateTitle": "Profil non validé",
+    "gateBody": "Validez le profil depuis la barre latérale avant de lister ses buckets.",
+    "loading": "Chargement des buckets…",
+    "loadError": "Échec du chargement des buckets",
+    "emptyTitle": "Aucun bucket trouvé",
+    "emptyBody": "Ce profil n'a accès à aucun bucket S3.",
+    "filterNoMatch": "Aucun bucket ne correspond à « {{filter}} »",
+    "filterClearHint": "Effacez le filtre (Esc) ou affinez la requête.",
+    "listAria": "Liste des buckets"
+  },
+  "preview": {
+    "label": "Aperçu",
+    "empty": "Sélectionnez un fichier pour l'aperçu",
+    "validateGate": "Validez ce profil pour prévisualiser les fichiers",
+    "sizeLimit": "Le fichier pèse {{size}} Mo — au-dessus de la limite de {{limit}} Mo.",
+    "previewAnyway": "Prévisualiser quand même",
+    "editInMonaco": "Modifier dans Monaco",
+    "exitEdit": "Quitter le mode édition"
+  },
   "toolbar": {
     "label": "Barre d'outils du navigateur",
     "back": "Retour",
@@ -131,6 +155,30 @@
   },
   "settings": {
     "title": "Paramètres",
+    "loading": "Chargement des paramètres…",
+    "close": "Fermer les paramètres",
+    "resetAll": "Tout réinitialiser",
+    "resetAllAria": "Réinitialiser tous les paramètres",
+    "resetDefaults": "Réinitialiser les valeurs",
+    "saving": "Enregistrement…",
+    "sectionsAria": "Sections des paramètres",
+    "tabs": {
+      "general": "Général",
+      "transfers": "Transferts",
+      "preview": "Aperçu",
+      "shortcuts": "Raccourcis",
+      "notifications": "Notifications",
+      "endpoints": "Points de terminaison",
+      "updates": "Mises à jour",
+      "diagnostics": "Diagnostic",
+      "startup": "Démarrage",
+      "proxy": "Proxy",
+      "cache": "Cache",
+      "fallback": "Repli",
+      "confirmations": "Confirmations",
+      "defaultView": "Vue par défaut",
+      "multipart": "Nettoyage multipart"
+    },
     "section": {
       "appearance": "Apparence",
       "language": "Langue",

@@ -69,6 +69,30 @@
     "validateTooltip": "Validate this profile to use this bookmark",
     "validateToUse": "Validate to use"
   },
+  "breadcrumb": {
+    "label": "Breadcrumb",
+    "editAria": "Navigate to path"
+  },
+  "buckets": {
+    "gateTitle": "Profile not validated",
+    "gateBody": "Validate the profile from the sidebar before listing its buckets.",
+    "loading": "Loading buckets…",
+    "loadError": "Failed to load buckets",
+    "emptyTitle": "No buckets found",
+    "emptyBody": "This profile has access to zero buckets in S3.",
+    "filterNoMatch": "No bucket matches \"{{filter}}\"",
+    "filterClearHint": "Clear the filter (Esc) or refine your query.",
+    "listAria": "Bucket list"
+  },
+  "preview": {
+    "label": "Preview",
+    "empty": "Select a file to preview",
+    "validateGate": "Validate this profile to preview files",
+    "sizeLimit": "File is {{size}} MB — above the {{limit}} MB preview limit.",
+    "previewAnyway": "Preview anyway",
+    "editInMonaco": "Edit in Monaco",
+    "exitEdit": "Exit edit mode"
+  },
   "toolbar": {
     "label": "File browser toolbar",
     "back": "Navigate back",
@@ -131,6 +155,30 @@
   },
   "settings": {
     "title": "Settings",
+    "loading": "Loading settings…",
+    "close": "Close settings",
+    "resetAll": "Reset all",
+    "resetAllAria": "Reset all settings to defaults",
+    "resetDefaults": "Reset to defaults",
+    "saving": "Saving…",
+    "sectionsAria": "Settings sections",
+    "tabs": {
+      "general": "General",
+      "transfers": "Transfers",
+      "preview": "Preview",
+      "shortcuts": "Shortcuts",
+      "notifications": "Notifications",
+      "endpoints": "Endpoints",
+      "updates": "Updates",
+      "diagnostics": "Diagnostics",
+      "startup": "Startup",
+      "proxy": "Proxy",
+      "cache": "Cache",
+      "fallback": "Fallback",
+      "confirmations": "Confirmations",
+      "defaultView": "Default View",
+      "multipart": "Multipart cleanup"
+    },
     "section": {
       "appearance": "Appearance",
       "language": "Language",

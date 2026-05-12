@@ -69,6 +69,30 @@
     "validateTooltip": "Valida este perfil para usar este marcador",
     "validateToUse": "Validar para usar"
   },
+  "breadcrumb": {
+    "label": "Ruta de navegación",
+    "editAria": "Ir a la ruta"
+  },
+  "buckets": {
+    "gateTitle": "Perfil no validado",
+    "gateBody": "Valida el perfil desde la barra lateral antes de listar buckets.",
+    "loading": "Cargando buckets…",
+    "loadError": "Error al cargar buckets",
+    "emptyTitle": "No se encontraron buckets",
+    "emptyBody": "Este perfil no tiene acceso a ningún bucket en S3.",
+    "filterNoMatch": "Ningún bucket coincide con \"{{filter}}\"",
+    "filterClearHint": "Limpia el filtro (Esc) o ajusta la búsqueda.",
+    "listAria": "Lista de buckets"
+  },
+  "preview": {
+    "label": "Vista previa",
+    "empty": "Selecciona un archivo para previsualizar",
+    "validateGate": "Valida este perfil para previsualizar archivos",
+    "sizeLimit": "El archivo pesa {{size}} MB — por encima del límite de {{limit}} MB.",
+    "previewAnyway": "Previsualizar de todos modos",
+    "editInMonaco": "Editar en Monaco",
+    "exitEdit": "Salir del modo edición"
+  },
   "toolbar": {
     "label": "Barra de herramientas",
     "back": "Atrás",
@@ -131,6 +155,30 @@
   },
   "settings": {
     "title": "Configuración",
+    "loading": "Cargando configuración…",
+    "close": "Cerrar configuración",
+    "resetAll": "Restablecer todo",
+    "resetAllAria": "Restablecer toda la configuración",
+    "resetDefaults": "Restablecer valores",
+    "saving": "Guardando…",
+    "sectionsAria": "Secciones de configuración",
+    "tabs": {
+      "general": "General",
+      "transfers": "Transferencias",
+      "preview": "Vista previa",
+      "shortcuts": "Atajos",
+      "notifications": "Notificaciones",
+      "endpoints": "Endpoints",
+      "updates": "Actualizaciones",
+      "diagnostics": "Diagnóstico",
+      "startup": "Inicio",
+      "proxy": "Proxy",
+      "cache": "Caché",
+      "fallback": "Reserva",
+      "confirmations": "Confirmaciones",
+      "defaultView": "Vista por defecto",
+      "multipart": "Limpieza multipart"
+    },
     "section": {
       "appearance": "Apariencia",
       "language": "Idioma",

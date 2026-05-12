@@ -6,6 +6,7 @@
  */
 
 import type * as React from "react";
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 
 // ---------------------------------------------------------------------------
@@ -79,8 +80,9 @@ export function PanelActions({
   onReset,
   onSave,
   saving = false,
-  resetLabel = "Reset to defaults",
+  resetLabel,
 }: PanelActionsProps) {
+  const { t } = useTranslation();
   return (
     <div className="flex items-center justify-between pt-2 border-t">
       <button
@@ -88,7 +90,7 @@ export function PanelActions({
         className="text-sm text-muted-foreground underline-offset-2 hover:underline"
         onClick={onReset}
       >
-        {resetLabel}
+        {resetLabel ?? t("settings.resetDefaults")}
       </button>
       <button
         type="button"
@@ -97,7 +99,7 @@ export function PanelActions({
         className="h-8 rounded-lg bg-primary px-3 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
         onClick={onSave}
       >
-        {saving ? "Saving…" : "Save"}
+        {saving ? t("settings.saving") : t("common.save")}
       </button>
     </div>
   );

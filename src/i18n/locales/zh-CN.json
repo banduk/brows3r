@@ -69,6 +69,30 @@
     "validateTooltip": "验证此配置文件以使用此书签",
     "validateToUse": "验证后可用"
   },
+  "breadcrumb": {
+    "label": "面包屑导航",
+    "editAria": "前往路径"
+  },
+  "buckets": {
+    "gateTitle": "配置文件未验证",
+    "gateBody": "在列出存储桶之前,从侧边栏验证配置文件。",
+    "loading": "正在加载存储桶…",
+    "loadError": "加载存储桶失败",
+    "emptyTitle": "未找到存储桶",
+    "emptyBody": "此配置文件无法访问任何 S3 存储桶。",
+    "filterNoMatch": "没有匹配 \"{{filter}}\" 的存储桶",
+    "filterClearHint": "清除筛选(Esc)或调整查询。",
+    "listAria": "存储桶列表"
+  },
+  "preview": {
+    "label": "预览",
+    "empty": "选择文件以预览",
+    "validateGate": "验证此配置文件以预览文件",
+    "sizeLimit": "文件大小 {{size}} MB — 超过 {{limit}} MB 的预览限制。",
+    "previewAnyway": "仍然预览",
+    "editInMonaco": "在 Monaco 中编辑",
+    "exitEdit": "退出编辑模式"
+  },
   "toolbar": {
     "label": "文件浏览器工具栏",
     "back": "后退",
@@ -131,6 +155,30 @@
   },
   "settings": {
     "title": "设置",
+    "loading": "正在加载设置…",
+    "close": "关闭设置",
+    "resetAll": "全部重置",
+    "resetAllAria": "将所有设置重置为默认值",
+    "resetDefaults": "重置为默认值",
+    "saving": "保存中…",
+    "sectionsAria": "设置分类",
+    "tabs": {
+      "general": "常规",
+      "transfers": "传输",
+      "preview": "预览",
+      "shortcuts": "快捷键",
+      "notifications": "通知",
+      "endpoints": "端点",
+      "updates": "更新",
+      "diagnostics": "诊断",
+      "startup": "启动",
+      "proxy": "代理",
+      "cache": "缓存",
+      "fallback": "回退",
+      "confirmations": "确认",
+      "defaultView": "默认视图",
+      "multipart": "Multipart 清理"
+    },
     "section": {
       "appearance": "外观",
       "language": "语言",
