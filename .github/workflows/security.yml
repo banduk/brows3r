@@ -1,0 +1,123 @@
+name: Security
+
+# Supply-chain & vulnerability gates. All actions used here are
+# free-for-open-source and maintained by reputable orgs (RustSec, EmbarkStudios,
+# Google, OpenSSF).
+#
+# Triggers:
+#   - PRs to main         → fail-the-build gate for new deps / CVEs
+#   - pushes to main      → baseline + publish results to GitHub Security tab
+#   - weekly cron         → catch advisories published after merge
+#   - manual dispatch     → on-demand audit
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Mondays 07:00 UTC — fresh week, picks up weekend advisories.
+    - cron: "0 7 * * 1"
+  workflow_dispatch:
+
+# Workflow-level least-privilege. Individual jobs widen as needed.
+permissions:
+  contents: read
+
+concurrency:
+  group: security-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ───────────────────────────────────────────────────────────────────────────
+  # Rust — advisories (RustSec) via cargo-audit.
+  # ───────────────────────────────────────────────────────────────────────────
+  cargo-audit:
+    name: cargo-audit (RustSec)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: rustsec/audit-check@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          working-directory: src-tauri
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # Rust — licenses, sources, bans, advisories via cargo-deny.
+  # Stronger than cargo-audit alone: also blocks crates from unknown registries
+  # and licenses outside our allow-list (see src-tauri/deny.toml).
+  # ───────────────────────────────────────────────────────────────────────────
+  cargo-deny:
+    name: cargo-deny (licenses, sources, bans)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: EmbarkStudios/cargo-deny-action@v2
+        with:
+          manifest-path: src-tauri/Cargo.toml
+          command: check
+          arguments: --all-features
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # Cross-ecosystem scanner (npm + cargo + others) against Google's OSV DB.
+  # Catches advisories that GitHub/RustSec haven't mirrored yet.
+  # ───────────────────────────────────────────────────────────────────────────
+  osv-scanner:
+    name: OSV-Scanner (cross-ecosystem)
+    permissions:
+      contents: read
+      security-events: write # upload SARIF to Security tab
+      actions: read
+    uses: google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml@v2
+    with:
+      scan-args: |-
+        --recursive
+        --skip-git
+        ./
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # GitHub-native: blocks PRs that introduce deps with known vulnerabilities
+  # or licenses outside our policy. Only runs on pull_request events.
+  # ───────────────────────────────────────────────────────────────────────────
+  dependency-review:
+    name: Dependency Review
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high
+          comment-summary-in-pr: on-failure
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # OpenSSF Scorecard — scores the repo against a checklist of security best
+  # practices (branch protection, pinned actions, signed commits, etc.) and
+  # publishes results to the Security tab. Runs weekly + on main pushes only.
+  # ───────────────────────────────────────────────────────────────────────────
+  scorecard:
+    name: OSSF Scorecard
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request'
+    permissions:
+      security-events: write
+      id-token: write
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: ossf/scorecard-action@v2
+        with:
+          results_file: scorecard-results.sarif
+          results_format: sarif
+          publish_results: true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: scorecard-results
+          path: scorecard-results.sarif
+          retention-days: 7
+      - uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: scorecard-results.sarif

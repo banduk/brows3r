@@ -1,0 +1,101 @@
+# cargo-deny configuration — supply-chain hygiene for the Rust side.
+#
+# Run locally with:
+#   cargo install cargo-deny --locked
+#   cargo deny --manifest-path src-tauri/Cargo.toml check
+#
+# CI runs the same in .github/workflows/security.yml. The policy is
+# intentionally strict: any addition to `[licenses].allow`, `[advisories].ignore`,
+# or `[sources].allow-git` should require code-review attention.
+
+[graph]
+all-features = false
+no-default-features = false
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Advisories — vulnerable / yanked / unmaintained crates.
+# ─────────────────────────────────────────────────────────────────────────────
+[advisories]
+db-path = "~/.cargo/advisory-db"
+db-urls = ["https://github.com/rustsec/advisory-db"]
+yanked = "deny"
+
+# Ignored advisories. Every entry here MUST be an "unmaintained" advisory
+# (informational) coming from a Tauri transitive dependency we cannot patch
+# without forking the upstream crate. None of these correspond to an actual
+# vulnerability with a known exploit path against brows3r's runtime. Re-audit
+# this list when bumping Tauri's major version.
+ignore = [
+    # ── proc-macro-error (build-time macro helper, unmaintained) ───────────
+    "RUSTSEC-2024-0370",
+    # ── gtk-rs GTK3 bindings family — pulled by tao/wry on Linux ──────────
+    "RUSTSEC-2024-0411", # atk
+    "RUSTSEC-2024-0412", # atk-sys
+    "RUSTSEC-2024-0413", # gdk
+    "RUSTSEC-2024-0414", # gdk-sys
+    "RUSTSEC-2024-0415", # gdkwayland-sys
+    "RUSTSEC-2024-0416", # gdkx11
+    "RUSTSEC-2024-0417", # gdkx11-sys
+    "RUSTSEC-2024-0418", # gtk
+    "RUSTSEC-2024-0419", # gtk-sys
+    "RUSTSEC-2024-0420", # gtk3-macros
+    # ── unic-* family — pulled via urlpattern → tauri-utils ───────────────
+    "RUSTSEC-2025-0075", # unic-char-property
+    "RUSTSEC-2025-0080", # unic-char-range
+    "RUSTSEC-2025-0081", # unic-common
+    "RUSTSEC-2025-0098", # unic-ucd-ident / unic-ucd-version
+    "RUSTSEC-2025-0100", # remaining unic-*
+]
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Licenses — only allow permissive OSI-approved licenses we've reviewed.
+# Anything outside this list fails the build until explicitly added here.
+# ─────────────────────────────────────────────────────────────────────────────
+[licenses]
+confidence-threshold = 0.93
+allow = [
+    "MIT",
+    "Apache-2.0",
+    "Apache-2.0 WITH LLVM-exception",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "ISC",
+    "Unicode-3.0",
+    "Zlib",
+    "CC0-1.0",
+    "MPL-2.0",
+    # `CDLA-Permissive-2.0` is the Linux Foundation's data-set permissive
+    # license. Used by the `webpki-root-certs` crate that ships Mozilla's
+    # bundled root CA list — we already ship and trust those roots via
+    # `rustls-webpki`. Permissive, OSI-friendly text.
+    "CDLA-Permissive-2.0",
+    # `bzip2-1.0.6` is the historic libbzip2 license (BSD-style, very
+    # permissive). Comes in via `bzip2-sys` → archive/decompression crates.
+    "bzip2-1.0.6",
+]
+exceptions = []
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Bans — multiple-version warnings + explicit allow/deny crate lists.
+# multiple-versions is `warn` (not `deny`) because the Tauri + AWS SDK graphs
+# both pull common crates (rand, http, base64, …) at different majors and
+# unifying them is upstream's call, not ours.
+# ─────────────────────────────────────────────────────────────────────────────
+[bans]
+multiple-versions = "warn"
+wildcards = "deny"
+highlight = "all"
+deny = []
+skip = []
+skip-tree = []
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Sources — crates must come from a registry/git source we trust.
+# `unknown-git = "deny"` is the strongest mitigation against a malicious
+# Cargo.toml redirecting a dep to a typosquatted git fork.
+# ─────────────────────────────────────────────────────────────────────────────
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]
+allow-git = []
