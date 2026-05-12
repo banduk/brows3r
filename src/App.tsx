@@ -26,6 +26,7 @@
  */
 
 import { QueryClientProvider } from "@tanstack/react-query";
+import { openUrl } from "@tauri-apps/plugin-opener";
 import { useEffect, useMemo, useState } from "react";
 import type { ListPage } from "@/api/objects";
 import type { EntryRef } from "@/api/search";
@@ -49,6 +50,8 @@ import {
   installHistoryTracker,
 } from "@/store/history";
 import { usePanesStore } from "@/store/panes";
+import type { ViewMode } from "@/store/ui";
+import { useUiStore } from "@/store/ui";
 import { DiffPreviewModal } from "@/views/diff/DiffPreviewModal";
 import { Toaster } from "@/views/notifications/Toaster";
 import { SearchBox } from "@/views/search/SearchBox";
@@ -63,7 +66,7 @@ import {
 } from "@/views/shell/KeychainFallbackPrompt";
 import { Theme } from "@/views/shell/Theme";
 import { UpdaterPrompt, useUpdaterStatus } from "@/views/shell/UpdaterPrompt";
-import { useNavShortcuts } from "@/views/shell/useNavShortcuts";
+import { useGlobalShortcuts } from "@/views/shell/useGlobalShortcuts";
 import { usePaletteShortcut } from "@/views/shell/usePaletteShortcut";
 import { useRecentAutoTrack } from "@/views/sidebar/Recents";
 import { TransferManager } from "@/views/transfers/TransferManager";
@@ -145,6 +148,244 @@ tryRegister({
 });
 
 // ---------------------------------------------------------------------------
+// Menu-targeted commands
+//
+// Each `Go` / `View` / `Edit` / `File` / `Help` menu item in `menus.rs`
+// dispatches an event of the form `menu:<group>/<id>` which the menu
+// bridge converts to a registry command `<group>.<id>` (slash → dot).
+// The commands below cover every item the native menu surfaces so a
+// menu click — *and* the matching keyboard shortcut via
+// `useGlobalShortcuts` — does the same thing as the equivalent toolbar
+// button.
+// ---------------------------------------------------------------------------
+
+// --- Go: delegate to existing nav.* commands -----------------------------
+tryRegister({
+  id: "go.back",
+  title: "Go Back",
+  group: "Navigation",
+  defaultShortcut: {
+    mac: { key: "[", mod: ["cmd"] },
+    default: { key: "[", mod: ["ctrl"] },
+  },
+  run(ctx) {
+    registry.lookupById("nav.back")?.run(ctx);
+  },
+});
+
+tryRegister({
+  id: "go.forward",
+  title: "Go Forward",
+  group: "Navigation",
+  defaultShortcut: {
+    mac: { key: "]", mod: ["cmd"] },
+    default: { key: "]", mod: ["ctrl"] },
+  },
+  run(ctx) {
+    registry.lookupById("nav.forward")?.run(ctx);
+  },
+});
+
+tryRegister({
+  id: "go.up",
+  title: "Go Up",
+  group: "Navigation",
+  defaultShortcut: {
+    mac: { key: "ArrowUp", mod: ["cmd"] },
+    default: { key: "ArrowUp", mod: ["ctrl"] },
+  },
+  run(ctx) {
+    registry.lookupById("nav.up")?.run(ctx);
+  },
+});
+
+tryRegister({
+  id: "go.bookmarks",
+  title: "Focus Bookmarks",
+  group: "Navigation",
+  run(_ctx) {
+    // Scroll the bookmarks section into view. Best-effort — when the
+    // sidebar is collapsed the user still gets useful feedback by
+    // toggling it open.
+    const node = document.querySelector('[aria-label="Bookmarks"]');
+    if (node instanceof HTMLElement) {
+      node.scrollIntoView({ behavior: "smooth", block: "start" });
+    } else {
+      // Sidebar collapsed: open it so the bookmarks section appears.
+      const ui = useUiStore.getState();
+      if (ui.sidebarCollapsed) ui.toggleSidebar();
+    }
+  },
+});
+
+// --- View: sidebar / preview / mode --------------------------------------
+tryRegister({
+  id: "view.toggle-sidebar",
+  title: "Toggle Sidebar",
+  group: "View",
+  defaultShortcut: {
+    mac: { key: "b", mod: ["cmd"] },
+    default: { key: "b", mod: ["ctrl"] },
+  },
+  run(_ctx) {
+    useUiStore.getState().toggleSidebar();
+  },
+});
+
+tryRegister({
+  id: "view.toggle-preview",
+  title: "Toggle Preview",
+  group: "View",
+  defaultShortcut: {
+    mac: { key: "/", mod: ["cmd"] },
+    default: { key: "/", mod: ["ctrl"] },
+  },
+  run(_ctx) {
+    useUiStore.getState().togglePreview();
+  },
+});
+
+const VIEW_MODE_BINDINGS: ReadonlyArray<{
+  id: string;
+  mode: ViewMode;
+  digit: string;
+  label: string;
+}> = [
+  {
+    id: "view.mode.details",
+    mode: "Details",
+    digit: "1",
+    label: "View · Details",
+  },
+  {
+    id: "view.mode.icon-grid",
+    mode: "IconGrid",
+    digit: "2",
+    label: "View · Icon Grid",
+  },
+  {
+    id: "view.mode.gallery",
+    mode: "Gallery",
+    digit: "3",
+    label: "View · Gallery",
+  },
+  {
+    id: "view.mode.column",
+    mode: "Column",
+    digit: "4",
+    label: "View · Column",
+  },
+  { id: "view.mode.tree", mode: "Tree", digit: "5", label: "View · Tree" },
+  {
+    id: "view.mode.flat-key",
+    mode: "FlatKey",
+    digit: "6",
+    label: "View · Flat Key",
+  },
+  {
+    id: "view.mode.dual-pane",
+    mode: "DualPane",
+    digit: "7",
+    label: "View · Dual Pane",
+  },
+];
+
+for (const { id, mode, digit, label } of VIEW_MODE_BINDINGS) {
+  tryRegister({
+    id,
+    title: label,
+    group: "View",
+    defaultShortcut: {
+      mac: { key: digit, mod: ["cmd"] },
+      default: { key: digit, mod: ["ctrl"] },
+    },
+    run(_ctx) {
+      const { activePaneId, setViewMode } = usePanesStore.getState();
+      setViewMode(activePaneId, mode);
+    },
+  });
+}
+
+// --- Edit: find — delegates to the existing search.local command --------
+// `search.local` already owns the Cmd+F shortcut (its definition lives in
+// `commands/definitions/search.ts`). This alias only exists so the
+// `menu:edit/find` menu entry routes to a registered id; the actual UX
+// (opening the search overlay) flows through `search:open` which both
+// commands dispatch identically.
+tryRegister({
+  id: "edit.find",
+  title: "Find in Bucket…",
+  group: "Edit",
+  run(ctx) {
+    registry.lookupById("search.local")?.run(ctx);
+  },
+});
+
+// --- File: New Folder maps to file.create_folder via dialog --------------
+// menu:file/new-folder → bridge → file.new-folder (this command). Bridges
+// to the existing `file:open-create-folder` event that App.tsx listens to.
+tryRegister({
+  id: "file.new-folder",
+  title: "New Folder",
+  group: "File",
+  defaultShortcut: {
+    mac: { key: "n", mod: ["cmd", "shift"] },
+    default: { key: "n", mod: ["ctrl", "shift"] },
+  },
+  run(_ctx) {
+    const { activePaneId, panes } = usePanesStore.getState();
+    const pane = panes.find((p) => p.id === activePaneId);
+    if (!pane?.location?.bucket) return;
+    window.dispatchEvent(
+      new CustomEvent("file:open-create-folder", {
+        detail: {
+          profileId: pane.location.profileId,
+          bucket: pane.location.bucket,
+          prefix: pane.location.prefix ?? "",
+        },
+      }),
+    );
+  },
+});
+
+// menu:file/save → "Save" — placeholder. Triggers a `file:save`
+// window event the editor can listen to in a later batch; today no
+// editor is mounted that responds to it, so this is intentionally a
+// no-op that at least makes the menu item dispatch *something* the
+// devtools Console can see.
+tryRegister({
+  id: "file.save",
+  title: "Save",
+  group: "File",
+  defaultShortcut: {
+    mac: { key: "s", mod: ["cmd"] },
+    default: { key: "s", mod: ["ctrl"] },
+  },
+  run(_ctx) {
+    window.dispatchEvent(new CustomEvent("file:save"));
+  },
+});
+
+// --- Help -----------------------------------------------------------------
+tryRegister({
+  id: "help.docs",
+  title: "Open Documentation",
+  group: "Help",
+  run(_ctx) {
+    void openUrl("https://banduk.github.io/brows3r/");
+  },
+});
+
+tryRegister({
+  id: "help.report-bug",
+  title: "Report a Bug",
+  group: "Help",
+  run(_ctx) {
+    void openUrl("https://github.com/banduk/brows3r/issues/new");
+  },
+});
+
+// ---------------------------------------------------------------------------
 // App
 // ---------------------------------------------------------------------------
 
@@ -172,10 +413,14 @@ function App() {
  */
 function AppContent() {
   // Register global Cmd/Ctrl+K shortcut for the command palette.
+  // (palette.open is not a registered command — handled here directly.)
   usePaletteShortcut();
 
-  // Register Cmd/Ctrl + [ / ] / ArrowUp for pane navigation history.
-  useNavShortcuts();
+  // Dispatch every other registry command's `defaultShortcut` from a
+  // single window-level keydown listener. Covers Cmd+R refresh, Cmd+1..7
+  // view modes, Cmd+B toggle sidebar, Cmd+/ toggle preview, Cmd+[ / ] / ↑
+  // for navigation, Cmd+F find, Cmd+I inspect, etc.
+  useGlobalShortcuts();
 
   // Auto-track pane location changes into the recents store (AC-10).
   useRecentAutoTrack();

@@ -41,7 +41,12 @@ import { PreviewPane } from "@/views/preview/PreviewPane";
 import { Sidebar } from "@/views/sidebar/Sidebar";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { StatusBar } from "./StatusBar";
-import { useInspectorShortcut } from "./useInspectorShortcut";
+
+// `useInspectorShortcut` is intentionally NOT mounted here anymore —
+// `view.inspect` carries `defaultShortcut: { key: "i", mod: ["cmd"] }`
+// (registered by Toolbar.tsx) and is now dispatched by `useGlobalShortcuts`
+// which is mounted once at the App root. Mounting both would double-fire
+// Cmd+I and open the inspector twice per keystroke.
 
 // ---------------------------------------------------------------------------
 // Main-pane content
@@ -96,7 +101,8 @@ function MainPaneContent({ pane }: MainPaneContentProps) {
 // ---------------------------------------------------------------------------
 
 export function AppShell() {
-  useInspectorShortcut();
+  // Cmd+I (inspect) is handled by useGlobalShortcuts mounted at the App
+  // root — see the import-site comment for why.
 
   const {
     sidebarCollapsed,
