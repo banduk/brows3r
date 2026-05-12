@@ -30,6 +30,7 @@ import { useObjectHead } from "@/query/hooks/useObjectHead";
 import { useProfilesList } from "@/query/hooks/useValidatedProfile";
 import type { Pane } from "@/store/panes";
 import { useTransfersStore } from "@/store/transfers";
+import { useUiStore } from "@/store/ui";
 
 /**
  * Concise list of the most-used shortcuts, rendered as a tooltip on the
@@ -51,7 +52,8 @@ const SHORTCUT_HINTS = [
   ["Backspace", "Up one level / back column"],
   ["⌘B", "Toggle sidebar"],
   ["⌘J", "Toggle preview"],
-  ["⌘⇧J", "Toggle transfer manager"],
+  ["⌘⇧A", "Open Activity Center"],
+  ["⌘⇧J", "Toggle transfer popup"],
   ["⌘1‒7", "Switch view mode"],
   ["⌘,", "Open Settings"],
 ] as const;
@@ -336,9 +338,7 @@ function ShortcutHints() {
 function ActivityChip() {
   const { t } = useTranslation();
   const transfers = useTransfersStore((s) => s.transfers);
-  const openPanel = useTransfersStore((s) => s.openPanel);
-  const togglePanel = useTransfersStore((s) => s.togglePanel);
-  const panelOpen = useTransfersStore((s) => s.panelOpen);
+  const toggleActivityCenter = useUiStore((s) => s.toggleActivityCenter);
 
   let activeCount = 0;
   let totalBytes = 0;
@@ -368,7 +368,7 @@ function ActivityChip() {
       type="button"
       title={title}
       aria-label={title}
-      onClick={() => (panelOpen ? togglePanel() : openPanel())}
+      onClick={() => toggleActivityCenter()}
       className="inline-flex items-center gap-1 rounded px-1 py-0.5 hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       data-testid="activity-chip"
     >

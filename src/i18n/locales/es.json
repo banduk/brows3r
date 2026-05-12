@@ -223,9 +223,45 @@
     "loadFileFailed": "Error al cargar el archivo",
     "saveFailed": "Error al guardar"
   },
+  "activityCenter": {
+    "label": "Centro de actividad",
+    "title": "Actividad",
+    "subtitle": "Historial de transferencias, filtros y estadísticas de sesión",
+    "close": "Cerrar centro de actividad",
+    "filtersAria": "Filtrar por estado",
+    "statsAria": "Totales de sesión",
+    "searchPlaceholder": "Buscar por nombre o ruta…",
+    "clearSearch": "Limpiar búsqueda",
+    "sortBy": "Ordenar",
+    "filter": {
+      "all": "Todas",
+      "active": "Activas",
+      "completed": "Completadas",
+      "failed": "Fallidas"
+    },
+    "sort": {
+      "newest": "Más recientes primero",
+      "oldest": "Más antiguas primero",
+      "largest": "Mayores primero"
+    },
+    "stats": {
+      "active": "{{count}} activas",
+      "completed": "{{count}} completadas",
+      "failed": "{{count}} fallidas",
+      "transferred": "{{bytes}} transferidos en esta sesión"
+    },
+    "empty": {
+      "title": "Aún no hay transferencias",
+      "body": "Descargas y subidas aparecerán aquí en cuanto inicies una.",
+      "filteredTitle": "Nada coincide con este filtro",
+      "searchTitle": "Sin resultados",
+      "searchBody": "Nada en el historial coincide con \"{{query}}\"."
+    }
+  },
   "transferManager": {
     "label": "Gestor de transferencias",
     "title": "Transferencias",
+    "viewAll": "Ver todas",
     "empty": "Sin transferencias",
     "expand": "Expandir gestor de transferencias",
     "minimize": "Minimizar gestor de transferencias",

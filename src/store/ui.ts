@@ -114,6 +114,12 @@ interface UiState {
   textPreviewPrefs: TextPreviewPrefs;
   /** Resizable column widths for the file list (Details view). */
   detailsColumnWidths: DetailsColumnWidths;
+  /**
+   * When `true` the Activity Center (transfer history + filters)
+   * replaces the main pane. The floating Transfer Manager popup stays
+   * available for ambient awareness.
+   */
+  activityCenterOpen: boolean;
 
   setTheme(theme: UiState["theme"]): void;
   toggleSidebar(): void;
@@ -132,6 +138,10 @@ interface UiState {
   setDetailsColumnWidth(column: keyof DetailsColumnWidths, px: number): void;
   /** Restore the default details-table column widths. */
   resetDetailsColumnWidths(): void;
+  /** Toggle the Activity Center on/off. */
+  toggleActivityCenter(): void;
+  /** Explicitly set the Activity Center state. */
+  setActivityCenterOpen(open: boolean): void;
 }
 
 // ---------------------------------------------------------------------------
@@ -152,6 +162,7 @@ export const useUiStore = create<UiState>()(
       firstRunCompleted: false,
       textPreviewPrefs: { ...DEFAULT_TEXT_PREVIEW_PREFS },
       detailsColumnWidths: { ...DEFAULT_DETAILS_COLUMN_WIDTHS },
+      activityCenterOpen: false,
 
       // ---- actions ----
       setTheme: (theme) => set({ theme }),
@@ -190,6 +201,9 @@ export const useUiStore = create<UiState>()(
         })),
       resetDetailsColumnWidths: () =>
         set({ detailsColumnWidths: { ...DEFAULT_DETAILS_COLUMN_WIDTHS } }),
+      toggleActivityCenter: () =>
+        set((s) => ({ activityCenterOpen: !s.activityCenterOpen })),
+      setActivityCenterOpen: (open) => set({ activityCenterOpen: open }),
     }),
     {
       // Bumped from "brows3r-ui" → "brows3r-ui-v2" so any old localStorage

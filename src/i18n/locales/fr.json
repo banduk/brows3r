@@ -223,9 +223,45 @@
     "loadFileFailed": "Échec du chargement du fichier",
     "saveFailed": "Échec de l'enregistrement"
   },
+  "activityCenter": {
+    "label": "Centre d'activité",
+    "title": "Activité",
+    "subtitle": "Historique des transferts, filtres et statistiques de session",
+    "close": "Fermer le centre d'activité",
+    "filtersAria": "Filtrer par état",
+    "statsAria": "Totaux de session",
+    "searchPlaceholder": "Rechercher par nom ou chemin…",
+    "clearSearch": "Effacer la recherche",
+    "sortBy": "Trier",
+    "filter": {
+      "all": "Tous",
+      "active": "Actifs",
+      "completed": "Terminés",
+      "failed": "Échoués"
+    },
+    "sort": {
+      "newest": "Plus récents d'abord",
+      "oldest": "Plus anciens d'abord",
+      "largest": "Plus volumineux d'abord"
+    },
+    "stats": {
+      "active": "{{count}} actifs",
+      "completed": "{{count}} terminés",
+      "failed": "{{count}} échoués",
+      "transferred": "{{bytes}} transférés cette session"
+    },
+    "empty": {
+      "title": "Aucun transfert pour l'instant",
+      "body": "Les téléchargements et téléversements apparaîtront ici dès le premier.",
+      "filteredTitle": "Rien ne correspond à ce filtre",
+      "searchTitle": "Aucun résultat",
+      "searchBody": "Rien dans l'historique ne correspond à « {{query}} »."
+    }
+  },
   "transferManager": {
     "label": "Gestionnaire de transferts",
     "title": "Transferts",
+    "viewAll": "Voir tout",
     "empty": "Aucun transfert",
     "expand": "Développer le gestionnaire de transferts",
     "minimize": "Réduire le gestionnaire de transferts",

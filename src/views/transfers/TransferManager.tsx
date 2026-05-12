@@ -27,6 +27,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { Transfer } from "@/api/transfers";
 import { useTransfersStore } from "@/store/transfers";
+import { useUiStore } from "@/store/ui";
 import { TransferGroup } from "./TransferGroup";
 import { TransferRow } from "./TransferRow";
 
@@ -193,13 +194,19 @@ export function TransferManager() {
   const setMinimized = useTransfersStore((s) => s.setMinimized);
   const clearCompleted = useTransfersStore((s) => s.clearCompleted);
   const transfers = useTransfersStore((s) => s.transfers);
+  const setActivityCenterOpen = useUiStore((s) => s.setActivityCenterOpen);
+  const activityCenterOpen = useUiStore((s) => s.activityCenterOpen);
 
   const active = selectActive(transfers);
   const completed = selectCompleted(transfers);
 
   const [completedExpanded, setCompletedExpanded] = useState(false);
-
   const announcement = useTransferAnnouncement(transfers);
+
+  // When the Activity Center is open it owns the full pane; the floating
+  // popup would be redundant + cover content. Hide it.
+  // (Hook calls above must run unconditionally — React rules-of-hooks.)
+  if (activityCenterOpen) return null;
 
   // Compute aggregate progress for the minimized pill.
   const totalBytes = active.reduce((sum, t) => sum + (t.totalBytes ?? 0), 0);
@@ -260,6 +267,17 @@ export function TransferManager() {
         </div>
 
         <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={() => {
+              setActivityCenterOpen(true);
+            }}
+            className="rounded px-2 py-1 text-xs font-medium text-primary hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            data-testid="transfer-manager-view-all"
+          >
+            {t("transferManager.viewAll")}
+          </button>
+
           {completed.length > 0 && (
             <button
               type="button"

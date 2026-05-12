@@ -39,6 +39,7 @@ import { ViewModeDispatcher } from "@/views/browser/ViewModeDispatcher";
 import { InspectorPanel } from "@/views/inspector/InspectorPanel";
 import { PreviewPane } from "@/views/preview/PreviewPane";
 import { Sidebar } from "@/views/sidebar/Sidebar";
+import { ActivityCenter } from "@/views/transfers/ActivityCenter";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { StatusBar } from "./StatusBar";
 
@@ -64,6 +65,16 @@ interface MainPaneContentProps {
 }
 
 function MainPaneContent({ pane }: MainPaneContentProps) {
+  const activityCenterOpen = useUiStore((s) => s.activityCenterOpen);
+
+  // The Activity Center is a top-level destination: when it's open, it
+  // owns the main pane entirely (preview/inspector still visible if the
+  // user has them up, but the file browser is hidden so the user has a
+  // calm surface to review transfer history).
+  if (activityCenterOpen) {
+    return <ActivityCenter />;
+  }
+
   const location = pane.location;
 
   if (!location?.profileId) {

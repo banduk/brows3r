@@ -223,9 +223,45 @@
     "loadFileFailed": "Datei konnte nicht geladen werden",
     "saveFailed": "Speichern fehlgeschlagen"
   },
+  "activityCenter": {
+    "label": "Aktivitätscenter",
+    "title": "Aktivität",
+    "subtitle": "Übertragungsverlauf, Filter und Sitzungsstatistik",
+    "close": "Aktivitätscenter schließen",
+    "filtersAria": "Nach Zustand filtern",
+    "statsAria": "Sitzungssummen",
+    "searchPlaceholder": "Nach Dateiname oder Pfad suchen…",
+    "clearSearch": "Suche löschen",
+    "sortBy": "Sortieren",
+    "filter": {
+      "all": "Alle",
+      "active": "Aktiv",
+      "completed": "Abgeschlossen",
+      "failed": "Fehlgeschlagen"
+    },
+    "sort": {
+      "newest": "Neueste zuerst",
+      "oldest": "Älteste zuerst",
+      "largest": "Größte zuerst"
+    },
+    "stats": {
+      "active": "{{count}} aktiv",
+      "completed": "{{count}} abgeschlossen",
+      "failed": "{{count}} fehlgeschlagen",
+      "transferred": "{{bytes}} in dieser Sitzung übertragen"
+    },
+    "empty": {
+      "title": "Noch keine Übertragungen",
+      "body": "Downloads und Uploads erscheinen hier, sobald Sie einen starten.",
+      "filteredTitle": "Nichts entspricht diesem Filter",
+      "searchTitle": "Keine Treffer",
+      "searchBody": "Nichts im Verlauf entspricht \"{{query}}\"."
+    }
+  },
   "transferManager": {
     "label": "Übertragungsmanager",
     "title": "Übertragungen",
+    "viewAll": "Alle anzeigen",
     "empty": "Keine Übertragungen",
     "expand": "Übertragungsmanager erweitern",
     "minimize": "Übertragungsmanager minimieren",

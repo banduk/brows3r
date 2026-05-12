@@ -250,9 +250,9 @@ tryRegister({
 // --- View: transfer manager / activity center ----------------------------
 tryRegister({
   id: "view.toggle-transfers",
-  title: "Toggle Transfer Manager",
+  title: "Toggle Transfer Manager (popup)",
   group: "View",
-  description: "Show / hide the transfer manager panel.",
+  description: "Show / hide the floating transfer manager popup.",
   defaultShortcut: {
     mac: { key: "j", mod: ["cmd", "shift"] },
     default: { key: "j", mod: ["ctrl", "shift"] },
@@ -260,6 +260,21 @@ tryRegister({
   async run(_ctx) {
     const { useTransfersStore } = await import("@/store/transfers");
     useTransfersStore.getState().togglePanel();
+  },
+});
+
+tryRegister({
+  id: "view.activity-center",
+  title: "Toggle Activity Center",
+  group: "View",
+  description:
+    "Open the full-pane Activity Center with transfer history, filters, search and session stats.",
+  defaultShortcut: {
+    mac: { key: "a", mod: ["cmd", "shift"] },
+    default: { key: "a", mod: ["ctrl", "shift"] },
+  },
+  run(_ctx) {
+    useUiStore.getState().toggleActivityCenter();
   },
 });
 

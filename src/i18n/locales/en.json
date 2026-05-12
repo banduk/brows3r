@@ -223,9 +223,45 @@
     "loadFileFailed": "Failed to load file",
     "saveFailed": "Save failed"
   },
+  "activityCenter": {
+    "label": "Activity Center",
+    "title": "Activity",
+    "subtitle": "Transfer history, filters and session stats",
+    "close": "Close Activity Center",
+    "filtersAria": "Filter by state",
+    "statsAria": "Session totals",
+    "searchPlaceholder": "Search by filename or path…",
+    "clearSearch": "Clear search",
+    "sortBy": "Sort",
+    "filter": {
+      "all": "All",
+      "active": "Active",
+      "completed": "Completed",
+      "failed": "Failed"
+    },
+    "sort": {
+      "newest": "Newest first",
+      "oldest": "Oldest first",
+      "largest": "Largest first"
+    },
+    "stats": {
+      "active": "{{count}} active",
+      "completed": "{{count}} completed",
+      "failed": "{{count}} failed",
+      "transferred": "{{bytes}} transferred this session"
+    },
+    "empty": {
+      "title": "No transfers yet",
+      "body": "Downloads and uploads will appear here as soon as you start one.",
+      "filteredTitle": "Nothing matches this filter",
+      "searchTitle": "No matches",
+      "searchBody": "Nothing in the transfer history matches \"{{query}}\"."
+    }
+  },
   "transferManager": {
     "label": "Transfer Manager",
     "title": "Transfers",
+    "viewAll": "View all",
     "empty": "No transfers",
     "expand": "Expand transfer manager",
     "minimize": "Minimize transfer manager",

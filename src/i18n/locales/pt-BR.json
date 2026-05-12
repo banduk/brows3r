@@ -223,9 +223,45 @@
     "loadFileFailed": "Falha ao carregar arquivo",
     "saveFailed": "Falha ao salvar"
   },
+  "activityCenter": {
+    "label": "Central de atividade",
+    "title": "Atividade",
+    "subtitle": "Histórico de transferências, filtros e estatísticas da sessão",
+    "close": "Fechar central de atividade",
+    "filtersAria": "Filtrar por estado",
+    "statsAria": "Totais da sessão",
+    "searchPlaceholder": "Buscar por nome ou caminho…",
+    "clearSearch": "Limpar busca",
+    "sortBy": "Ordenar",
+    "filter": {
+      "all": "Todas",
+      "active": "Ativas",
+      "completed": "Concluídas",
+      "failed": "Falharam"
+    },
+    "sort": {
+      "newest": "Mais recentes primeiro",
+      "oldest": "Mais antigas primeiro",
+      "largest": "Maiores primeiro"
+    },
+    "stats": {
+      "active": "{{count}} ativas",
+      "completed": "{{count}} concluídas",
+      "failed": "{{count}} falhas",
+      "transferred": "{{bytes}} transferidos nesta sessão"
+    },
+    "empty": {
+      "title": "Nenhuma transferência ainda",
+      "body": "Downloads e uploads aparecem aqui assim que você começa um.",
+      "filteredTitle": "Nada corresponde a este filtro",
+      "searchTitle": "Sem resultados",
+      "searchBody": "Nada no histórico corresponde a \"{{query}}\"."
+    }
+  },
   "transferManager": {
     "label": "Gerenciador de transferências",
     "title": "Transferências",
+    "viewAll": "Ver todas",
     "empty": "Sem transferências",
     "expand": "Expandir gerenciador de transferências",
     "minimize": "Minimizar gerenciador de transferências",
