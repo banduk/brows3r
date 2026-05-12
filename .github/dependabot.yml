@@ -14,3 +14,11 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 10
+    ignore:
+      # keyring 4.x split the crate into a CLI binary and a separate
+      # `keyring-core` library; migrating is a non-trivial refactor and is
+      # tracked separately. Ignore major bumps until the migration is on the
+      # roadmap. See the comment above the `keyring` dependency in
+      # src-tauri/Cargo.toml.
+      - dependency-name: keyring
+        update-types: ["version-update:semver-major"]
