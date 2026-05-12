@@ -7,13 +7,25 @@
 //!
 //! Both commands take `tauri::State<SettingsHandle>` so they share the same
 //! `Arc<Mutex<Settings>>` that was seeded at app start.
+//!
+//! ## Hot-reload
+//!
+//! `settings_update` also pushes runtime-affecting changes into the live
+//! services:
+//! - `proxy`               → `ClientPool::set_proxy` (rebuilds connectors).
+//! - `transfer_concurrency`→ `TransferQueue::rebuild_semaphore`.
+//!
+//! Cache TTL changes still require an app restart — the cache stores them as
+//! immutable config at open time.
 
 use serde_json::Value;
 use tauri::State;
 
 use crate::{
     error::AppError,
+    s3::S3ClientPoolHandle,
     settings::{validate_patch, Settings, SettingsHandle},
+    transfers::TransferQueueHandle,
 };
 
 /// Return the current settings as a serialised `Settings` value.
@@ -42,6 +54,8 @@ pub async fn settings_get(handle: State<'_, SettingsHandle>) -> Result<Settings,
 #[tauri::command]
 pub async fn settings_update(
     handle: State<'_, SettingsHandle>,
+    pool: State<'_, S3ClientPoolHandle>,
+    queue: State<'_, TransferQueueHandle>,
     patch: Value,
     #[allow(unused_variables)] force: Option<bool>,
 ) -> Result<Settings, AppError> {
@@ -49,6 +63,11 @@ pub async fn settings_update(
     validate_patch(&patch)?;
 
     let mut settings = handle.inner.lock().await;
+
+    // Capture the pre-patch values so we only push side-effects when the
+    // relevant fields actually changed.
+    let prev_proxy = settings.proxy.clone();
+    let prev_concurrency = settings.transfer_concurrency;
 
     // Merge the patch into the current settings via JSON round-trip.
     // Strategy: serialize current → merge patch → deserialize.
@@ -69,6 +88,20 @@ pub async fn settings_update(
     updated.save(&handle.path).await?;
 
     *settings = updated.clone();
+    // Drop the lock before touching the live services to avoid holding it
+    // across their awaits.
+    drop(settings);
+
+    // ---------- hot-reload: proxy ----------
+    if updated.proxy != prev_proxy {
+        pool.inner.set_proxy(updated.proxy.clone().into()).await;
+    }
+
+    // ---------- hot-reload: transfer concurrency ----------
+    if updated.transfer_concurrency != prev_concurrency {
+        queue.0.rebuild_semaphore(updated.transfer_concurrency);
+    }
+
     Ok(updated)
 }
 
