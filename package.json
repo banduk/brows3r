@@ -87,7 +87,9 @@
   },
   "pnpm": {
     "overrides": {
-      "dompurify": "^3.3.2"
+      "dompurify": "^3.3.2",
+      "vitepress>vite": "^6.4.2",
+      "esbuild": "^0.25.0"
     }
   }
 }
