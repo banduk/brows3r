@@ -16,6 +16,7 @@
  */
 
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 import type { AppError } from "@/lib/errors";
 
 // ---------------------------------------------------------------------------
@@ -90,3 +91,40 @@ export function selectStatus(
 ): ValidationStatus {
   return state.statuses.get(profileId) ?? "idle";
 }
+
+// ---------------------------------------------------------------------------
+// Periodic refresh preferences — persisted to localStorage
+// ---------------------------------------------------------------------------
+
+interface ValidationPrefsState {
+  /** If true, the app refreshes every validated profile every N minutes. */
+  periodicRefreshEnabled: boolean;
+  /** Refresh cadence in minutes. */
+  periodicRefreshMinutes: number;
+  setPeriodicRefreshEnabled(enabled: boolean): void;
+  setPeriodicRefreshMinutes(minutes: number): void;
+}
+
+export const useValidationPrefsStore = create<ValidationPrefsState>()(
+  persist(
+    (set) => ({
+      periodicRefreshEnabled: false,
+      periodicRefreshMinutes: 30,
+      setPeriodicRefreshEnabled(enabled) {
+        set({ periodicRefreshEnabled: enabled });
+      },
+      setPeriodicRefreshMinutes(minutes) {
+        // Clamp to a sane band: 5 min minimum, 12 h maximum.
+        const clamped = Math.max(5, Math.min(12 * 60, Math.round(minutes)));
+        set({ periodicRefreshMinutes: clamped });
+      },
+    }),
+    {
+      name: "brows3r:validation-prefs",
+      partialize: (state) => ({
+        periodicRefreshEnabled: state.periodicRefreshEnabled,
+        periodicRefreshMinutes: state.periodicRefreshMinutes,
+      }),
+    },
+  ),
+);

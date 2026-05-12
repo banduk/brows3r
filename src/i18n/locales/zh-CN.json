@@ -194,6 +194,12 @@
       "description": "为菜单、按钮和对话框选择语言。",
       "resetKeychain": "重置钥匙串密码提示"
     },
+    "autoRefresh": {
+      "label": "自动验证",
+      "toggleLabel": "定期重新验证配置文件",
+      "description": "在后台刷新会话凭据(SSO 令牌、扮演角色),避免在使用之间过期。默认关闭。",
+      "cadenceLabel": "刷新间隔(分钟)"
+    },
     "theme": {
       "system": "跟随系统",
       "light": "浅色",

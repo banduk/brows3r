@@ -194,6 +194,12 @@
       "description": "Elige el idioma para menús, botones y diálogos.",
       "resetKeychain": "Restablecer el aviso de contraseña del keychain"
     },
+    "autoRefresh": {
+      "label": "Auto-validación",
+      "toggleLabel": "Re-validar perfiles periódicamente",
+      "description": "Refresca credenciales de sesión (tokens SSO, roles asumidos) en segundo plano para que no caduquen entre usos. Desactivado por defecto.",
+      "cadenceLabel": "Refrescar cada (minutos)"
+    },
     "theme": {
       "system": "Seguir al sistema",
       "light": "Claro",

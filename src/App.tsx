@@ -44,6 +44,7 @@ import "@/commands/definitions/settings";
 import { installMenuBridge } from "@/commands/menuBridge";
 import { surfaceUnknownError } from "@/lib/errors";
 import { installEventBridge, queryClient } from "@/query/client";
+import { usePeriodicProfileRefresh } from "@/query/hooks/usePeriodicProfileRefresh";
 import {
   back as historyBack,
   forward as historyForward,
@@ -441,6 +442,9 @@ function AppContent() {
 
   // Auto-track pane location changes into the recents store (AC-10).
   useRecentAutoTrack();
+
+  // Opt-in periodic profile re-validation. No-op when disabled in Settings.
+  usePeriodicProfileRefresh();
 
   // Updater banner state. Resets `dismissed` when a new status flows in
   // so a fresh "Available" replaces a previously dismissed one.

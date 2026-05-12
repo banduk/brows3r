@@ -194,6 +194,12 @@
       "description": "Escolha o idioma para menus, botões e diálogos.",
       "resetKeychain": "Redefinir prompt de senha do keychain"
     },
+    "autoRefresh": {
+      "label": "Validação automática",
+      "toggleLabel": "Revalidar perfis periodicamente",
+      "description": "Atualiza credenciais de sessão (tokens SSO, roles assumidas) em background pra não expirarem entre usos. Desligado por padrão.",
+      "cadenceLabel": "Atualizar a cada (minutos)"
+    },
     "theme": {
       "system": "Seguir o sistema",
       "light": "Claro",

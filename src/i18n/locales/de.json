@@ -194,6 +194,12 @@
       "description": "Wählen Sie die Sprache für Menüs, Schaltflächen und Dialoge.",
       "resetKeychain": "Schlüsselbund-Passwortabfrage zurücksetzen"
     },
+    "autoRefresh": {
+      "label": "Auto-Validierung",
+      "toggleLabel": "Profile regelmäßig erneut validieren",
+      "description": "Aktualisiert sitzungsgebundene Anmeldedaten (SSO-Token, übernommene Rollen) im Hintergrund, damit sie zwischen Verwendungen nicht ablaufen. Standardmäßig deaktiviert.",
+      "cadenceLabel": "Aktualisieren alle (Minuten)"
+    },
     "theme": {
       "system": "Systemeinstellung folgen",
       "light": "Hell",

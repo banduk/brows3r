@@ -194,6 +194,12 @@
       "description": "Choose the language for menus, buttons, and dialogs.",
       "resetKeychain": "Reset keychain passphrase prompt"
     },
+    "autoRefresh": {
+      "label": "Auto-refresh validation",
+      "toggleLabel": "Re-validate profiles periodically",
+      "description": "Refreshes session-scoped credentials (SSO tokens, assumed roles) in the background so they don't expire between uses. Off by default.",
+      "cadenceLabel": "Refresh every (minutes)"
+    },
     "theme": {
       "system": "Follow system",
       "light": "Light",

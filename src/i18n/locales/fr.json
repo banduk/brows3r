@@ -194,6 +194,12 @@
       "description": "Choisissez la langue pour les menus, boutons et dialogues.",
       "resetKeychain": "Réinitialiser l'invite de mot de passe du trousseau"
     },
+    "autoRefresh": {
+      "label": "Validation automatique",
+      "toggleLabel": "Re-valider les profils périodiquement",
+      "description": "Rafraîchit les identifiants de session (jetons SSO, rôles assumés) en arrière-plan pour qu'ils n'expirent pas entre les utilisations. Désactivé par défaut.",
+      "cadenceLabel": "Rafraîchir toutes les (minutes)"
+    },
     "theme": {
       "system": "Suivre le système",
       "light": "Clair",

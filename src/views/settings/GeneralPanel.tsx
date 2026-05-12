@@ -10,7 +10,8 @@ import { useTranslation } from "react-i18next";
 import { SUPPORTED_LANGUAGES } from "@/i18n";
 import { surfaceUnknownError } from "@/lib/errors";
 import { DEFAULT_SETTINGS, useSettingsStore } from "@/store/settings";
-import { FieldRow, PanelActions } from "./_shared";
+import { useValidationPrefsStore } from "@/store/validation";
+import { FieldRow, PanelActions, ToggleSwitch } from "./_shared";
 
 type Theme = "light" | "dark" | "system";
 type ViewMode =
@@ -133,6 +134,8 @@ export function GeneralPanel() {
         </select>
       </FieldRow>
 
+      <AutoRefreshFieldRows />
+
       {error !== null && (
         <p role="alert" className="text-sm text-destructive">
           {error}
@@ -145,5 +148,62 @@ export function GeneralPanel() {
         saving={saving}
       />
     </section>
+  );
+}
+
+/**
+ * Periodic profile re-validation toggle + cadence input.
+ *
+ * Lives next to General because there is no separate "Profiles" tab in
+ * Settings yet — the toggle is small enough to fit and discoverable
+ * here. Move into its own panel if more profile-level preferences land.
+ */
+function AutoRefreshFieldRows() {
+  const { t } = useTranslation();
+  const enabled = useValidationPrefsStore((s) => s.periodicRefreshEnabled);
+  const minutes = useValidationPrefsStore((s) => s.periodicRefreshMinutes);
+  const setEnabled = useValidationPrefsStore(
+    (s) => s.setPeriodicRefreshEnabled,
+  );
+  const setMinutes = useValidationPrefsStore(
+    (s) => s.setPeriodicRefreshMinutes,
+  );
+
+  return (
+    <>
+      <FieldRow
+        label={t("settings.autoRefresh.label")}
+        htmlFor="general-auto-refresh"
+      >
+        <ToggleSwitch
+          id="general-auto-refresh"
+          checked={enabled}
+          onChange={setEnabled}
+          label={t("settings.autoRefresh.toggleLabel")}
+          description={t("settings.autoRefresh.description")}
+        />
+      </FieldRow>
+
+      {enabled && (
+        <FieldRow
+          label={t("settings.autoRefresh.cadenceLabel")}
+          htmlFor="general-auto-refresh-cadence"
+        >
+          <input
+            id="general-auto-refresh-cadence"
+            type="number"
+            min={5}
+            max={720}
+            step={5}
+            value={minutes}
+            onChange={(e) => {
+              const n = Number(e.currentTarget.value);
+              if (!Number.isNaN(n)) setMinutes(n);
+            }}
+            className="h-8 w-24 rounded-lg border border-border bg-background px-2.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          />
+        </FieldRow>
+      )}
+    </>
   );
 }
