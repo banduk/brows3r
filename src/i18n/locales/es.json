@@ -69,6 +69,35 @@
     "validateTooltip": "Valida este perfil para usar este marcador",
     "validateToUse": "Validar para usar"
   },
+  "toolbar": {
+    "label": "Barra de herramientas",
+    "back": "Atrás",
+    "forward": "Adelante",
+    "up": "Subir un nivel",
+    "refresh": "Actualizar",
+    "inspect": "Inspeccionar selección",
+    "upload": "Subir archivos",
+    "downloadFile": "Descargar archivo seleccionado",
+    "downloadBulk": "Descargar (carpeta/bucket — se descarga objeto por objeto)",
+    "newFolder": "Nueva carpeta",
+    "bookmarkRemove": "Quitar marcador",
+    "bookmarkObject": "Marcar objeto seleccionado",
+    "bookmarkLocation": "Marcar esta ubicación",
+    "filterAria": "Filtrar (difuso)",
+    "filterTooltip": "Filtra la vista actual — pulsa \"/\" para enfocar, Esc para limpiar",
+    "filterPlaceholder": "Filtrar…  pulsa \"/\"",
+    "viewModeAria": "Modo de vista: {{label}}",
+    "viewModeMenuAria": "Modo de vista",
+    "viewMode": {
+      "details": "Detalles",
+      "icons": "Iconos",
+      "gallery": "Galería",
+      "columns": "Columnas",
+      "tree": "Árbol",
+      "flatKey": "Claves planas",
+      "dualPane": "Panel doble"
+    }
+  },
   "statusBar": {
     "label": "Barra de estado",
     "noLocation": "Sin ubicación",
@@ -137,6 +166,43 @@
   "errors": {
     "loadFileFailed": "Error al cargar el archivo",
     "saveFailed": "Error al guardar"
+  },
+  "transferManager": {
+    "label": "Gestor de transferencias",
+    "title": "Transferencias",
+    "empty": "Sin transferencias",
+    "expand": "Expandir gestor de transferencias",
+    "minimize": "Minimizar gestor de transferencias",
+    "close": "Cerrar gestor de transferencias",
+    "clearCompleted": "Borrar completadas",
+    "pillCount": "{{count}} transferencias",
+    "activeCountTitle": "{{count}} activa(s)",
+    "activeSection": "Transferencias activas",
+    "completedSection": "Transferencias completadas",
+    "completedCount": "Completadas ({{count}})",
+    "announce": {
+      "downloadDone": "Descarga completada: {{name}}",
+      "uploadDone": "Subida completada: {{name}}",
+      "downloadFailed": "Descarga fallida: {{name}}",
+      "uploadFailed": "Subida fallida: {{name}}",
+      "canceled": "Transferencia cancelada: {{name}}"
+    }
+  },
+  "transferRow": {
+    "upload": "Subida",
+    "download": "Descarga",
+    "progressAria": "{{name}} {{pct}}% completado",
+    "eta": "ETA: {{value}}",
+    "partsTitle": "partes del multipart",
+    "startedAt": "Iniciado {{time}}",
+    "startedAgo": "iniciado {{ago}}",
+    "stateDone": "Hecho",
+    "stateFailed": "Fallido",
+    "stateCanceled": "Cancelado",
+    "cancel": "Cancelar",
+    "retry": "Reintentar",
+    "cancelAria": "Cancelar {{name}}",
+    "retryAria": "Reintentar {{name}}"
   },
   "transfers": {
     "downloadComplete": {

@@ -69,6 +69,35 @@
     "validateTooltip": "Validieren Sie dieses Profil, um dieses Lesezeichen zu nutzen",
     "validateToUse": "Zum Verwenden validieren"
   },
+  "toolbar": {
+    "label": "Dateibrowser-Symbolleiste",
+    "back": "Zurück",
+    "forward": "Vorwärts",
+    "up": "Eine Ebene nach oben",
+    "refresh": "Aktualisieren",
+    "inspect": "Auswahl prüfen",
+    "upload": "Dateien hochladen",
+    "downloadFile": "Ausgewählte Datei herunterladen",
+    "downloadBulk": "Herunterladen (Ordner/Bucket — Objekt für Objekt)",
+    "newFolder": "Neuer Ordner",
+    "bookmarkRemove": "Lesezeichen entfernen",
+    "bookmarkObject": "Ausgewähltes Objekt als Lesezeichen",
+    "bookmarkLocation": "Diesen Ort als Lesezeichen",
+    "filterAria": "Filtern (unscharf)",
+    "filterTooltip": "Aktuelle Ansicht filtern — \"/\" zum Fokussieren, Esc zum Löschen",
+    "filterPlaceholder": "Filtern…  \"/\" drücken",
+    "viewModeAria": "Ansichtsmodus: {{label}}",
+    "viewModeMenuAria": "Ansichtsmodus",
+    "viewMode": {
+      "details": "Details",
+      "icons": "Symbole",
+      "gallery": "Galerie",
+      "columns": "Spalten",
+      "tree": "Baum",
+      "flatKey": "Flache Schlüssel",
+      "dualPane": "Doppelbereich"
+    }
+  },
   "statusBar": {
     "label": "Statusleiste",
     "noLocation": "Kein Ort",
@@ -137,6 +166,43 @@
   "errors": {
     "loadFileFailed": "Datei konnte nicht geladen werden",
     "saveFailed": "Speichern fehlgeschlagen"
+  },
+  "transferManager": {
+    "label": "Übertragungsmanager",
+    "title": "Übertragungen",
+    "empty": "Keine Übertragungen",
+    "expand": "Übertragungsmanager erweitern",
+    "minimize": "Übertragungsmanager minimieren",
+    "close": "Übertragungsmanager schließen",
+    "clearCompleted": "Abgeschlossene löschen",
+    "pillCount": "{{count}} Übertragungen",
+    "activeCountTitle": "{{count}} aktiv",
+    "activeSection": "Aktive Übertragungen",
+    "completedSection": "Abgeschlossene Übertragungen",
+    "completedCount": "Abgeschlossen ({{count}})",
+    "announce": {
+      "downloadDone": "Download abgeschlossen: {{name}}",
+      "uploadDone": "Upload abgeschlossen: {{name}}",
+      "downloadFailed": "Download fehlgeschlagen: {{name}}",
+      "uploadFailed": "Upload fehlgeschlagen: {{name}}",
+      "canceled": "Übertragung abgebrochen: {{name}}"
+    }
+  },
+  "transferRow": {
+    "upload": "Upload",
+    "download": "Download",
+    "progressAria": "{{name}} {{pct}}% abgeschlossen",
+    "eta": "ETA: {{value}}",
+    "partsTitle": "Multipart-Teile",
+    "startedAt": "Gestartet {{time}}",
+    "startedAgo": "gestartet {{ago}}",
+    "stateDone": "Fertig",
+    "stateFailed": "Fehlgeschlagen",
+    "stateCanceled": "Abgebrochen",
+    "cancel": "Abbrechen",
+    "retry": "Erneut versuchen",
+    "cancelAria": "{{name}} abbrechen",
+    "retryAria": "{{name}} erneut versuchen"
   },
   "transfers": {
     "downloadComplete": {

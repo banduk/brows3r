@@ -69,6 +69,35 @@
     "validateTooltip": "Validez ce profil pour utiliser ce favori",
     "validateToUse": "Valider pour utiliser"
   },
+  "toolbar": {
+    "label": "Barre d'outils du navigateur",
+    "back": "Retour",
+    "forward": "Suivant",
+    "up": "Remonter d'un niveau",
+    "refresh": "Actualiser",
+    "inspect": "Inspecter la sélection",
+    "upload": "Téléverser des fichiers",
+    "downloadFile": "Télécharger le fichier sélectionné",
+    "downloadBulk": "Télécharger (dossier/bucket — récupéré objet par objet)",
+    "newFolder": "Nouveau dossier",
+    "bookmarkRemove": "Retirer le favori",
+    "bookmarkObject": "Marquer l'objet sélectionné",
+    "bookmarkLocation": "Marquer cet emplacement",
+    "filterAria": "Filtrer (flou)",
+    "filterTooltip": "Filtrer la vue actuelle — appuyez sur \"/\" pour le focus, Esc pour effacer",
+    "filterPlaceholder": "Filtrer…  appuyez sur \"/\"",
+    "viewModeAria": "Mode d'affichage : {{label}}",
+    "viewModeMenuAria": "Mode d'affichage",
+    "viewMode": {
+      "details": "Détails",
+      "icons": "Icônes",
+      "gallery": "Galerie",
+      "columns": "Colonnes",
+      "tree": "Arborescence",
+      "flatKey": "Clés à plat",
+      "dualPane": "Double panneau"
+    }
+  },
   "statusBar": {
     "label": "Barre d'état",
     "noLocation": "Aucun emplacement",
@@ -137,6 +166,43 @@
   "errors": {
     "loadFileFailed": "Échec du chargement du fichier",
     "saveFailed": "Échec de l'enregistrement"
+  },
+  "transferManager": {
+    "label": "Gestionnaire de transferts",
+    "title": "Transferts",
+    "empty": "Aucun transfert",
+    "expand": "Développer le gestionnaire de transferts",
+    "minimize": "Réduire le gestionnaire de transferts",
+    "close": "Fermer le gestionnaire de transferts",
+    "clearCompleted": "Effacer les terminés",
+    "pillCount": "{{count}} transferts",
+    "activeCountTitle": "{{count}} actif(s)",
+    "activeSection": "Transferts actifs",
+    "completedSection": "Transferts terminés",
+    "completedCount": "Terminés ({{count}})",
+    "announce": {
+      "downloadDone": "Téléchargement terminé : {{name}}",
+      "uploadDone": "Téléversement terminé : {{name}}",
+      "downloadFailed": "Téléchargement échoué : {{name}}",
+      "uploadFailed": "Téléversement échoué : {{name}}",
+      "canceled": "Transfert annulé : {{name}}"
+    }
+  },
+  "transferRow": {
+    "upload": "Téléversement",
+    "download": "Téléchargement",
+    "progressAria": "{{name}} {{pct}}% terminé",
+    "eta": "ETA : {{value}}",
+    "partsTitle": "parties du multipart",
+    "startedAt": "Démarré {{time}}",
+    "startedAgo": "démarré {{ago}}",
+    "stateDone": "Terminé",
+    "stateFailed": "Échoué",
+    "stateCanceled": "Annulé",
+    "cancel": "Annuler",
+    "retry": "Réessayer",
+    "cancelAria": "Annuler {{name}}",
+    "retryAria": "Réessayer {{name}}"
   },
   "transfers": {
     "downloadComplete": {

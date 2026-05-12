@@ -65,6 +65,7 @@ import {
   useSyncExternalStore,
 } from "react";
 import { createPortal } from "react-dom";
+import { useTranslation } from "react-i18next";
 import type { Bookmark } from "@/api/bookmarks";
 import { bookmarkAdd, bookmarkRemove, bookmarksList } from "@/api/bookmarks";
 import { objectCreateFolder, objectsListFlat } from "@/api/objects";
@@ -89,18 +90,26 @@ import type { ViewMode } from "@/store/ui";
  * Per-view-mode metadata for the picker. Keeping label + icon together in
  * one array makes adding a mode = one line.
  */
+/**
+ * View-mode rows. `labelKey` is an i18n path resolved at render time so
+ * the label flips with the active language. Adding a new mode = one row.
+ */
 const VIEW_MODES: ReadonlyArray<{
   id: ViewMode;
-  label: string;
+  labelKey: string;
   Icon: React.ComponentType<{ className?: string }>;
 }> = [
-  { id: "Details", label: "Details", Icon: ListIcon },
-  { id: "IconGrid", label: "Icons", Icon: LayoutGridIcon },
-  { id: "Gallery", label: "Gallery", Icon: ImagesIcon },
-  { id: "Column", label: "Columns", Icon: ColumnsIcon },
-  { id: "Tree", label: "Tree", Icon: FolderTreeIcon },
-  { id: "FlatKey", label: "Flat keys", Icon: TextIcon },
-  { id: "DualPane", label: "Dual pane", Icon: SplitSquareHorizontalIcon },
+  { id: "Details", labelKey: "toolbar.viewMode.details", Icon: ListIcon },
+  { id: "IconGrid", labelKey: "toolbar.viewMode.icons", Icon: LayoutGridIcon },
+  { id: "Gallery", labelKey: "toolbar.viewMode.gallery", Icon: ImagesIcon },
+  { id: "Column", labelKey: "toolbar.viewMode.columns", Icon: ColumnsIcon },
+  { id: "Tree", labelKey: "toolbar.viewMode.tree", Icon: FolderTreeIcon },
+  { id: "FlatKey", labelKey: "toolbar.viewMode.flatKey", Icon: TextIcon },
+  {
+    id: "DualPane",
+    labelKey: "toolbar.viewMode.dualPane",
+    Icon: SplitSquareHorizontalIcon,
+  },
 ];
 
 // VIEW_MODES is non-empty (it owns the seven Pane.viewMode literals), so
@@ -123,6 +132,7 @@ interface ViewModePickerProps {
 }
 
 function ViewModePicker({ current, onSelect }: ViewModePickerProps) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
@@ -182,15 +192,17 @@ function ViewModePicker({ current, onSelect }: ViewModePickerProps) {
       <button
         ref={triggerRef}
         type="button"
-        aria-label={`View mode: ${currentMeta.label}`}
-        title={`View mode: ${currentMeta.label}`}
+        aria-label={t("toolbar.viewModeAria", {
+          label: t(currentMeta.labelKey),
+        })}
+        title={t("toolbar.viewModeAria", { label: t(currentMeta.labelKey) })}
         aria-haspopup="menu"
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
         className="flex items-center gap-1.5 rounded px-2 py-1 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         <currentMeta.Icon className="size-4" />
-        <span>{currentMeta.label}</span>
+        <span>{t(currentMeta.labelKey)}</span>
         <ChevronDownIcon className="size-3 opacity-70" />
       </button>
 
@@ -200,7 +212,7 @@ function ViewModePicker({ current, onSelect }: ViewModePickerProps) {
           <div
             ref={menuRef}
             role="menu"
-            aria-label="View mode"
+            aria-label={t("toolbar.viewModeMenuAria")}
             style={{
               position: "fixed",
               top: coords.top,
@@ -210,7 +222,7 @@ function ViewModePicker({ current, onSelect }: ViewModePickerProps) {
             }}
             className="rounded-lg border border-border bg-popover py-1 text-sm shadow-md"
           >
-            {VIEW_MODES.map(({ id, label, Icon }) => {
+            {VIEW_MODES.map(({ id, labelKey, Icon }) => {
               const isCurrent = id === current;
               return (
                 <button
@@ -225,7 +237,7 @@ function ViewModePicker({ current, onSelect }: ViewModePickerProps) {
                   className="flex w-full items-center gap-2 px-3 py-1.5 text-left hover:bg-accent"
                 >
                   <Icon className="size-4 shrink-0 text-muted-foreground" />
-                  <span className="flex-1">{label}</span>
+                  <span className="flex-1">{t(labelKey)}</span>
                   {isCurrent && (
                     <CheckIcon
                       className="size-3.5 shrink-0 text-primary"
@@ -310,6 +322,7 @@ function ToolbarButton({
 // ---------------------------------------------------------------------------
 
 export function Toolbar() {
+  const { t } = useTranslation();
   const openInspector = useInspectorStore((s) => s.openInspector);
   const { panes, activePaneId } = usePanesStore();
   const setViewMode = usePanesStore((s) => s.setViewMode);
@@ -670,11 +683,11 @@ export function Toolbar() {
   return (
     <div
       role="toolbar"
-      aria-label="File browser toolbar"
+      aria-label={t("toolbar.label")}
       className="flex items-center gap-0.5 border-b bg-background/80 px-2 py-1 backdrop-blur"
     >
       <ToolbarButton
-        label="Navigate back"
+        label={t("toolbar.back")}
         onClick={handleNavigateBack}
         disabled={!canBack}
       >
@@ -682,20 +695,20 @@ export function Toolbar() {
       </ToolbarButton>
 
       <ToolbarButton
-        label="Navigate forward"
+        label={t("toolbar.forward")}
         onClick={handleNavigateForward}
         disabled={!canForward}
       >
         <ArrowRightIcon className="size-4" />
       </ToolbarButton>
 
-      <ToolbarButton label="Navigate up" onClick={handleNavigateUp}>
+      <ToolbarButton label={t("toolbar.up")} onClick={handleNavigateUp}>
         <ArrowUpIcon className="size-4" />
       </ToolbarButton>
 
       <div className="mx-1 h-4 w-px bg-border" aria-hidden="true" />
 
-      <ToolbarButton label="Refresh" onClick={handleRefresh}>
+      <ToolbarButton label={t("toolbar.refresh")} onClick={handleRefresh}>
         <RefreshCwIcon className="size-4" />
       </ToolbarButton>
 
@@ -708,13 +721,13 @@ export function Toolbar() {
 
       <div className="mx-1 h-4 w-px bg-border" aria-hidden="true" />
 
-      <ToolbarButton label="Inspect selection" onClick={handleInspect}>
+      <ToolbarButton label={t("toolbar.inspect")} onClick={handleInspect}>
         <InfoIcon className="size-4" />
       </ToolbarButton>
 
       <div className="mx-1 h-4 w-px bg-border" aria-hidden="true" />
 
-      <ToolbarButton label="Upload files" onClick={handleUpload}>
+      <ToolbarButton label={t("toolbar.upload")} onClick={handleUpload}>
         <UploadIcon className="size-4" />
       </ToolbarButton>
 
@@ -722,25 +735,25 @@ export function Toolbar() {
         label={
           pane?.selection.size === 1 &&
           [...pane.selection][0]?.endsWith("/") === false
-            ? "Download selected file"
-            : "Download (folder/bucket — explains zip caveat)"
+            ? t("toolbar.downloadFile")
+            : t("toolbar.downloadBulk")
         }
         onClick={handleDownload}
       >
         <DownloadIcon className="size-4" />
       </ToolbarButton>
 
-      <ToolbarButton label="New folder" onClick={handleNewFolder}>
+      <ToolbarButton label={t("toolbar.newFolder")} onClick={handleNewFolder}>
         <FolderPlusIcon className="size-4" />
       </ToolbarButton>
 
       <ToolbarButton
         label={
           activeBookmark
-            ? "Remove bookmark"
+            ? t("toolbar.bookmarkRemove")
             : pane?.selection.size === 1
-              ? "Bookmark selected object"
-              : "Bookmark this location"
+              ? t("toolbar.bookmarkObject")
+              : t("toolbar.bookmarkLocation")
         }
         onClick={handleBookmark}
       >
@@ -755,9 +768,9 @@ export function Toolbar() {
         <input
           ref={filterInputRef}
           type="text"
-          aria-label="Filter (fuzzy)"
-          title='Fuzzy filter the current view — press "/" to focus, Esc to clear'
-          placeholder='Filter…  press "/"'
+          aria-label={t("toolbar.filterAria")}
+          title={t("toolbar.filterTooltip")}
+          placeholder={t("toolbar.filterPlaceholder")}
           autoComplete="off"
           autoCorrect="off"
           autoCapitalize="off"

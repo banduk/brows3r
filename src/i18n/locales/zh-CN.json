@@ -69,6 +69,35 @@
     "validateTooltip": "验证此配置文件以使用此书签",
     "validateToUse": "验证后可用"
   },
+  "toolbar": {
+    "label": "文件浏览器工具栏",
+    "back": "后退",
+    "forward": "前进",
+    "up": "上一级",
+    "refresh": "刷新",
+    "inspect": "查看选择",
+    "upload": "上传文件",
+    "downloadFile": "下载所选文件",
+    "downloadBulk": "下载(文件夹/存储桶——逐个对象获取)",
+    "newFolder": "新建文件夹",
+    "bookmarkRemove": "移除书签",
+    "bookmarkObject": "为所选对象添加书签",
+    "bookmarkLocation": "为此位置添加书签",
+    "filterAria": "筛选(模糊)",
+    "filterTooltip": "筛选当前视图——按 \"/\" 聚焦,Esc 清除",
+    "filterPlaceholder": "筛选… 按 \"/\"",
+    "viewModeAria": "查看模式:{{label}}",
+    "viewModeMenuAria": "查看模式",
+    "viewMode": {
+      "details": "详情",
+      "icons": "图标",
+      "gallery": "画廊",
+      "columns": "列",
+      "tree": "树",
+      "flatKey": "扁平键",
+      "dualPane": "双窗格"
+    }
+  },
   "statusBar": {
     "label": "状态栏",
     "noLocation": "无位置",
@@ -137,6 +166,43 @@
   "errors": {
     "loadFileFailed": "加载文件失败",
     "saveFailed": "保存失败"
+  },
+  "transferManager": {
+    "label": "传输管理器",
+    "title": "传输",
+    "empty": "无传输",
+    "expand": "展开传输管理器",
+    "minimize": "最小化传输管理器",
+    "close": "关闭传输管理器",
+    "clearCompleted": "清空已完成",
+    "pillCount": "{{count}} 个传输",
+    "activeCountTitle": "{{count}} 个活动",
+    "activeSection": "活动传输",
+    "completedSection": "已完成传输",
+    "completedCount": "已完成({{count}})",
+    "announce": {
+      "downloadDone": "下载完成:{{name}}",
+      "uploadDone": "上传完成:{{name}}",
+      "downloadFailed": "下载失败:{{name}}",
+      "uploadFailed": "上传失败:{{name}}",
+      "canceled": "传输已取消:{{name}}"
+    }
+  },
+  "transferRow": {
+    "upload": "上传",
+    "download": "下载",
+    "progressAria": "{{name}} 完成 {{pct}}%",
+    "eta": "预计:{{value}}",
+    "partsTitle": "分片",
+    "startedAt": "开始于 {{time}}",
+    "startedAgo": "开始于 {{ago}}",
+    "stateDone": "完成",
+    "stateFailed": "失败",
+    "stateCanceled": "已取消",
+    "cancel": "取消",
+    "retry": "重试",
+    "cancelAria": "取消 {{name}}",
+    "retryAria": "重试 {{name}}"
   },
   "transfers": {
     "downloadComplete": {

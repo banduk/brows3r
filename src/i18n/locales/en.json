@@ -69,6 +69,35 @@
     "validateTooltip": "Validate this profile to use this bookmark",
     "validateToUse": "Validate to use"
   },
+  "toolbar": {
+    "label": "File browser toolbar",
+    "back": "Navigate back",
+    "forward": "Navigate forward",
+    "up": "Navigate up",
+    "refresh": "Refresh",
+    "inspect": "Inspect selection",
+    "upload": "Upload files",
+    "downloadFile": "Download selected file",
+    "downloadBulk": "Download (folder/bucket — fetched as individual objects)",
+    "newFolder": "New folder",
+    "bookmarkRemove": "Remove bookmark",
+    "bookmarkObject": "Bookmark selected object",
+    "bookmarkLocation": "Bookmark this location",
+    "filterAria": "Filter (fuzzy)",
+    "filterTooltip": "Fuzzy filter the current view — press \"/\" to focus, Esc to clear",
+    "filterPlaceholder": "Filter…  press \"/\"",
+    "viewModeAria": "View mode: {{label}}",
+    "viewModeMenuAria": "View mode",
+    "viewMode": {
+      "details": "Details",
+      "icons": "Icons",
+      "gallery": "Gallery",
+      "columns": "Columns",
+      "tree": "Tree",
+      "flatKey": "Flat keys",
+      "dualPane": "Dual pane"
+    }
+  },
   "statusBar": {
     "label": "Status bar",
     "noLocation": "No location",
@@ -137,6 +166,43 @@
   "errors": {
     "loadFileFailed": "Failed to load file",
     "saveFailed": "Save failed"
+  },
+  "transferManager": {
+    "label": "Transfer Manager",
+    "title": "Transfers",
+    "empty": "No transfers",
+    "expand": "Expand transfer manager",
+    "minimize": "Minimize transfer manager",
+    "close": "Close transfer manager",
+    "clearCompleted": "Clear completed",
+    "pillCount": "{{count}} transfers",
+    "activeCountTitle": "{{count}} active",
+    "activeSection": "Active transfers",
+    "completedSection": "Completed transfers",
+    "completedCount": "Completed ({{count}})",
+    "announce": {
+      "downloadDone": "Download completed: {{name}}",
+      "uploadDone": "Upload completed: {{name}}",
+      "downloadFailed": "Download failed: {{name}}",
+      "uploadFailed": "Upload failed: {{name}}",
+      "canceled": "Transfer canceled: {{name}}"
+    }
+  },
+  "transferRow": {
+    "upload": "Upload",
+    "download": "Download",
+    "progressAria": "{{name}} {{pct}}% complete",
+    "eta": "ETA: {{value}}",
+    "partsTitle": "multipart parts",
+    "startedAt": "Started {{time}}",
+    "startedAgo": "started {{ago}}",
+    "stateDone": "Done",
+    "stateFailed": "Failed",
+    "stateCanceled": "Canceled",
+    "cancel": "Cancel",
+    "retry": "Retry",
+    "cancelAria": "Cancel {{name}}",
+    "retryAria": "Retry {{name}}"
   },
   "transfers": {
     "downloadComplete": {
