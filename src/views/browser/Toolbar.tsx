@@ -436,7 +436,8 @@ export function Toolbar() {
     try {
       const ids = await transferUploadMany(specs);
       const { seedTransfers } = await import("@/store/transfers");
-      seedTransfers(ids, specs, "upload");
+      const batchId = `up-${Date.now().toString(36)}`;
+      seedTransfers(ids, specs, "upload", batchId);
     } catch (err) {
       await surfaceUnknownError(err, {
         operation: "transfer_upload_many",
@@ -533,6 +534,7 @@ export function Toolbar() {
       try {
         const ids = await transferDownloadMany([singleSpec]);
         const { seedTransfers } = await import("@/store/transfers");
+        // Single-file download stays as a singleton row, no batch id.
         seedTransfers(ids, [singleSpec], "download");
       } catch (err) {
         await surfaceUnknownError(err, {
@@ -611,7 +613,8 @@ export function Toolbar() {
     try {
       const ids = await transferDownloadMany(specs);
       const { seedTransfers } = await import("@/store/transfers");
-      seedTransfers(ids, specs, "download");
+      const batchId = `dl-${Date.now().toString(36)}`;
+      seedTransfers(ids, specs, "download", batchId);
     } catch (err) {
       await surfaceUnknownError(err, {
         operation: "transfer_download_many",

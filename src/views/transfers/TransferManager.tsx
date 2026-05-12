@@ -27,7 +27,57 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { Transfer } from "@/api/transfers";
 import { useTransfersStore } from "@/store/transfers";
+import { TransferGroup } from "./TransferGroup";
 import { TransferRow } from "./TransferRow";
+
+// ---------------------------------------------------------------------------
+// Grouping
+// ---------------------------------------------------------------------------
+
+interface TransferGrouping {
+  /** Singleton transfers with no batch id or batches of size 1. */
+  singletons: Transfer[];
+  /** Ordered list of (batchId, transfers) pairs for batches ≥ 2. */
+  groups: Array<[string, Transfer[]]>;
+}
+
+/**
+ * Partition transfers by batchId. Preserves insertion order for both
+ * singletons and groups so the panel doesn't reshuffle as transfers
+ * complete.
+ */
+function groupByBatch(transfers: Transfer[]): TransferGrouping {
+  const groups = new Map<string, Transfer[]>();
+  const singletons: Transfer[] = [];
+  const order: string[] = [];
+  for (const tr of transfers) {
+    if (!tr.batchId) {
+      singletons.push(tr);
+      continue;
+    }
+    const existing = groups.get(tr.batchId);
+    if (existing) {
+      existing.push(tr);
+    } else {
+      groups.set(tr.batchId, [tr]);
+      order.push(tr.batchId);
+    }
+  }
+
+  const groupEntries: Array<[string, Transfer[]]> = [];
+  for (const id of order) {
+    const arr = groups.get(id);
+    if (!arr) continue;
+    if (arr.length === 1) {
+      // A batch of 1 collapses to a singleton row — no point showing a
+      // parent with a single child.
+      singletons.push(arr[0] as Transfer);
+    } else {
+      groupEntries.push([id, arr]);
+    }
+  }
+  return { singletons, groups: groupEntries };
+}
 
 // ---------------------------------------------------------------------------
 // Stable per-state-slice selectors
@@ -248,13 +298,27 @@ export function TransferManager() {
           </p>
         ) : (
           <>
-            {/* Active section */}
+            {/* Active section — grouped by batchId. */}
             {active.length > 0 && (
               <section aria-label={t("transferManager.activeSection")}>
                 <ul className="flex flex-col gap-2">
-                  {active.map((tr) => (
-                    <TransferRow key={tr.id} transfer={tr} />
-                  ))}
+                  {(() => {
+                    const { singletons, groups } = groupByBatch(active);
+                    return (
+                      <>
+                        {groups.map(([batchId, group]) => (
+                          <TransferGroup
+                            key={batchId}
+                            transfers={group}
+                            defaultExpanded={false}
+                          />
+                        ))}
+                        {singletons.map((tr) => (
+                          <TransferRow key={tr.id} transfer={tr} />
+                        ))}
+                      </>
+                    );
+                  })()}
                 </ul>
               </section>
             )}
@@ -281,13 +345,24 @@ export function TransferManager() {
                   </span>
                 </button>
 
-                {completedExpanded && (
-                  <ul className="mt-2 flex flex-col gap-2">
-                    {completed.map((tr) => (
-                      <TransferRow key={tr.id} transfer={tr} />
-                    ))}
-                  </ul>
-                )}
+                {completedExpanded &&
+                  (() => {
+                    const { singletons, groups } = groupByBatch(completed);
+                    return (
+                      <ul className="mt-2 flex flex-col gap-2">
+                        {groups.map(([batchId, group]) => (
+                          <TransferGroup
+                            key={batchId}
+                            transfers={group}
+                            defaultExpanded={false}
+                          />
+                        ))}
+                        {singletons.map((tr) => (
+                          <TransferRow key={tr.id} transfer={tr} />
+                        ))}
+                      </ul>
+                    );
+                  })()}
               </section>
             )}
           </>

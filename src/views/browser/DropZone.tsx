@@ -102,7 +102,8 @@ export function DropZone({
 
       const ids = await transferUploadMany(specs);
       const { seedTransfers } = await import("@/store/transfers");
-      seedTransfers(ids, specs, "upload");
+      const batchId = `up-${Date.now().toString(36)}`;
+      seedTransfers(ids, specs, "upload", batchId);
       setState("success");
       setAnnouncement(
         `Uploading ${specs.length.toString()} file${specs.length === 1 ? "" : "s"} to ${bucket}/${prefix}`,

@@ -213,16 +213,23 @@ export function seedTransfers(
     sourcePath?: string;
   }>,
   kind: TransferKind,
+  batchId?: string,
 ): void {
   if (ids.length === 0) return;
   const store = useTransfersStore.getState();
   const now = Date.now();
+  // Auto-mint a batch id when the caller didn't supply one but more than
+  // one transfer is being seeded — the user is going to want to see
+  // them grouped regardless.
+  const effectiveBatchId =
+    batchId ?? (ids.length > 1 ? `auto-${now}-${ids[0] ?? "0"}` : undefined);
   for (let i = 0; i < ids.length; i++) {
     const id = ids[i];
     const spec = specs[i];
     if (!id || !spec) continue;
     store.upsert({
       id,
+      batchId: effectiveBatchId,
       kind,
       profileId: spec.profileId,
       bucket: spec.bucket,

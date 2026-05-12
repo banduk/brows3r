@@ -244,6 +244,13 @@
       "canceled": "Übertragung abgebrochen: {{name}}"
     }
   },
+  "transferGroup": {
+    "title": "{{name}} ({{count}} Dateien)",
+    "files": "Dateien",
+    "partial": "{{done}}/{{total}} fertig",
+    "progressAria": "{{name}} {{pct}}% abgeschlossen",
+    "cancelAll": "Alle abbrechen"
+  },
   "transferRow": {
     "upload": "Upload",
     "download": "Download",

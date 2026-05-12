@@ -244,6 +244,13 @@
       "canceled": "Transferencia cancelada: {{name}}"
     }
   },
+  "transferGroup": {
+    "title": "{{name}} ({{count}} archivos)",
+    "files": "archivos",
+    "partial": "{{done}}/{{total}} completados",
+    "progressAria": "{{name}} {{pct}}% completado",
+    "cancelAll": "Cancelar todo"
+  },
   "transferRow": {
     "upload": "Subida",
     "download": "Descarga",

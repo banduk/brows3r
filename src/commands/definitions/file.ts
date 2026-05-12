@@ -68,7 +68,11 @@ function getQueryClient(ctx: Record<string, unknown>): QueryClient | undefined {
     : undefined;
 }
 
-/** Local thin wrapper around the store's seedTransfers helper. */
+/**
+ * Local thin wrapper around the store's seedTransfers helper. Mints a
+ * batch id so every transfer initiated by the same Download click is
+ * grouped under one parent row in the Transfer Manager.
+ */
 async function seedTransfersFromSpecs(
   ids: string[],
   specs: Array<{
@@ -79,7 +83,10 @@ async function seedTransfersFromSpecs(
   }>,
 ): Promise<void> {
   const { seedTransfers } = await import("@/store/transfers");
-  seedTransfers(ids, specs, "download");
+  const batchId = `dl-${Date.now().toString(36)}-${Math.random()
+    .toString(36)
+    .slice(2, 8)}`;
+  seedTransfers(ids, specs, "download", batchId);
 }
 
 // ---------------------------------------------------------------------------
@@ -480,16 +487,7 @@ registry.register({
     const pid = profileId(ctx);
     const bkt = bucket(ctx);
     const ks = selectedKeys(ctx);
-    // TEMP DIAGNOSTIC — remove once folder-download bug is resolved.
-    console.log("[file.download] start", { pid, bkt, ks });
-    if (!pid || !bkt || ks.length === 0) {
-      console.warn("[file.download] aborting: missing ctx", {
-        pid,
-        bkt,
-        ksLen: ks.length,
-      });
-      return;
-    }
+    if (!pid || !bkt || ks.length === 0) return;
 
     // Resolve Tauri dialog + transfers API lazily so commandPalette
     // tests do not need to mock the entire Tauri bridge to import
@@ -506,13 +504,11 @@ registry.register({
 
     const onlyKey = ks.length === 1 ? ks[0] : undefined;
     const isSingleObject = onlyKey !== undefined && !onlyKey.endsWith("/");
-    console.log("[file.download] mode", { isSingleObject, onlyKey });
 
     try {
       if (isSingleObject && onlyKey) {
         const basename = onlyKey.split("/").pop() ?? onlyKey;
         const dest = await saveDialog({ defaultPath: basename });
-        console.log("[file.download] single-file dest", { dest });
         if (!dest) return;
         const singleSpec = {
           profileId: pid,
@@ -531,11 +527,7 @@ registry.register({
       // we report a non-null estimate, so there is no race between
       // listing and the user clicking Start.
       const root = await openDialog({ directory: true, multiple: false });
-      console.log("[file.download] picked root", { root });
-      if (!root || Array.isArray(root)) {
-        console.warn("[file.download] aborting: no directory chosen");
-        return;
-      }
+      if (!root || Array.isArray(root)) return;
 
       const specs: Array<{
         profileId: string;
@@ -575,23 +567,14 @@ registry.register({
       let bytes = 0;
       try {
         for (const k of ks) {
-          console.log("[file.download] processing key", { k });
           if (k.endsWith("/")) {
             // Preserve the folder name in the destination.
             const folderRoot = joinPath(root, folderBasename(k));
-            console.log("[file.download] folder branch", { k, folderRoot });
             let cursor: string | undefined;
-            let pageIdx = 0;
             do {
               const page = await listFlat(pid as string, bkt as string, k, {
                 continuationToken: cursor,
               });
-              console.log("[file.download] page", {
-                pageIdx,
-                entries: page.entries.length,
-                truncated: page.isTruncated,
-              });
-              pageIdx += 1;
               for (const entry of page.entries) {
                 if (entry.isPrefix) continue;
                 const rel = entry.key.startsWith(k)
@@ -619,15 +602,8 @@ registry.register({
             files += 1;
           }
         }
-        console.log("[file.download] enumeration done", {
-          files,
-          bytes,
-          specsLen: specs.length,
-          firstSpec: specs[0],
-        });
         dialog.update({ estimate: { files, bytes }, error: null });
       } catch (err) {
-        console.error("[file.download] enumeration failed", err);
         const msg =
           err instanceof Error
             ? err.message
@@ -637,16 +613,10 @@ registry.register({
         dialog.update({ estimate: { files, bytes }, error: msg });
       }
 
-      console.log("[file.download] awaiting user decision");
       const confirmed = await dialog.decision;
-      console.log("[file.download] decision", {
-        confirmed,
-        specsLen: specs.length,
-      });
       if (!confirmed) return;
 
       if (specs.length === 0) {
-        console.warn("[file.download] specs empty after confirm");
         const { notify } = await import("@/lib/errors");
         const { default: i18n } = await import("@/i18n");
         notify({
@@ -658,24 +628,15 @@ registry.register({
         return;
       }
 
-      console.log("[file.download] calling transferDownloadMany", {
-        count: specs.length,
-      });
       const ids = await transferDownloadMany(specs);
-      console.log("[file.download] transferDownloadMany returned", {
-        idsLen: ids.length,
-        firstId: ids[0],
-      });
-      // Seed the transfers store with the full records so TransferRow can
-      // render key/profileId/bucket immediately. Without this, only the
-      // empty placeholder created by applyProgressEvent gets shown, and
-      // the user sees blank filenames + "/" badges in the panel.
+      // Seed the transfers store with the full records so the manager
+      // can render key/profileId/bucket immediately. Without this, only
+      // the empty placeholder created by applyProgressEvent gets shown.
       await seedTransfersFromSpecs(ids, specs);
       // Surface the transfer manager so the user can monitor + cancel.
       const { useTransfersStore } = await import("@/store/transfers");
       useTransfersStore.getState().openPanel();
     } catch (err) {
-      console.error("[file.download] outer catch", err);
       await surfaceUnknownError(err, {
         operation: "file.download",
         resource: ks.length === 1 ? (ks[0] ?? null) : `${ks.length} items`,

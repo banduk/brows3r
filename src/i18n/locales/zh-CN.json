@@ -244,6 +244,13 @@
       "canceled": "传输已取消:{{name}}"
     }
   },
+  "transferGroup": {
+    "title": "{{name}}({{count}} 个文件)",
+    "files": "个文件",
+    "partial": "已完成 {{done}}/{{total}}",
+    "progressAria": "{{name}} 完成 {{pct}}%",
+    "cancelAll": "全部取消"
+  },
   "transferRow": {
     "upload": "上传",
     "download": "下载",
