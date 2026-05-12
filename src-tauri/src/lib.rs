@@ -186,8 +186,8 @@ pub fn run() {
                     .map(MultipartTableHandle::new)
                     .unwrap_or_else(|_| {
                         let fallback_db = std::sync::Arc::new(
-                            redb::Database::create(
-                                std::env::temp_dir().join("brows3r_multipart_fallback.redb"),
+                            cache::store::open_or_recreate_redb(
+                                &std::env::temp_dir().join("brows3r_multipart_fallback.redb"),
                             )
                             .expect("fallback multipart db must open"),
                         );
