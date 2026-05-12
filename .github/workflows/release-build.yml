@@ -44,6 +44,12 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: aarch64-apple-darwin,x86_64-apple-darwin
+      # Share the same cache slot as the automatic release-please pipeline
+      # so manual re-runs do not start from scratch.
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+          shared-key: release-macos
       - run: pnpm install --frozen-lockfile
       - run: pnpm tauri build --target universal-apple-darwin
       - env:
@@ -70,6 +76,10 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: 22, cache: pnpm }
       - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+          shared-key: release-linux
       - run: pnpm install --frozen-lockfile
       - run: pnpm tauri build
       - env:
@@ -93,6 +103,10 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: 22, cache: pnpm }
       - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+          shared-key: release-windows
       - run: pnpm install --frozen-lockfile
       - run: pnpm tauri build
       - shell: bash

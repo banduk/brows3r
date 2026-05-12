@@ -85,6 +85,17 @@ jobs:
         with:
           targets: aarch64-apple-darwin,x86_64-apple-darwin
 
+      # Reuse compiled deps across releases — cold cargo on macos-15 is the
+      # slowest job in the release pipeline (~6 min). Keyed off Cargo.lock,
+      # so a lockfile bump invalidates correctly. Uses `release-macos` as a
+      # stable shared key separate from the `unit` cache in ci.yml since
+      # the release profile differs from the debug profile compiled by CI.
+      - name: Cache Rust build artifacts
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+          shared-key: release-macos
+
       - run: pnpm install --frozen-lockfile
 
       # `pnpm tauri build` on macOS occasionally fails inside `bundle_dmg.sh`
@@ -143,6 +154,14 @@ jobs:
           cache: pnpm
       - uses: dtolnay/rust-toolchain@stable
 
+      # See macOS job above — same rationale; the release-linux job has a
+      # separate cache slot from CI's unit-test cache (different profile).
+      - name: Cache Rust build artifacts
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+          shared-key: release-linux
+
       - run: pnpm install --frozen-lockfile
 
       - run: pnpm tauri build
@@ -181,6 +200,13 @@ jobs:
           node-version: 22
           cache: pnpm
       - uses: dtolnay/rust-toolchain@stable
+
+      # See macOS job above — same rationale, separate slot per platform.
+      - name: Cache Rust build artifacts
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+          shared-key: release-windows
 
       - run: pnpm install --frozen-lockfile
 
