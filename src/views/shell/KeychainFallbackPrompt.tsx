@@ -13,6 +13,7 @@
  */
 
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { keychainFallbackUnlock } from "@/api/profiles";
 import { Button } from "@/components/ui/button";
 import {
@@ -93,6 +94,7 @@ export function KeychainFallbackPrompt({
   open,
   onClose,
 }: KeychainFallbackPromptProps) {
+  const { t } = useTranslation();
   const [passphrase, setPassphrase] = useState("");
   const [confirm, setConfirm] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -112,11 +114,11 @@ export function KeychainFallbackPrompt({
     setError(null);
 
     if (passphrase.length === 0) {
-      setError("Passphrase must not be empty.");
+      setError(t("keychain.errors.empty"));
       return;
     }
     if (passphrase !== confirm) {
-      setError("Passphrases do not match.");
+      setError(t("keychain.errors.mismatch"));
       return;
     }
 
@@ -133,7 +135,7 @@ export function KeychainFallbackPrompt({
         "message" in err &&
         typeof (err as { message: unknown }).message === "string"
           ? (err as { message: string }).message
-          : "Failed to unlock keychain. Please try again.";
+          : t("keychain.errors.generic");
       setError(msg);
     } finally {
       setSubmitting(false);
@@ -144,11 +146,9 @@ export function KeychainFallbackPrompt({
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent aria-describedby="kfp-description">
         <DialogHeader>
-          <DialogTitle>Keychain Unavailable</DialogTitle>
+          <DialogTitle>{t("keychain.promptTitle")}</DialogTitle>
           <DialogDescription id="kfp-description">
-            The OS keychain is not available on this system. Enter a passphrase
-            to encrypt your credentials locally. We'll remember your choice for
-            future launches; you can reset it from Settings if you change it.
+            {t("keychain.promptDescription")}
           </DialogDescription>
         </DialogHeader>
 
@@ -156,7 +156,7 @@ export function KeychainFallbackPrompt({
           <div className="flex flex-col gap-3 py-2">
             <div className="flex flex-col gap-1">
               <label htmlFor="kfp-passphrase" className="text-sm font-medium">
-                Passphrase
+                {t("keychain.passphrase")}
               </label>
               <input
                 id="kfp-passphrase"
@@ -173,7 +173,7 @@ export function KeychainFallbackPrompt({
 
             <div className="flex flex-col gap-1">
               <label htmlFor="kfp-confirm" className="text-sm font-medium">
-                Confirm passphrase
+                {t("keychain.confirmPassphrase")}
               </label>
               <input
                 id="kfp-confirm"
@@ -200,7 +200,9 @@ export function KeychainFallbackPrompt({
 
           <DialogFooter>
             <Button type="submit" disabled={submitting} aria-busy={submitting}>
-              {submitting ? "Unlocking…" : "Set passphrase"}
+              {submitting
+                ? t("keychain.unlocking")
+                : t("keychain.setPassphrase")}
             </Button>
           </DialogFooter>
         </form>

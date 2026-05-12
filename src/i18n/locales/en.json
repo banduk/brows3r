@@ -1,0 +1,79 @@
+{
+  "menu": {
+    "file": {
+      "open": "Open",
+      "download": "Download",
+      "copyPresignedUrl": "Copy Presigned URL",
+      "delete": "Delete",
+      "createFolder": "Create Folder Here",
+      "properties": "Properties",
+      "refresh": "Refresh",
+      "bookmarkLocation": "Bookmark this location",
+      "bookmarkFirst": "Bookmark first selected item",
+      "bookmarkItem": "Bookmark this item",
+      "actions": "Actions"
+    },
+    "tooltip": {
+      "disabledLockSuffix": "in progress"
+    }
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "close": "Close",
+    "ok": "OK",
+    "retry": "Retry",
+    "reset": "Reset",
+    "edit": "Edit",
+    "select": "Select",
+    "loading": "Loading…",
+    "search": "Search",
+    "filter": "Filter",
+    "select_a_file_to_preview": "Select a file to preview",
+    "select_all": "Select all"
+  },
+  "sidebar": {
+    "profiles": "Profiles",
+    "addProfile": "Add profile",
+    "bookmarks": "Bookmarks",
+    "recents": "Recents"
+  },
+  "settings": {
+    "title": "Settings",
+    "section": {
+      "appearance": "Appearance",
+      "language": "Language",
+      "proxy": "Proxy",
+      "transfers": "Transfers",
+      "cache": "Cache",
+      "diagnostics": "Diagnostics"
+    },
+    "language": {
+      "label": "Display language",
+      "description": "Choose the language for menus, buttons, and dialogs.",
+      "resetKeychain": "Reset keychain passphrase prompt"
+    },
+    "theme": {
+      "system": "Follow system",
+      "light": "Light",
+      "dark": "Dark"
+    }
+  },
+  "keychain": {
+    "promptTitle": "Keychain Unavailable",
+    "promptDescription": "The OS keychain is not available on this system. Enter a passphrase to encrypt your credentials locally. We'll remember your choice for future launches; you can reset it from Settings if you change it.",
+    "passphrase": "Passphrase",
+    "confirmPassphrase": "Confirm passphrase",
+    "setPassphrase": "Set passphrase",
+    "unlocking": "Unlocking…",
+    "errors": {
+      "empty": "Passphrase must not be empty.",
+      "mismatch": "Passphrases do not match.",
+      "generic": "Failed to unlock keychain. Please try again."
+    }
+  },
+  "errors": {
+    "loadFileFailed": "Failed to load file",
+    "saveFailed": "Save failed"
+  }
+}

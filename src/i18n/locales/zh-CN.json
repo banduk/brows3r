@@ -1,0 +1,79 @@
+{
+  "menu": {
+    "file": {
+      "open": "打开",
+      "download": "下载",
+      "copyPresignedUrl": "复制预签名 URL",
+      "delete": "删除",
+      "createFolder": "在此创建文件夹",
+      "properties": "属性",
+      "refresh": "刷新",
+      "bookmarkLocation": "收藏此位置",
+      "bookmarkFirst": "收藏第一个选中项",
+      "bookmarkItem": "收藏此项",
+      "actions": "操作"
+    },
+    "tooltip": {
+      "disabledLockSuffix": "进行中"
+    }
+  },
+  "common": {
+    "save": "保存",
+    "cancel": "取消",
+    "close": "关闭",
+    "ok": "确定",
+    "retry": "重试",
+    "reset": "重置",
+    "edit": "编辑",
+    "select": "选择",
+    "loading": "加载中…",
+    "search": "搜索",
+    "filter": "筛选",
+    "select_a_file_to_preview": "选择文件以预览",
+    "select_all": "全选"
+  },
+  "sidebar": {
+    "profiles": "配置文件",
+    "addProfile": "添加配置文件",
+    "bookmarks": "书签",
+    "recents": "最近"
+  },
+  "settings": {
+    "title": "设置",
+    "section": {
+      "appearance": "外观",
+      "language": "语言",
+      "proxy": "代理",
+      "transfers": "传输",
+      "cache": "缓存",
+      "diagnostics": "诊断"
+    },
+    "language": {
+      "label": "界面语言",
+      "description": "为菜单、按钮和对话框选择语言。",
+      "resetKeychain": "重置钥匙串密码提示"
+    },
+    "theme": {
+      "system": "跟随系统",
+      "light": "浅色",
+      "dark": "深色"
+    }
+  },
+  "keychain": {
+    "promptTitle": "钥匙串不可用",
+    "promptDescription": "系统钥匙串不可用。请输入密码以在本地加密您的凭据。我们会记住您的选择用于后续启动;您可以在设置中重置。",
+    "passphrase": "密码",
+    "confirmPassphrase": "确认密码",
+    "setPassphrase": "设置密码",
+    "unlocking": "解锁中…",
+    "errors": {
+      "empty": "密码不能为空。",
+      "mismatch": "两次输入的密码不一致。",
+      "generic": "解锁钥匙串失败,请重试。"
+    }
+  },
+  "errors": {
+    "loadFileFailed": "加载文件失败",
+    "saveFailed": "保存失败"
+  }
+}

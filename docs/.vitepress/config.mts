@@ -113,7 +113,11 @@ export default defineConfig({
           items: [
             { text: "How to contribute", link: "/contributing/" },
             { text: "Dev environment", link: "/contributing/dev" },
-            { text: "Writing documentation", link: "/contributing/documentation" },
+            {
+              text: "Writing documentation",
+              link: "/contributing/documentation",
+            },
+            { text: "Adding a new language", link: "/contributing/i18n" },
             { text: "Release process", link: "/contributing/release" },
             { text: "Security", link: "/contributing/security" },
             { text: "Release checklist", link: "/contributing/checklist" },

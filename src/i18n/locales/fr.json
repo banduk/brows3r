@@ -1,0 +1,79 @@
+{
+  "menu": {
+    "file": {
+      "open": "Ouvrir",
+      "download": "Télécharger",
+      "copyPresignedUrl": "Copier l'URL pré-signée",
+      "delete": "Supprimer",
+      "createFolder": "Créer un dossier ici",
+      "properties": "Propriétés",
+      "refresh": "Actualiser",
+      "bookmarkLocation": "Marquer cet emplacement",
+      "bookmarkFirst": "Marquer le premier élément sélectionné",
+      "bookmarkItem": "Marquer cet élément",
+      "actions": "Actions"
+    },
+    "tooltip": {
+      "disabledLockSuffix": "en cours"
+    }
+  },
+  "common": {
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "close": "Fermer",
+    "ok": "OK",
+    "retry": "Réessayer",
+    "reset": "Réinitialiser",
+    "edit": "Modifier",
+    "select": "Sélectionner",
+    "loading": "Chargement…",
+    "search": "Rechercher",
+    "filter": "Filtrer",
+    "select_a_file_to_preview": "Sélectionnez un fichier pour l'aperçu",
+    "select_all": "Tout sélectionner"
+  },
+  "sidebar": {
+    "profiles": "Profils",
+    "addProfile": "Ajouter un profil",
+    "bookmarks": "Favoris",
+    "recents": "Récents"
+  },
+  "settings": {
+    "title": "Paramètres",
+    "section": {
+      "appearance": "Apparence",
+      "language": "Langue",
+      "proxy": "Proxy",
+      "transfers": "Transferts",
+      "cache": "Cache",
+      "diagnostics": "Diagnostic"
+    },
+    "language": {
+      "label": "Langue de l'interface",
+      "description": "Choisissez la langue pour les menus, boutons et dialogues.",
+      "resetKeychain": "Réinitialiser l'invite de mot de passe du trousseau"
+    },
+    "theme": {
+      "system": "Suivre le système",
+      "light": "Clair",
+      "dark": "Sombre"
+    }
+  },
+  "keychain": {
+    "promptTitle": "Trousseau indisponible",
+    "promptDescription": "Le trousseau du système n'est pas disponible. Entrez une phrase secrète pour chiffrer vos identifiants localement. Nous mémoriserons votre choix pour les prochains lancements ; vous pouvez le réinitialiser dans les Paramètres.",
+    "passphrase": "Phrase secrète",
+    "confirmPassphrase": "Confirmer la phrase secrète",
+    "setPassphrase": "Définir la phrase secrète",
+    "unlocking": "Déverrouillage…",
+    "errors": {
+      "empty": "La phrase secrète ne peut pas être vide.",
+      "mismatch": "Les phrases secrètes ne correspondent pas.",
+      "generic": "Échec du déverrouillage du trousseau. Réessayez."
+    }
+  },
+  "errors": {
+    "loadFileFailed": "Échec du chargement du fichier",
+    "saveFailed": "Échec de l'enregistrement"
+  }
+}

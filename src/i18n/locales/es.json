@@ -1,0 +1,79 @@
+{
+  "menu": {
+    "file": {
+      "open": "Abrir",
+      "download": "Descargar",
+      "copyPresignedUrl": "Copiar URL prefirmada",
+      "delete": "Eliminar",
+      "createFolder": "Crear carpeta aquí",
+      "properties": "Propiedades",
+      "refresh": "Actualizar",
+      "bookmarkLocation": "Marcar esta ubicación",
+      "bookmarkFirst": "Marcar el primer elemento seleccionado",
+      "bookmarkItem": "Marcar este elemento",
+      "actions": "Acciones"
+    },
+    "tooltip": {
+      "disabledLockSuffix": "en curso"
+    }
+  },
+  "common": {
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "close": "Cerrar",
+    "ok": "OK",
+    "retry": "Reintentar",
+    "reset": "Restablecer",
+    "edit": "Editar",
+    "select": "Seleccionar",
+    "loading": "Cargando…",
+    "search": "Buscar",
+    "filter": "Filtrar",
+    "select_a_file_to_preview": "Selecciona un archivo para previsualizar",
+    "select_all": "Seleccionar todo"
+  },
+  "sidebar": {
+    "profiles": "Perfiles",
+    "addProfile": "Añadir perfil",
+    "bookmarks": "Marcadores",
+    "recents": "Recientes"
+  },
+  "settings": {
+    "title": "Configuración",
+    "section": {
+      "appearance": "Apariencia",
+      "language": "Idioma",
+      "proxy": "Proxy",
+      "transfers": "Transferencias",
+      "cache": "Caché",
+      "diagnostics": "Diagnóstico"
+    },
+    "language": {
+      "label": "Idioma de la interfaz",
+      "description": "Elige el idioma para menús, botones y diálogos.",
+      "resetKeychain": "Restablecer el aviso de contraseña del keychain"
+    },
+    "theme": {
+      "system": "Seguir al sistema",
+      "light": "Claro",
+      "dark": "Oscuro"
+    }
+  },
+  "keychain": {
+    "promptTitle": "Keychain no disponible",
+    "promptDescription": "El keychain del sistema no está disponible. Introduce una contraseña para cifrar tus credenciales localmente. Recordaremos tu elección en futuros lanzamientos; puedes restablecerlo en Configuración.",
+    "passphrase": "Contraseña",
+    "confirmPassphrase": "Confirmar contraseña",
+    "setPassphrase": "Establecer contraseña",
+    "unlocking": "Desbloqueando…",
+    "errors": {
+      "empty": "La contraseña no puede estar vacía.",
+      "mismatch": "Las contraseñas no coinciden.",
+      "generic": "Error al desbloquear el keychain. Inténtalo de nuevo."
+    }
+  },
+  "errors": {
+    "loadFileFailed": "Error al cargar el archivo",
+    "saveFailed": "Error al guardar"
+  }
+}

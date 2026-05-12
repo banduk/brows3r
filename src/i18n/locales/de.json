@@ -1,0 +1,79 @@
+{
+  "menu": {
+    "file": {
+      "open": "Öffnen",
+      "download": "Herunterladen",
+      "copyPresignedUrl": "Vorsignierte URL kopieren",
+      "delete": "Löschen",
+      "createFolder": "Ordner hier erstellen",
+      "properties": "Eigenschaften",
+      "refresh": "Aktualisieren",
+      "bookmarkLocation": "Diesen Ort als Lesezeichen speichern",
+      "bookmarkFirst": "Erstes ausgewähltes Element als Lesezeichen speichern",
+      "bookmarkItem": "Dieses Element als Lesezeichen speichern",
+      "actions": "Aktionen"
+    },
+    "tooltip": {
+      "disabledLockSuffix": "läuft"
+    }
+  },
+  "common": {
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "close": "Schließen",
+    "ok": "OK",
+    "retry": "Erneut versuchen",
+    "reset": "Zurücksetzen",
+    "edit": "Bearbeiten",
+    "select": "Auswählen",
+    "loading": "Lädt…",
+    "search": "Suchen",
+    "filter": "Filtern",
+    "select_a_file_to_preview": "Wählen Sie eine Datei zur Vorschau",
+    "select_all": "Alles auswählen"
+  },
+  "sidebar": {
+    "profiles": "Profile",
+    "addProfile": "Profil hinzufügen",
+    "bookmarks": "Lesezeichen",
+    "recents": "Zuletzt verwendet"
+  },
+  "settings": {
+    "title": "Einstellungen",
+    "section": {
+      "appearance": "Darstellung",
+      "language": "Sprache",
+      "proxy": "Proxy",
+      "transfers": "Übertragungen",
+      "cache": "Cache",
+      "diagnostics": "Diagnose"
+    },
+    "language": {
+      "label": "Anzeigesprache",
+      "description": "Wählen Sie die Sprache für Menüs, Schaltflächen und Dialoge.",
+      "resetKeychain": "Schlüsselbund-Passwortabfrage zurücksetzen"
+    },
+    "theme": {
+      "system": "Systemeinstellung folgen",
+      "light": "Hell",
+      "dark": "Dunkel"
+    }
+  },
+  "keychain": {
+    "promptTitle": "Schlüsselbund nicht verfügbar",
+    "promptDescription": "Der System-Schlüsselbund ist nicht verfügbar. Geben Sie eine Passphrase ein, um Ihre Anmeldedaten lokal zu verschlüsseln. Wir merken uns Ihre Wahl für zukünftige Starts; Sie können sie in den Einstellungen zurücksetzen.",
+    "passphrase": "Passphrase",
+    "confirmPassphrase": "Passphrase bestätigen",
+    "setPassphrase": "Passphrase festlegen",
+    "unlocking": "Entsperrt…",
+    "errors": {
+      "empty": "Die Passphrase darf nicht leer sein.",
+      "mismatch": "Die Passphrasen stimmen nicht überein.",
+      "generic": "Schlüsselbund konnte nicht entsperrt werden. Bitte erneut versuchen."
+    }
+  },
+  "errors": {
+    "loadFileFailed": "Datei konnte nicht geladen werden",
+    "saveFailed": "Speichern fehlgeschlagen"
+  }
+}

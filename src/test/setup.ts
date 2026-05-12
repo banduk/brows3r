@@ -7,6 +7,10 @@
  */
 
 import "@testing-library/jest-dom";
+// Bootstrap i18n with English so `useTranslation()` returns rendered
+// strings in tests (without this, `t(key)` returns the key itself and
+// every assertion that matches on translated copy fails).
+import "@/i18n";
 // Import vitest-axe types + register global matcher augmentation.
 import "vitest-axe/extend-expect";
 import { afterEach, expect, vi } from "vitest";
