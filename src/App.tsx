@@ -69,6 +69,7 @@ import { UpdaterPrompt, useUpdaterStatus } from "@/views/shell/UpdaterPrompt";
 import { useGlobalShortcuts } from "@/views/shell/useGlobalShortcuts";
 import { usePaletteShortcut } from "@/views/shell/usePaletteShortcut";
 import { useRecentAutoTrack } from "@/views/sidebar/Recents";
+import { BulkDownloadHost } from "@/views/transfers/BulkDownloadHost";
 import { TransferManager } from "@/views/transfers/TransferManager";
 
 // ---------------------------------------------------------------------------
@@ -242,6 +243,22 @@ tryRegister({
   },
   run(_ctx) {
     useUiStore.getState().togglePreview();
+  },
+});
+
+// --- View: transfer manager / activity center ----------------------------
+tryRegister({
+  id: "view.toggle-transfers",
+  title: "Toggle Transfer Manager",
+  group: "View",
+  description: "Show / hide the transfer manager panel.",
+  defaultShortcut: {
+    mac: { key: "j", mod: ["cmd", "shift"] },
+    default: { key: "j", mod: ["ctrl", "shift"] },
+  },
+  async run(_ctx) {
+    const { useTransfersStore } = await import("@/store/transfers");
+    useTransfersStore.getState().togglePanel();
   },
 });
 
@@ -598,6 +615,7 @@ function AppContent() {
       )}
       {/* Transfer Manager rendered at app root as a portal-like overlay */}
       <TransferManager />
+      <BulkDownloadHost />
       {/* Settings screen — shown on settings:open event (Cmd/Ctrl+,) */}
       <SettingsScreen />
       {/* DiffPreviewModal — listens to useDiffStore; renders nothing until a

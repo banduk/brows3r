@@ -84,5 +84,20 @@
       "openFolder": "Ordner öffnen",
       "revealFailed": "Der Zielordner konnte nicht geöffnet werden."
     }
+  },
+  "bulkDownload": {
+    "title": "Download bestätigen",
+    "description": "S3 bietet keine zip/tar-Verknüpfung, daher wird jedes Objekt einzeln abgerufen. Prüfen Sie die Gesamtwerte vor dem Start.",
+    "files": "Dateien",
+    "size": "Gesamtgröße",
+    "eta": "Geschätzte Dauer",
+    "etaTooltip": "Schätzung basierend auf einer konservativen 25-Mbit/s-Verbindung.",
+    "destination": "Ziel",
+    "counting": "(zähle…)",
+    "riskWarning": "Großer Vorgang: Der Download wird einige Zeit dauern und erheblichen Speicherplatz sowie Bandbreite verbrauchen. Sie können ihn jederzeit im Übertragungsmanager abbrechen.",
+    "cancelHint": "Jede Übertragung kann einzeln im Übertragungsmanager abgebrochen werden (⌘⇧J).",
+    "startDownload": "Download starten",
+    "emptyTitle": "Nichts zum Herunterladen",
+    "emptyMessage": "Die Auswahl enthält keine Objekte."
   }
 }

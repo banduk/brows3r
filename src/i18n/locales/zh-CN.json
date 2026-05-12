@@ -84,5 +84,20 @@
       "openFolder": "打开文件夹",
       "revealFailed": "无法打开目标文件夹。"
     }
+  },
+  "bulkDownload": {
+    "title": "确认下载",
+    "description": "S3 没有 zip/tar 快捷方式,每个对象需要单独下载。开始前请确认总数。",
+    "files": "文件",
+    "size": "总大小",
+    "eta": "预计时间",
+    "etaTooltip": "基于保守的 25 Mbps 连接估算。",
+    "destination": "目标",
+    "counting": "(计数中…)",
+    "riskWarning": "大型操作:下载将花费一段时间并占用大量磁盘空间和带宽。你可以随时在传输管理器中取消。",
+    "cancelHint": "每个传输都可以在传输管理器(⌘⇧J)中单独取消。",
+    "startDownload": "开始下载",
+    "emptyTitle": "没有要下载的内容",
+    "emptyMessage": "所选项中没有对象。"
   }
 }

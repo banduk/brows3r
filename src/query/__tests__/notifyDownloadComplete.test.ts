@@ -12,14 +12,10 @@
  */
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-
+import type { TransferKind } from "@/api/transfers";
 import { onToast, type ToastNotification } from "@/lib/errors";
 import { notifyDownloadComplete } from "@/query/notifyDownloadComplete";
-import {
-  type Transfer,
-  type TransferKind,
-  useTransfersStore,
-} from "@/store/transfers";
+import { type Transfer, useTransfersStore } from "@/store/transfers";
 
 // ---------------------------------------------------------------------------
 // Mock @tauri-apps/plugin-opener

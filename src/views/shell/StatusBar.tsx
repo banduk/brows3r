@@ -16,13 +16,14 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { openUrl } from "@tauri-apps/plugin-opener";
-import { ExternalLinkIcon, KeyboardIcon } from "lucide-react";
+import { ActivityIcon, ExternalLinkIcon, KeyboardIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { profileGet } from "@/api/profiles";
 import { formatBytes } from "@/lib/format";
 import { useObjectHead } from "@/query/hooks/useObjectHead";
 import { useProfilesList } from "@/query/hooks/useValidatedProfile";
 import type { Pane } from "@/store/panes";
+import { useTransfersStore } from "@/store/transfers";
 
 /**
  * Concise list of the most-used shortcuts, rendered as a tooltip on the
@@ -44,6 +45,7 @@ const SHORTCUT_HINTS = [
   ["Backspace", "Up one level / back column"],
   ["⌘B", "Toggle sidebar"],
   ["⌘J", "Toggle preview"],
+  ["⌘⇧J", "Toggle transfer manager"],
   ["⌘1‒7", "Switch view mode"],
 ] as const;
 
@@ -233,6 +235,7 @@ export function StatusBar({ pane }: StatusBarProps) {
           </span>
         )}
         <div className="ml-auto flex items-center gap-3">
+          <ActivityChip />
           <ShortcutHints />
           <span className="truncate" title={profileLabel}>
             {profileLabel}
@@ -310,5 +313,62 @@ function ShortcutHints() {
         </table>
       </div>
     </div>
+  );
+}
+
+/**
+ * ActivityChip — status-bar affordance that opens the Transfer Manager
+ * panel. Always visible so the user can review history; pulses + shows
+ * aggregate progress while any transfer is queued or running.
+ */
+function ActivityChip() {
+  const transfers = useTransfersStore((s) => s.transfers);
+  const openPanel = useTransfersStore((s) => s.openPanel);
+  const togglePanel = useTransfersStore((s) => s.togglePanel);
+  const panelOpen = useTransfersStore((s) => s.panelOpen);
+
+  let activeCount = 0;
+  let totalBytes = 0;
+  let doneBytes = 0;
+  for (const t of transfers.values()) {
+    if (t.state === "queued" || t.state === "running") {
+      activeCount += 1;
+      totalBytes += t.totalBytes ?? 0;
+      doneBytes += t.transferredBytes;
+    }
+  }
+  const overallPct =
+    totalBytes > 0
+      ? Math.min(100, Math.round((doneBytes / totalBytes) * 100))
+      : 0;
+
+  const isActive = activeCount > 0;
+  const completedCount = transfers.size - activeCount;
+  const title = isActive
+    ? `${activeCount} active transfer${activeCount === 1 ? "" : "s"} — ${overallPct}%`
+    : completedCount > 0
+      ? `${completedCount} completed transfer${completedCount === 1 ? "" : "s"}`
+      : "No transfers";
+
+  return (
+    <button
+      type="button"
+      title={title}
+      aria-label={title}
+      onClick={() => (panelOpen ? togglePanel() : openPanel())}
+      className="inline-flex items-center gap-1 rounded px-1 py-0.5 hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      data-testid="activity-chip"
+    >
+      <ActivityIcon
+        className={`size-3 ${isActive ? "text-primary animate-pulse" : ""}`}
+      />
+      {isActive ? (
+        <span className="text-[10px] uppercase tracking-wide font-medium">
+          {activeCount} • {overallPct}%
+        </span>
+      ) : (
+        <span className="text-[10px] uppercase tracking-wide">Activity</span>
+      )}
+    </button>
   );
 }

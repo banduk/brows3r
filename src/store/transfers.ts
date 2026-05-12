@@ -83,6 +83,12 @@ export interface TransfersState {
   /** Toggle panel open/closed. */
   togglePanel(): void;
 
+  /** Open the panel (idempotent). */
+  openPanel(): void;
+
+  /** Open the panel in minimized (pill) mode without taking focus. */
+  openPanelMinimized(): void;
+
   /** Explicitly set the minimized state. */
   setMinimized(minimized: boolean): void;
 
@@ -138,6 +144,18 @@ export function createTransfersStore() {
 
     togglePanel() {
       set((state) => ({ panelOpen: !state.panelOpen }));
+    },
+
+    openPanel() {
+      set({ panelOpen: true, panelMinimized: false });
+    },
+
+    openPanelMinimized() {
+      // Don't override an already-expanded panel — only flip from closed
+      // to minimized so an in-progress browse isn't interrupted.
+      set((state) =>
+        state.panelOpen ? state : { panelOpen: true, panelMinimized: true },
+      );
     },
 
     setMinimized(minimized: boolean) {

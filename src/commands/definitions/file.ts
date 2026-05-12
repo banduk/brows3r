@@ -495,20 +495,10 @@ registry.register({
         return;
       }
 
-      // Bulk path: prompt for a destination directory then enumerate
-      // every prefix in the selection.
-      const targetLabel = `${ks.length.toString()} item${ks.length === 1 ? "" : "s"}`;
-      const ok = window.confirm(
-        [
-          "Download as multiple files",
-          "",
-          `S3 does not support archive (zip/tar) downloads natively. ${targetLabel} will be downloaded by fetching each object individually and placing it under a folder you pick.`,
-          "",
-          "Anything over 50 MB will warn again on a per-transfer basis. Continue?",
-        ].join("\n"),
-      );
-      if (!ok) return;
-
+      // Bulk path: prompt for a destination directory first, then surface
+      // the BulkDownloadConfirm dialog. The dialog enumerates the
+      // selection in the background so the user sees a live "234 files,
+      // 1.2 GB" summary before committing.
       const root = await openDialog({ directory: true, multiple: false });
       if (!root || Array.isArray(root)) return;
 
@@ -519,46 +509,76 @@ registry.register({
         destPath: string;
       }> = [];
 
-      // Helper: enumerate every object under a prefix and append a
-      // download spec (mirroring layout under `root`).
-      async function enumerateUnder(prefix: string): Promise<void> {
-        let cursor: string | undefined;
-        do {
-          const page = await listFlat(pid as string, bkt as string, prefix, {
-            continuationToken: cursor,
-          });
-          for (const entry of page.entries) {
-            if (entry.isPrefix) continue;
-            const rel = entry.key.startsWith(prefix)
-              ? entry.key.slice(prefix.length)
-              : entry.key;
+      // Async generator that yields progressive (files, bytes) counts as
+      // it pages through the selection. The dialog renders each yielded
+      // value and stops polling when `done: true` is emitted. The same
+      // walk also fills `specs` so the post-confirm transferDownloadMany
+      // call has the full list without re-listing.
+      async function* enumerateSelection() {
+        let files = 0;
+        let bytes = 0;
+        for (const k of ks) {
+          if (k.endsWith("/")) {
+            // Folder: page through objects under the prefix.
+            let cursor: string | undefined;
+            do {
+              const page = await listFlat(pid as string, bkt as string, k, {
+                continuationToken: cursor,
+              });
+              for (const entry of page.entries) {
+                if (entry.isPrefix) continue;
+                const rel = entry.key.startsWith(k)
+                  ? entry.key.slice(k.length)
+                  : entry.key;
+                specs.push({
+                  profileId: pid as string,
+                  bucket: bkt as string,
+                  key: entry.key,
+                  destPath: `${root}/${rel}`,
+                });
+                files += 1;
+                bytes += entry.size ?? 0;
+              }
+              cursor = page.nextContinuationToken;
+              // Yield after each page so the dialog updates progressively.
+              yield { files, bytes, done: false };
+            } while (cursor);
+          } else {
+            // Single object: no HEAD here. Size shows as the listing's
+            // recorded `size` when available; otherwise 0 (the row's
+            // progress bar still works once the transfer reports total).
+            const basename = k.split("/").pop() ?? k;
             specs.push({
               profileId: pid as string,
               bucket: bkt as string,
-              key: entry.key,
-              destPath: `${root}/${rel}`,
+              key: k,
+              destPath: `${root}/${basename}`,
             });
+            files += 1;
           }
-          cursor = page.nextContinuationToken;
-        } while (cursor);
+          yield { files, bytes, done: false };
+        }
+        yield { files, bytes, done: true };
       }
 
-      for (const k of ks) {
-        if (k.endsWith("/")) {
-          await enumerateUnder(k);
-        } else {
-          const basename = k.split("/").pop() ?? k;
-          specs.push({
-            profileId: pid,
-            bucket: bkt,
-            key: k,
-            destPath: `${root}/${basename}`,
-          });
-        }
-      }
+      const { requestBulkDownloadConfirm } = await import(
+        "@/views/transfers/BulkDownloadHost"
+      );
+      const confirmed = await requestBulkDownloadConfirm({
+        destination: root,
+        enumerate: enumerateSelection,
+      });
+      if (!confirmed) return;
 
       if (specs.length === 0) {
-        window.alert("Nothing to download — selection contained no objects.");
+        const { notify } = await import("@/lib/errors");
+        const { default: i18n } = await import("@/i18n");
+        notify({
+          id: `bulk-download-empty-${Date.now().toString()}`,
+          title: i18n.t("bulkDownload.emptyTitle"),
+          message: i18n.t("bulkDownload.emptyMessage"),
+          severity: "info",
+        });
         return;
       }
 

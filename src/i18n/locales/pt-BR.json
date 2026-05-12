@@ -84,5 +84,20 @@
       "openFolder": "Abrir pasta",
       "revealFailed": "Não foi possível abrir a pasta de destino."
     }
+  },
+  "bulkDownload": {
+    "title": "Confirmar download",
+    "description": "O S3 não tem atalho zip/tar, então cada objeto é baixado individualmente. Confira os totais antes de iniciar.",
+    "files": "Arquivos",
+    "size": "Tamanho total",
+    "eta": "Tempo estimado",
+    "etaTooltip": "Estimativa baseada em uma conexão conservadora de 25 Mbps.",
+    "destination": "Destino",
+    "counting": "(contando…)",
+    "riskWarning": "Operação grande: o download vai demorar e consumir bastante espaço em disco e banda. Você pode cancelar a qualquer momento no gerenciador de transferências.",
+    "cancelHint": "Cada transferência pode ser cancelada individualmente no gerenciador (⌘⇧J).",
+    "startDownload": "Iniciar download",
+    "emptyTitle": "Nada para baixar",
+    "emptyMessage": "A seleção não contém objetos."
   }
 }

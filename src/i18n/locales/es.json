@@ -84,5 +84,20 @@
       "openFolder": "Abrir carpeta",
       "revealFailed": "No se pudo abrir la carpeta de destino."
     }
+  },
+  "bulkDownload": {
+    "title": "Confirmar descarga",
+    "description": "S3 no tiene atajo zip/tar, por lo que cada objeto se descarga individualmente. Revisa los totales antes de iniciar.",
+    "files": "Archivos",
+    "size": "Tamaño total",
+    "eta": "Tiempo estimado",
+    "etaTooltip": "Estimación basada en una conexión conservadora de 25 Mbps.",
+    "destination": "Destino",
+    "counting": "(contando…)",
+    "riskWarning": "Operación grande: la descarga tardará y consumirá bastante espacio en disco y ancho de banda. Puedes cancelarla en cualquier momento desde el gestor de transferencias.",
+    "cancelHint": "Cada transferencia se puede cancelar individualmente desde el gestor (⌘⇧J).",
+    "startDownload": "Iniciar descarga",
+    "emptyTitle": "Nada que descargar",
+    "emptyMessage": "La selección no contiene objetos."
   }
 }

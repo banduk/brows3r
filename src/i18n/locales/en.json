@@ -84,5 +84,20 @@
       "openFolder": "Open folder",
       "revealFailed": "Could not open the destination folder."
     }
+  },
+  "bulkDownload": {
+    "title": "Confirm download",
+    "description": "S3 has no zip/tar shortcut, so each object is fetched individually. Review the totals before starting.",
+    "files": "Files",
+    "size": "Total size",
+    "eta": "Estimated time",
+    "etaTooltip": "Estimate based on a conservative 25 Mbps connection.",
+    "destination": "Destination",
+    "counting": "(counting…)",
+    "riskWarning": "Large operation: the download will take a while and consume significant disk space and bandwidth. You can cancel anytime from the transfer manager.",
+    "cancelHint": "Each transfer can be canceled individually from the transfer manager (⌘⇧J).",
+    "startDownload": "Start download",
+    "emptyTitle": "Nothing to download",
+    "emptyMessage": "Selection contained no objects."
   }
 }

@@ -84,5 +84,20 @@
       "openFolder": "Ouvrir le dossier",
       "revealFailed": "Impossible d'ouvrir le dossier de destination."
     }
+  },
+  "bulkDownload": {
+    "title": "Confirmer le téléchargement",
+    "description": "S3 n'a pas de raccourci zip/tar, chaque objet est donc récupéré individuellement. Vérifiez les totaux avant de démarrer.",
+    "files": "Fichiers",
+    "size": "Taille totale",
+    "eta": "Temps estimé",
+    "etaTooltip": "Estimation basée sur une connexion conservatrice à 25 Mbps.",
+    "destination": "Destination",
+    "counting": "(comptage…)",
+    "riskWarning": "Opération volumineuse : le téléchargement prendra du temps et consommera beaucoup d'espace disque et de bande passante. Vous pouvez l'annuler à tout moment depuis le gestionnaire de transferts.",
+    "cancelHint": "Chaque transfert peut être annulé individuellement depuis le gestionnaire (⌘⇧J).",
+    "startDownload": "Démarrer le téléchargement",
+    "emptyTitle": "Rien à télécharger",
+    "emptyMessage": "La sélection ne contient aucun objet."
   }
 }

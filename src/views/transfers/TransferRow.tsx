@@ -13,9 +13,11 @@
  * This component is intentionally pure — it never reads the store directly.
  */
 
+import { useEffect, useState } from "react";
 import type { Transfer } from "@/api/transfers";
 import { transferCancel, transferRetry } from "@/api/transfers";
 import { surfaceUnknownError } from "@/lib/errors";
+import { formatBytes } from "@/lib/format";
 import { computeBytesPerSec, computeEtaSec } from "@/store/transfers";
 
 // ---------------------------------------------------------------------------
@@ -45,6 +47,40 @@ export function formatEta(secs: number | null): string {
 function keyToFilename(key: string): string {
   const parts = key.split("/").filter(Boolean);
   return parts[parts.length - 1] ?? key;
+}
+
+/** Humanise an elapsed-since timestamp (e.g. "2s ago" / "3m ago"). */
+function formatRelativeAge(timestampMs: number, nowMs: number): string {
+  const delta = Math.max(0, nowMs - timestampMs);
+  const s = Math.floor(delta / 1000);
+  if (s < 60) return `${s}s ago`;
+  const m = Math.floor(s / 60);
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  return `${h}h ago`;
+}
+
+/** Humanise a duration in ms (e.g. "1m 23s"). */
+function formatDuration(ms: number): string {
+  const s = Math.max(0, Math.floor(ms / 1000));
+  if (s < 60) return `${s}s`;
+  const m = Math.floor(s / 60);
+  if (m < 60) return `${m}m ${s % 60}s`;
+  const h = Math.floor(m / 60);
+  return `${h}h ${m % 60}m`;
+}
+
+/**
+ * Tick once per second to refresh "X ago" labels. Cheap because we read
+ * a single Date.now() per tick and the row count is bounded.
+ */
+function useNowTick(intervalMs = 1000): number {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const id = window.setInterval(() => setNow(Date.now()), intervalMs);
+    return () => window.clearInterval(id);
+  }, [intervalMs]);
+  return now;
 }
 
 // ---------------------------------------------------------------------------
@@ -77,10 +113,25 @@ export function TransferRow({
 
   const rate = computeBytesPerSec(transfer);
   const eta = computeEtaSec(transfer);
+  const now = useNowTick();
 
   const filename = keyToFilename(transfer.key);
   const kindLabel = transfer.kind === "upload" ? "Upload" : "Download";
   const kindIcon = transfer.kind === "upload" ? "↑" : "↓";
+
+  const totalKnown = transfer.totalBytes != null && transfer.totalBytes > 0;
+  const bytesLabel = totalKnown
+    ? `${formatBytes(transfer.transferredBytes)} / ${formatBytes(transfer.totalBytes ?? 0)}`
+    : formatBytes(transfer.transferredBytes);
+  const startedLabel = formatRelativeAge(transfer.startedAt, now);
+  const durationLabel =
+    transfer.finishedAt !== undefined
+      ? formatDuration(transfer.finishedAt - transfer.startedAt)
+      : null;
+  const partsLabel =
+    transfer.partsTotal > 1
+      ? `${transfer.partsDone}/${transfer.partsTotal} parts`
+      : null;
 
   async function handleCancel() {
     try {
@@ -148,14 +199,21 @@ export function TransferRow({
       </div>
 
       {/* Stats + actions row */}
-      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-        <span>{pct}%</span>
+      <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-muted-foreground">
+        <span className="font-medium text-foreground/80">{pct}%</span>
+        <span title="bytes transferred / total">{bytesLabel}</span>
         {isActive && (
           <>
             <span>{formatRate(rate)}</span>
             <span>ETA: {formatEta(eta)}</span>
           </>
         )}
+        {partsLabel && <span title="multipart parts">{partsLabel}</span>}
+        <span
+          title={`Started ${new Date(transfer.startedAt).toLocaleString()}`}
+        >
+          {isActive ? `started ${startedLabel}` : durationLabel}
+        </span>
 
         {/* State badge for terminal states */}
         {!isActive && !isFailed && (

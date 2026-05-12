@@ -98,9 +98,18 @@ export async function installEventBridge(
     }),
 
     listen("transfer:state", (payload) => {
-      import("@/store/transfers").then(({ applyStateEvent }) => {
-        applyStateEvent(payload);
-      });
+      import("@/store/transfers").then(
+        ({ applyStateEvent, useTransfersStore }) => {
+          applyStateEvent(payload);
+          // Auto-surface the panel (minimized) on the first running transition
+          // so the user has an immediate, low-friction hook to monitor and
+          // cancel the job. We only do this on the first running transition
+          // to avoid re-opening a panel the user has explicitly closed.
+          if (payload.state === "running") {
+            useTransfersStore.getState().openPanelMinimized();
+          }
+        },
+      );
       // Side-effect: surface a "Download complete" toast with a clickable
       // "Open folder" action when a download finishes successfully. Kept
       // inline (rather than inside applyStateEvent) so the store stays a
