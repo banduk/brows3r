@@ -19,22 +19,22 @@ hero:
 features:
   - icon: 🪪
     title: Multi-profile, never leaks
-    details: AWS credentials, S3-compatible endpoints (MinIO, R2, Wasabi, B2). Credentials live in the OS keychain; the WebView never sees them.
+    details: AWS credentials, S3-compatible endpoints (MinIO, R2, Wasabi, B2). Credentials live in the OS keychain; the WebView never sees them. Profiles validate lazily, auto-retry on auth errors, with opt-in periodic refresh.
   - icon: ⌨️
     title: Keyboard-first
-    details: Cmd+K palette, Cmd+F search, Cmd+I inspector, Cmd+L breadcrumb-edit, back/forward history. Seven view modes, all fully navigable from the keyboard.
+    details: Cmd+K palette, Cmd+F search, Cmd+I inspector, Cmd+L breadcrumb-edit, Cmd+Shift+A/N Activity & Notifications Centers, back/forward history. Seven view modes, all navigable from the keyboard.
   - icon: 🖼️
     title: Rich preview
     details: Images, video, audio, PDF, Markdown, HTML, archives, CSV/JSON/Parquet tables. Plus a Monaco editor for in-place text edits.
-  - icon: ⚡
-    title: Fast on huge buckets
-    details: Virtualized rows, infinite scroll, off-thread fuzzy filter via Web Worker, capability cache that mutes unsupported operations instead of failing them.
-  - icon: 🔍
-    title: Inspector
-    details: Bucket metadata (versioning, encryption, lifecycle, policy) and object metadata (ACL, tags, locks, storage class transitions) at one keystroke.
+  - icon: 📥
+    title: Activity & Notifications Centers
+    details: Full-pane download manager with filter tabs, fuzzy search, batch grouping, and "Open folder" actions. A sister Notifications Center collects errors, warnings, and info — no toast spam.
+  - icon: 🌐
+    title: Six languages
+    details: UI shipped in English, Português, Español, Français, Deutsch, and 简体中文. Auto-detects the OS locale; switch any time from Settings → General.
   - icon: 🔐
     title: Auditable boundary
-    details: Per-request signed loopback URLs for media. No bytes cross the IPC boundary. Background multipart-cleanup scanner.
+    details: Per-request signed loopback URLs for media. No bytes cross the IPC boundary. Inspector, multipart cleanup scanner, and capability cache included.
 ---
 
 <style>
