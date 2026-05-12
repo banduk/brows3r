@@ -10,20 +10,17 @@
  *   clear "234 files, 1.2 GB, ~3 min on a 50 Mbps link" estimate before
  *   committing.
  *
- * Behaviour:
- * - Mounts in a portal-style overlay so it doesn't get clipped by the
- *   right-click menu's popover container.
- * - Counts + bytes are enumerated lazily via the `enumerate` callback
- *   the caller passes in. The enumerator is allowed to yield partial
- *   counts so the dialog can update its summary as objects are listed.
- * - Resolves with `true` on confirm, `false` on cancel or dismiss.
+ * The caller is responsible for enumerating the selection BEFORE showing
+ * the dialog and passing the final summary via `estimate`. While the
+ * caller is still counting, pass `estimate=null` and the dialog shows a
+ * "Counting files…" placeholder with a disabled confirm button. An
+ * enumeration error is communicated via `error`; the dialog surfaces it
+ * inline and the confirm stays disabled.
  *
  * OCP: adding a new risk dimension (e.g. cross-region egress fee) is
- * one new <p> below the file/byte summary. The shape of `Estimate` can
- * grow additively.
+ * one new <p> below the file/byte summary.
  */
 
-import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
@@ -43,22 +40,16 @@ import { formatBytes } from "@/lib/format";
 export interface Estimate {
   files: number;
   bytes: number;
-  /** True once the enumerator has visited every object. */
-  done: boolean;
 }
 
 export interface BulkDownloadConfirmProps {
   open: boolean;
   onConfirm: () => void;
   onCancel: () => void;
-  /**
-   * Async generator that yields running estimates as objects are listed.
-   * The dialog renders the latest yielded value and updates in place.
-   *
-   * When `done = true` is yielded, the dialog stops polling and lets the
-   * user confirm/cancel.
-   */
-  enumerate: () => AsyncIterable<Estimate>;
+  /** Final summary; `null` while the caller is still enumerating. */
+  estimate: Estimate | null;
+  /** Inline enumeration error message; suppresses confirm when set. */
+  error?: string | null;
   /**
    * Human-readable destination path used in the dialog body. e.g.
    * `/Users/me/Downloads/photos`.
@@ -102,75 +93,27 @@ export function BulkDownloadConfirm({
   open,
   onConfirm,
   onCancel,
-  enumerate,
+  estimate,
+  error = null,
   destination,
 }: BulkDownloadConfirmProps) {
   const { t } = useTranslation();
-  const [estimate, setEstimate] = useState<Estimate>({
-    files: 0,
-    bytes: 0,
-    done: false,
-  });
-  const [error, setError] = useState<string | null>(null);
 
-  // Drive the enumerator while the dialog is mounted + open.
-  useEffect(() => {
-    if (!open) return;
-    let cancelled = false;
-    setEstimate({ files: 0, bytes: 0, done: false });
-    setError(null);
+  const counting = estimate === null;
+  const files = estimate?.files ?? 0;
+  const bytes = estimate?.bytes ?? 0;
+  const isRisky = bytes >= RISK_BYTE_THRESHOLD || files >= RISK_FILE_THRESHOLD;
+  const wallClock = estimateWallClock(bytes);
 
-    (async () => {
-      try {
-        for await (const e of enumerate()) {
-          if (cancelled) return;
-          setEstimate(e);
-          if (e.done) return;
-        }
-      } catch (err) {
-        if (cancelled) return;
-        // Surface the enumeration error inline so the user knows the
-        // count is incomplete. Previously this was silently absorbed
-        // which left the dialog showing a stale running count with no
-        // hint that listing had failed.
-        const msg =
-          err instanceof Error
-            ? err.message
-            : typeof err === "object" && err !== null && "message" in err
-              ? String((err as { message: unknown }).message)
-              : "Failed to list files.";
-        setError(msg);
-        setEstimate((prev) => ({ ...prev, done: true }));
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [open, enumerate]);
-
-  const isRisky =
-    estimate.bytes >= RISK_BYTE_THRESHOLD ||
-    estimate.files >= RISK_FILE_THRESHOLD;
-
-  const wallClock = estimateWallClock(estimate.bytes);
-
-  // Confirm is gated on the enumeration being complete AND finding at
-  // least one file. Without this gate the user could click Start before
-  // the first page came back, and `specs` would still be empty.
-  const confirmDisabled = !estimate.done || estimate.files === 0;
-
-  // Button label gives the user a clear sense of state:
-  //   • before enumeration finishes → "Counting…"
-  //   • after, when something to download → "Start download (5 files, 12 MB)"
-  //   • after, when nothing found → "Nothing to download"
-  const confirmLabel = !estimate.done
+  // Confirm enabled only when we have a final count > 0 and no error.
+  const confirmDisabled = counting || error !== null || files === 0;
+  const confirmLabel = counting
     ? t("bulkDownload.counting")
-    : estimate.files === 0
+    : files === 0
       ? t("bulkDownload.emptyTitle")
       : t("bulkDownload.startDownloadWithSummary", {
-          files: estimate.files.toLocaleString(),
-          size: formatBytes(estimate.bytes),
+          files: files.toLocaleString(),
+          size: formatBytes(bytes),
         });
 
   return (
@@ -191,8 +134,8 @@ export function BulkDownloadConfirm({
           <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5">
             <dt className="text-muted-foreground">{t("bulkDownload.files")}</dt>
             <dd className="font-medium">
-              {estimate.files.toLocaleString()}
-              {!estimate.done && (
+              {files.toLocaleString()}
+              {counting && (
                 <span className="ml-1.5 text-xs text-muted-foreground">
                   {t("bulkDownload.counting")}
                 </span>
@@ -200,7 +143,7 @@ export function BulkDownloadConfirm({
             </dd>
 
             <dt className="text-muted-foreground">{t("bulkDownload.size")}</dt>
-            <dd className="font-medium">{formatBytes(estimate.bytes)}</dd>
+            <dd className="font-medium">{formatBytes(bytes)}</dd>
 
             <dt className="text-muted-foreground">{t("bulkDownload.eta")}</dt>
             <dd className="font-medium" title={t("bulkDownload.etaTooltip")}>

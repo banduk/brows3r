@@ -495,10 +495,11 @@ registry.register({
         return;
       }
 
-      // Bulk path: prompt for a destination directory first, then surface
-      // the BulkDownloadConfirm dialog. The dialog enumerates the
-      // selection in the background so the user sees a live "234 files,
-      // 1.2 GB" summary before committing.
+      // Bulk path: prompt for a destination directory, open the dialog
+      // in "Counting…" mode, run enumeration in parallel and push the
+      // final summary once it completes. The dialog gates Confirm until
+      // we report a non-null estimate, so there is no race between
+      // listing and the user clicking Start.
       const root = await openDialog({ directory: true, multiple: false });
       if (!root || Array.isArray(root)) return;
 
@@ -509,17 +510,27 @@ registry.register({
         destPath: string;
       }> = [];
 
-      // Async generator that yields progressive (files, bytes) counts as
-      // it pages through the selection. The dialog renders each yielded
-      // value and stops polling when `done: true` is emitted. The same
-      // walk also fills `specs` so the post-confirm transferDownloadMany
-      // call has the full list without re-listing.
-      async function* enumerateSelection() {
-        let files = 0;
-        let bytes = 0;
+      const { openBulkDownloadDialog } = await import(
+        "@/views/transfers/BulkDownloadHost"
+      );
+      const dialog = openBulkDownloadDialog({
+        destination: root,
+        initialEstimate: null,
+      });
+
+      // Join base + relative path. S3 keys always use forward slashes;
+      // Tauri's backend create_dir_all handles both separators per
+      // platform, so we just use "/" here.
+      const joinPath = (base: string, rel: string): string =>
+        base.endsWith("/") || base.endsWith("\\")
+          ? `${base}${rel}`
+          : `${base}/${rel}`;
+
+      let files = 0;
+      let bytes = 0;
+      try {
         for (const k of ks) {
           if (k.endsWith("/")) {
-            // Folder: page through objects under the prefix.
             let cursor: string | undefined;
             do {
               const page = await listFlat(pid as string, bkt as string, k, {
@@ -534,40 +545,36 @@ registry.register({
                   profileId: pid as string,
                   bucket: bkt as string,
                   key: entry.key,
-                  destPath: `${root}/${rel}`,
+                  destPath: joinPath(root, rel),
                 });
                 files += 1;
                 bytes += entry.size ?? 0;
               }
               cursor = page.nextContinuationToken;
-              // Yield after each page so the dialog updates progressively.
-              yield { files, bytes, done: false };
             } while (cursor);
           } else {
-            // Single object: no HEAD here. Size shows as the listing's
-            // recorded `size` when available; otherwise 0 (the row's
-            // progress bar still works once the transfer reports total).
             const basename = k.split("/").pop() ?? k;
             specs.push({
               profileId: pid as string,
               bucket: bkt as string,
               key: k,
-              destPath: `${root}/${basename}`,
+              destPath: joinPath(root, basename),
             });
             files += 1;
           }
-          yield { files, bytes, done: false };
         }
-        yield { files, bytes, done: true };
+        dialog.update({ estimate: { files, bytes }, error: null });
+      } catch (err) {
+        const msg =
+          err instanceof Error
+            ? err.message
+            : typeof err === "object" && err !== null && "message" in err
+              ? String((err as { message: unknown }).message)
+              : "Failed to list files.";
+        dialog.update({ estimate: { files, bytes }, error: msg });
       }
 
-      const { requestBulkDownloadConfirm } = await import(
-        "@/views/transfers/BulkDownloadHost"
-      );
-      const confirmed = await requestBulkDownloadConfirm({
-        destination: root,
-        enumerate: enumerateSelection,
-      });
+      const confirmed = await dialog.decision;
       if (!confirmed) return;
 
       if (specs.length === 0) {
@@ -583,6 +590,9 @@ registry.register({
       }
 
       await transferDownloadMany(specs);
+      // Surface the transfer manager so the user can monitor + cancel.
+      const { useTransfersStore } = await import("@/store/transfers");
+      useTransfersStore.getState().openPanel();
     } catch (err) {
       await surfaceUnknownError(err, {
         operation: "file.download",
