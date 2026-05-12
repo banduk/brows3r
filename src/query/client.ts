@@ -12,17 +12,103 @@
  *   on unmount.
  */
 
-import { QueryClient } from "@tanstack/react-query";
+import { QueryCache, QueryClient } from "@tanstack/react-query";
 
+import { profileValidate } from "@/api/profiles";
 import { type AppError, isAppError } from "@/lib/errors";
 import { listen } from "@/lib/tauri";
+import { useValidationStore } from "@/store/validation";
 import { keys } from "./keys";
+
+// ---------------------------------------------------------------------------
+// Auth-error auto-recovery
+// ---------------------------------------------------------------------------
+
+/**
+ * Track query-keys we have already attempted to recover from once this
+ * session. Without this guard a persistently-failing query (e.g. an
+ * actually-revoked credential) would loop revalidate → retry → fail →
+ * revalidate forever.
+ */
+const recoveryAttempts = new Set<string>();
+
+/**
+ * Extract the profileId from a query key. Most of our keys are tuples of
+ * the form `[domain, profileId, ...]` so the second element is the
+ * profile. Returns null when the shape does not match.
+ */
+function profileIdFromQueryKey(queryKey: readonly unknown[]): string | null {
+  const head = queryKey[0];
+  if (typeof head !== "string") return null;
+  // Keys like keys.profiles() are just ["profiles"]; not profile-scoped.
+  if (queryKey.length < 2) return null;
+  const second = queryKey[1];
+  return typeof second === "string" ? second : null;
+}
+
+/**
+ * Auth-error auto-recovery handler.
+ *
+ * When a gated query fails with `Auth` or `AccessDenied`, the most
+ * common cause is a session-scoped credential going stale (SSO token
+ * lifetime expired between launches, role chain rotated, etc.). Rather
+ * than make the user click Validate again, we transparently re-validate
+ * the profile and invalidate the failed query so it retries with fresh
+ * credentials.
+ */
+function handleAuthError(
+  client: QueryClient,
+  queryKey: readonly unknown[],
+  error: AppError,
+): void {
+  if (error.kind !== "Auth" && error.kind !== "AccessDenied") return;
+  const profileId = profileIdFromQueryKey(queryKey);
+  if (!profileId) return;
+
+  // Deduplicate: per (profileId, queryKey) pair.
+  const fingerprint = `${profileId}|${JSON.stringify(queryKey)}`;
+  if (recoveryAttempts.has(fingerprint)) return;
+  recoveryAttempts.add(fingerprint);
+
+  // Kick off revalidation. Mark the store so the UI shows the spinner.
+  useValidationStore.getState().startValidating(profileId);
+  void profileValidate(profileId)
+    .then(async (report) => {
+      await client.invalidateQueries({ queryKey: keys.profiles() });
+      if (report.ok) {
+        useValidationStore.getState().markOk(profileId);
+        // Refetch the failed query now that we have fresh creds.
+        await client.invalidateQueries({ queryKey });
+      } else if (report.error) {
+        useValidationStore.getState().markError(profileId, report.error);
+      }
+    })
+    .catch((err: unknown) => {
+      useValidationStore.getState().markError(
+        profileId,
+        isAppError(err)
+          ? err
+          : {
+              kind: "Internal",
+              message: err instanceof Error ? err.message : String(err),
+              retryable: false,
+              details: { traceId: "auth_recovery_throw" },
+            },
+      );
+    });
+}
 
 // ---------------------------------------------------------------------------
 // QueryClient
 // ---------------------------------------------------------------------------
 
 export const queryClient = new QueryClient({
+  queryCache: new QueryCache({
+    onError(error, query) {
+      if (!isAppError(error)) return;
+      handleAuthError(queryClient, query.queryKey, error as AppError);
+    },
+  }),
   defaultOptions: {
     queries: {
       staleTime: 30_000,
@@ -36,6 +122,11 @@ export const queryClient = new QueryClient({
     },
   },
 });
+
+/** Test-only: forget every auth-recovery attempt so a unit test can re-run. */
+export function _resetAuthRecoveryAttempts(): void {
+  recoveryAttempts.clear();
+}
 
 // ---------------------------------------------------------------------------
 // Event bridge
