@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.6](https://github.com/banduk/brows3r/compare/v0.2.5...v0.2.6) (2026-05-12)
+
+
+### Bug Fixes
+
+* **profiles:** wire sso credentials end-to-end ([#37](https://github.com/banduk/brows3r/issues/37)) ([1e40482](https://github.com/banduk/brows3r/commit/1e40482666f51cd7fc0905a7fbe25861810f0116))
+
 ## [0.2.5](https://github.com/banduk/brows3r/compare/v0.2.4...v0.2.5) (2026-05-12)
 
 
