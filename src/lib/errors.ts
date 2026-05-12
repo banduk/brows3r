@@ -246,7 +246,16 @@ export function present(
       if (ctx === "background") {
         return { placement: "panel", severity: "error" };
       }
-      return { placement: "panel+inline", severity: "error" };
+      // userInitiated: switched from `panel+inline` to `panel+toast`. A
+      // user just clicked Validate / Save / etc. expecting feedback on a
+      // failed credential; `+inline` only shows up when the caller has a
+      // dedicated inline-error slot (ProfileEditor.tsx manages its own
+      // local state via setValidationError, independent of present()).
+      // For everything else — sidebar Validate, command palette runs,
+      // toolbar actions — the panel-only placement was silent unless the
+      // user happened to have the notifications panel open. Forcing a
+      // toast guarantees the message lands somewhere visible.
+      return { placement: "panel+toast", severity: "error" };
 
     case "Validation":
       // Inline-only for user-initiated; panel optional for background
