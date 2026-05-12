@@ -138,14 +138,14 @@
     }
   },
   "activity": {
-    "label": "Aktivität",
+    "label": "Downloads",
     "titleActive": "{{count}} aktive Übertragungen — {{pct}}%",
     "titleCompleted": "{{count}} abgeschlossene Übertragungen",
     "titleUnseen": "{{count}} neue seit dem letzten Besuch",
     "titleIdle": "Keine Übertragungen"
   },
   "notificationsChip": {
-    "label": "Hinweise",
+    "label": "Benachrichtigungen",
     "titleErrors": "{{count}} neue Fehler — klicken zum Prüfen",
     "titleUnseen": "{{count}} neue Benachrichtigungen",
     "titleTotal": "{{count}} Benachrichtigungen",

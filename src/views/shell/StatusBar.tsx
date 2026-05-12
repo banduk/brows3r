@@ -17,8 +17,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import {
-  ActivityIcon,
   BellIcon,
+  DownloadIcon,
   ExternalLinkIcon,
   KeyboardIcon,
   SettingsIcon,
@@ -408,7 +408,7 @@ function ActivityChip() {
       title={title}
       aria-label={title}
       onClick={() => toggleActivityCenter()}
-      className={`relative inline-flex items-center justify-center rounded p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors ${
+      className={`relative inline-flex items-center gap-1 rounded px-1.5 py-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors ${
         tone === "active"
           ? "bg-green-500/15 text-green-700 dark:text-green-400 hover:bg-green-500/25"
           : tone === "unseen"
@@ -417,17 +417,14 @@ function ActivityChip() {
       }`}
       data-testid="activity-chip"
     >
-      <ActivityIcon
-        className={`size-4 ${isFlashing || isActive ? "animate-pulse" : ""}`}
+      <DownloadIcon
+        className={`size-3.5 ${isFlashing || isActive ? "animate-pulse" : ""}`}
         aria-hidden="true"
       />
-      {/* Live count badge while transfers are running. Compact — chip
-          stays icon-first (no "ACTIVITY" label) per design direction. */}
-      {isActive && (
-        <span className="ml-1 text-[10px] font-medium tabular-nums">
-          {activeCount}
-        </span>
-      )}
+      <span className="text-[10px] uppercase tracking-wide font-medium">
+        {t("activity.label")}
+        {isActive && <span className="ml-1 tabular-nums">{activeCount}</span>}
+      </span>
       {/* Unseen-completion dot when nothing is currently active. */}
       {hasUnseen && !isActive && !isFlashing && (
         <span
@@ -483,7 +480,7 @@ function NotificationsChip() {
       title={title}
       aria-label={title}
       onClick={() => toggle()}
-      className={`relative inline-flex items-center justify-center rounded p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors ${
+      className={`relative inline-flex items-center gap-1 rounded px-1.5 py-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors ${
         hasUnseenError
           ? "bg-red-500/15 text-red-700 dark:text-red-400 hover:bg-red-500/25"
           : hasUnseen
@@ -493,16 +490,13 @@ function NotificationsChip() {
       data-testid="notifications-chip"
     >
       <BellIcon
-        className={`size-4 ${hasUnseenError ? "animate-pulse" : ""}`}
+        className={`size-3.5 ${hasUnseenError ? "animate-pulse" : ""}`}
         aria-hidden="true"
       />
-      {/* Compact total count next to the bell when ≥ 1. Stays subtle
-          when zero so the chip remains icon-only at rest. */}
-      {total > 0 && (
-        <span className="ml-1 text-[10px] font-medium tabular-nums">
-          {total}
-        </span>
-      )}
+      <span className="text-[10px] uppercase tracking-wide font-medium">
+        {t("notificationsChip.label")}
+        {total > 0 && <span className="ml-1 tabular-nums">{total}</span>}
+      </span>
       {hasUnseen && (
         <span
           aria-hidden="true"

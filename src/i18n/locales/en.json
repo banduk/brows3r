@@ -138,14 +138,14 @@
     }
   },
   "activity": {
-    "label": "Activity",
+    "label": "Downloads",
     "titleActive": "{{count}} active transfers — {{pct}}%",
     "titleCompleted": "{{count}} completed transfers",
     "titleUnseen": "{{count}} new since you last looked",
     "titleIdle": "No transfers"
   },
   "notificationsChip": {
-    "label": "Alerts",
+    "label": "Notifications",
     "titleErrors": "{{count}} new errors — click to review",
     "titleUnseen": "{{count}} new notifications",
     "titleTotal": "{{count}} notifications",

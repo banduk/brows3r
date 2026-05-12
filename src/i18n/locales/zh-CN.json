@@ -138,14 +138,14 @@
     }
   },
   "activity": {
-    "label": "活动",
+    "label": "下载",
     "titleActive": "{{count}} 个活动传输 — {{pct}}%",
     "titleCompleted": "{{count}} 个已完成的传输",
     "titleUnseen": "上次查看后新增 {{count}} 个",
     "titleIdle": "无传输"
   },
   "notificationsChip": {
-    "label": "提醒",
+    "label": "通知",
     "titleErrors": "{{count}} 个新错误 — 点击查看",
     "titleUnseen": "{{count}} 条新通知",
     "titleTotal": "{{count}} 条通知",
