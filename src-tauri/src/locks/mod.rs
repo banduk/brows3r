@@ -102,38 +102,51 @@ impl LockScope {
             return false;
         }
 
-        // One or both scopes are profile-level (no bucket) — they overlap.
-        let (self_bucket, other_bucket) = match (&self.bucket, &other.bucket) {
-            (None, _) | (_, None) => return true,
-            (Some(a), Some(b)) => (a, b),
-        };
-
-        // Different buckets — no conflict.
-        if self_bucket != other_bucket {
-            return false;
+        // Different buckets never conflict (when both specified).
+        if let (Some(a), Some(b)) = (&self.bucket, &other.bucket) {
+            if a != b {
+                return false;
+            }
+        }
+        // If either bucket is None the scope is profile-wide → overlaps any
+        // same-profile scope.
+        if self.bucket.is_none() || other.bucket.is_none() {
+            return true;
         }
 
-        // One or both are bucket-level (no prefix) — they overlap.
-        let (self_prefix, other_prefix) = match (&self.prefix, &other.prefix) {
-            (None, _) | (_, None) => return true,
-            (Some(a), Some(b)) => (a, b),
-        };
-
-        // Longest-prefix rule: conflict when one prefix is a prefix of the other.
-        if !self_prefix.starts_with(other_prefix.as_str())
-            && !other_prefix.starts_with(self_prefix.as_str())
-        {
-            return false;
+        // Same bucket. Key-level checks take precedence so two concurrent
+        // single-object operations (e.g. download a.pdf and download
+        // b.html) do not falsely conflict via a None prefix on both sides.
+        // The previous implementation early-returned `true` when either
+        // prefix was None — making every `prefix=None, key=Some` scope
+        // collide with every other one in the same bucket.
+        match (&self.key, &other.key) {
+            (Some(a), Some(b)) => return a == b,
+            (Some(k), None) => {
+                // self is key-specific; other is broader (prefix or bucket).
+                // Overlap iff k is under other's prefix (or other is
+                // bucket-wide, i.e. other.prefix == None).
+                return match &other.prefix {
+                    Some(p) => k.as_str().starts_with(p.as_str()),
+                    None => true,
+                };
+            }
+            (None, Some(k)) => {
+                return match &self.prefix {
+                    Some(p) => k.as_str().starts_with(p.as_str()),
+                    None => true,
+                };
+            }
+            (None, None) => {}
         }
 
-        // One or both are prefix-level (no key) — they overlap.
-        let (self_key, other_key) = match (&self.key, &other.key) {
-            (None, _) | (_, None) => return true,
-            (Some(a), Some(b)) => (a, b),
-        };
-
-        // Key-level: conflict only when keys are identical.
-        self_key == other_key
+        // Neither side carries a specific key. Compare prefixes.
+        match (&self.prefix, &other.prefix) {
+            (None, _) | (_, None) => true,
+            (Some(a), Some(b)) => {
+                a.starts_with(b.as_str()) || b.starts_with(a.as_str())
+            }
+        }
     }
 }
 
@@ -563,6 +576,77 @@ mod tests {
         let a = scope_key("images/", "images/cat.png");
         let b = scope_key("images/", "images/cat.png");
         assert!(a.intersects(&b));
+    }
+
+    /// Regression: two concurrent single-object downloads acquire scopes
+    /// with `prefix: None, key: Some(...)`. The previous intersect logic
+    /// early-returned `true` whenever either prefix was None, so the
+    /// second download was always rejected with AppError::Locked — which
+    /// surfaced as a silently-failing PDF (or HTML, depending on race
+    /// order) when the user downloaded a folder containing both.
+    #[test]
+    fn prefix_none_key_some_different_keys_do_not_intersect() {
+        let a = LockScope {
+            profile: profile(),
+            bucket: Some(bucket()),
+            prefix: None,
+            key: Some(ObjectKey::new("folder/cat.pdf")),
+        };
+        let b = LockScope {
+            profile: profile(),
+            bucket: Some(bucket()),
+            prefix: None,
+            key: Some(ObjectKey::new("folder/dog.html")),
+        };
+        assert!(!a.intersects(&b));
+    }
+
+    #[test]
+    fn prefix_none_key_some_same_key_still_intersects() {
+        let a = LockScope {
+            profile: profile(),
+            bucket: Some(bucket()),
+            prefix: None,
+            key: Some(ObjectKey::new("folder/cat.pdf")),
+        };
+        let b = LockScope {
+            profile: profile(),
+            bucket: Some(bucket()),
+            prefix: None,
+            key: Some(ObjectKey::new("folder/cat.pdf")),
+        };
+        assert!(a.intersects(&b));
+    }
+
+    /// Key-specific scope conflicts with a prefix-wide scope that
+    /// covers it (mixed-mode operations e.g. download single object
+    /// during a bulk upload to its parent prefix).
+    #[test]
+    fn key_under_prefix_intersects() {
+        let key = LockScope {
+            profile: profile(),
+            bucket: Some(bucket()),
+            prefix: None,
+            key: Some(ObjectKey::new("foo/bar.txt")),
+        };
+        let prefix = scope_prefix("foo/");
+        assert!(key.intersects(&prefix));
+        assert!(prefix.intersects(&key));
+    }
+
+    /// Key-specific scope does NOT conflict with a sibling prefix that
+    /// doesn't cover it.
+    #[test]
+    fn key_under_unrelated_prefix_does_not_intersect() {
+        let key = LockScope {
+            profile: profile(),
+            bucket: Some(bucket()),
+            prefix: None,
+            key: Some(ObjectKey::new("foo/bar.txt")),
+        };
+        let prefix = scope_prefix("baz/");
+        assert!(!key.intersects(&prefix));
+        assert!(!prefix.intersects(&key));
     }
 
     // -----------------------------------------------------------------------
