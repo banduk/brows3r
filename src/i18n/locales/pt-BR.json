@@ -141,7 +141,48 @@
     "label": "Atividade",
     "titleActive": "{{count}} transferências ativas — {{pct}}%",
     "titleCompleted": "{{count}} transferências concluídas",
+    "titleUnseen": "{{count}} novas desde a última visita",
     "titleIdle": "Sem transferências"
+  },
+  "notificationsChip": {
+    "label": "Alertas",
+    "titleErrors": "{{count}} novos erros — clique para revisar",
+    "titleUnseen": "{{count}} notificações novas",
+    "titleTotal": "{{count}} notificações",
+    "titleIdle": "Sem notificações"
+  },
+  "notificationsCenter": {
+    "label": "Central de notificações",
+    "title": "Notificações",
+    "subtitle": "Erros, avisos e mensagens informativas",
+    "close": "Fechar central de notificações",
+    "clearAll": "Limpar tudo",
+    "filtersAria": "Filtrar por severidade",
+    "searchPlaceholder": "Buscar por título ou mensagem…",
+    "clearSearch": "Limpar busca",
+    "userBadge": "Usuário",
+    "dismissAria": "Descartar notificação: {{name}}",
+    "filter": {
+      "all": "Todas",
+      "error": "Erros",
+      "warning": "Avisos",
+      "info": "Info",
+      "success": "Sucesso"
+    },
+    "stats": {
+      "total": "{{count}} no total",
+      "errors": "{{count}} erros",
+      "warnings": "{{count}} avisos",
+      "info": "{{count}} info",
+      "success": "{{count}} sucessos"
+    },
+    "empty": {
+      "title": "Sem notificações ainda",
+      "body": "Erros, avisos e mensagens da sua atividade aparecem aqui.",
+      "filteredTitle": "Nada corresponde a este filtro",
+      "searchTitle": "Sem resultados",
+      "searchBody": "Nenhuma notificação corresponde a \"{{query}}\"."
+    }
   },
   "recents": {
     "sectionAria": "Locais recentes",

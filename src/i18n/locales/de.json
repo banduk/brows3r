@@ -141,7 +141,48 @@
     "label": "Aktivität",
     "titleActive": "{{count}} aktive Übertragungen — {{pct}}%",
     "titleCompleted": "{{count}} abgeschlossene Übertragungen",
+    "titleUnseen": "{{count}} neue seit dem letzten Besuch",
     "titleIdle": "Keine Übertragungen"
+  },
+  "notificationsChip": {
+    "label": "Hinweise",
+    "titleErrors": "{{count}} neue Fehler — klicken zum Prüfen",
+    "titleUnseen": "{{count}} neue Benachrichtigungen",
+    "titleTotal": "{{count}} Benachrichtigungen",
+    "titleIdle": "Keine Benachrichtigungen"
+  },
+  "notificationsCenter": {
+    "label": "Benachrichtigungscenter",
+    "title": "Benachrichtigungen",
+    "subtitle": "Fehler, Warnungen und Hinweise",
+    "close": "Benachrichtigungscenter schließen",
+    "clearAll": "Alle löschen",
+    "filtersAria": "Nach Schweregrad filtern",
+    "searchPlaceholder": "Nach Titel oder Nachricht suchen…",
+    "clearSearch": "Suche löschen",
+    "userBadge": "Benutzer",
+    "dismissAria": "Benachrichtigung verwerfen: {{name}}",
+    "filter": {
+      "all": "Alle",
+      "error": "Fehler",
+      "warning": "Warnungen",
+      "info": "Info",
+      "success": "Erfolg"
+    },
+    "stats": {
+      "total": "Insgesamt {{count}}",
+      "errors": "{{count}} Fehler",
+      "warnings": "{{count}} Warnungen",
+      "info": "{{count}} Info",
+      "success": "{{count}} Erfolg"
+    },
+    "empty": {
+      "title": "Noch keine Benachrichtigungen",
+      "body": "Fehler, Warnungen und Hinweise aus Ihrer Aktivität erscheinen hier.",
+      "filteredTitle": "Nichts entspricht diesem Filter",
+      "searchTitle": "Keine Treffer",
+      "searchBody": "Keine Benachrichtigung entspricht \"{{query}}\"."
+    }
   },
   "recents": {
     "sectionAria": "Zuletzt verwendete Orte",

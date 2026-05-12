@@ -120,6 +120,23 @@ interface UiState {
    * available for ambient awareness.
    */
   activityCenterOpen: boolean;
+  /**
+   * When `true` the Notifications Center (errors + warnings + info
+   * messages) replaces the main pane. Mutually exclusive with the
+   * Activity Center — opening one closes the other.
+   */
+  notificationsCenterOpen: boolean;
+  /**
+   * Unix-ms timestamp of the last time the user opened the Activity
+   * Center. Drives the "new download" highlight on the status-bar chip:
+   * transfers finished AFTER this stamp count as "unseen".
+   */
+  activityLastSeenAt: number;
+  /**
+   * Unix-ms timestamp of the last time the user opened the
+   * Notifications Center.
+   */
+  notificationsLastSeenAt: number;
 
   setTheme(theme: UiState["theme"]): void;
   toggleSidebar(): void;
@@ -142,6 +159,10 @@ interface UiState {
   toggleActivityCenter(): void;
   /** Explicitly set the Activity Center state. */
   setActivityCenterOpen(open: boolean): void;
+  /** Toggle the Notifications Center on/off. */
+  toggleNotificationsCenter(): void;
+  /** Explicitly set the Notifications Center state. */
+  setNotificationsCenterOpen(open: boolean): void;
 }
 
 // ---------------------------------------------------------------------------
@@ -163,6 +184,9 @@ export const useUiStore = create<UiState>()(
       textPreviewPrefs: { ...DEFAULT_TEXT_PREVIEW_PREFS },
       detailsColumnWidths: { ...DEFAULT_DETAILS_COLUMN_WIDTHS },
       activityCenterOpen: false,
+      notificationsCenterOpen: false,
+      activityLastSeenAt: 0,
+      notificationsLastSeenAt: 0,
 
       // ---- actions ----
       setTheme: (theme) => set({ theme }),
@@ -202,8 +226,43 @@ export const useUiStore = create<UiState>()(
       resetDetailsColumnWidths: () =>
         set({ detailsColumnWidths: { ...DEFAULT_DETAILS_COLUMN_WIDTHS } }),
       toggleActivityCenter: () =>
-        set((s) => ({ activityCenterOpen: !s.activityCenterOpen })),
-      setActivityCenterOpen: (open) => set({ activityCenterOpen: open }),
+        set((s) => {
+          const nextOpen = !s.activityCenterOpen;
+          return {
+            activityCenterOpen: nextOpen,
+            // Mutually exclusive with the Notifications Center.
+            notificationsCenterOpen: nextOpen
+              ? false
+              : s.notificationsCenterOpen,
+            // Opening counts as "seen".
+            activityLastSeenAt: nextOpen ? Date.now() : s.activityLastSeenAt,
+          };
+        }),
+      setActivityCenterOpen: (open) =>
+        set((s) => ({
+          activityCenterOpen: open,
+          notificationsCenterOpen: open ? false : s.notificationsCenterOpen,
+          activityLastSeenAt: open ? Date.now() : s.activityLastSeenAt,
+        })),
+      toggleNotificationsCenter: () =>
+        set((s) => {
+          const nextOpen = !s.notificationsCenterOpen;
+          return {
+            notificationsCenterOpen: nextOpen,
+            activityCenterOpen: nextOpen ? false : s.activityCenterOpen,
+            notificationsLastSeenAt: nextOpen
+              ? Date.now()
+              : s.notificationsLastSeenAt,
+          };
+        }),
+      setNotificationsCenterOpen: (open) =>
+        set((s) => ({
+          notificationsCenterOpen: open,
+          activityCenterOpen: open ? false : s.activityCenterOpen,
+          notificationsLastSeenAt: open
+            ? Date.now()
+            : s.notificationsLastSeenAt,
+        })),
     }),
     {
       // Bumped from "brows3r-ui" → "brows3r-ui-v2" so any old localStorage

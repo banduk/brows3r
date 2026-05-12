@@ -141,7 +141,48 @@
     "label": "活动",
     "titleActive": "{{count}} 个活动传输 — {{pct}}%",
     "titleCompleted": "{{count}} 个已完成的传输",
+    "titleUnseen": "上次查看后新增 {{count}} 个",
     "titleIdle": "无传输"
+  },
+  "notificationsChip": {
+    "label": "提醒",
+    "titleErrors": "{{count}} 个新错误 — 点击查看",
+    "titleUnseen": "{{count}} 条新通知",
+    "titleTotal": "{{count}} 条通知",
+    "titleIdle": "无通知"
+  },
+  "notificationsCenter": {
+    "label": "通知中心",
+    "title": "通知",
+    "subtitle": "错误、警告和信息提示",
+    "close": "关闭通知中心",
+    "clearAll": "全部清除",
+    "filtersAria": "按严重级别筛选",
+    "searchPlaceholder": "按标题或消息搜索…",
+    "clearSearch": "清除搜索",
+    "userBadge": "用户",
+    "dismissAria": "关闭通知:{{name}}",
+    "filter": {
+      "all": "全部",
+      "error": "错误",
+      "warning": "警告",
+      "info": "信息",
+      "success": "成功"
+    },
+    "stats": {
+      "total": "共 {{count}} 条",
+      "errors": "{{count}} 个错误",
+      "warnings": "{{count}} 个警告",
+      "info": "{{count}} 条信息",
+      "success": "{{count}} 个成功"
+    },
+    "empty": {
+      "title": "暂无通知",
+      "body": "活动中的错误、警告和提示会在此显示。",
+      "filteredTitle": "没有匹配此筛选的内容",
+      "searchTitle": "无匹配",
+      "searchBody": "没有通知匹配 \"{{query}}\"。"
+    }
   },
   "recents": {
     "sectionAria": "最近位置",

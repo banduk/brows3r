@@ -278,6 +278,21 @@ tryRegister({
   },
 });
 
+tryRegister({
+  id: "view.notifications-center",
+  title: "Toggle Notifications Center",
+  group: "View",
+  description:
+    "Open the full-pane Notifications Center listing past errors, warnings and notices with filters and search.",
+  defaultShortcut: {
+    mac: { key: "n", mod: ["cmd", "shift"] },
+    default: { key: "n", mod: ["ctrl", "shift"] },
+  },
+  run(_ctx) {
+    useUiStore.getState().toggleNotificationsCenter();
+  },
+});
+
 const VIEW_MODE_BINDINGS: ReadonlyArray<{
   id: string;
   mode: ViewMode;

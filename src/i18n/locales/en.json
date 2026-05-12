@@ -141,7 +141,48 @@
     "label": "Activity",
     "titleActive": "{{count}} active transfers — {{pct}}%",
     "titleCompleted": "{{count}} completed transfers",
+    "titleUnseen": "{{count}} new since you last looked",
     "titleIdle": "No transfers"
+  },
+  "notificationsChip": {
+    "label": "Alerts",
+    "titleErrors": "{{count}} new errors — click to review",
+    "titleUnseen": "{{count}} new notifications",
+    "titleTotal": "{{count}} notifications",
+    "titleIdle": "No notifications"
+  },
+  "notificationsCenter": {
+    "label": "Notifications Center",
+    "title": "Notifications",
+    "subtitle": "Errors, warnings and informational notices",
+    "close": "Close Notifications Center",
+    "clearAll": "Clear all",
+    "filtersAria": "Filter by severity",
+    "searchPlaceholder": "Search by title or message…",
+    "clearSearch": "Clear search",
+    "userBadge": "User",
+    "dismissAria": "Dismiss notification: {{name}}",
+    "filter": {
+      "all": "All",
+      "error": "Errors",
+      "warning": "Warnings",
+      "info": "Info",
+      "success": "Success"
+    },
+    "stats": {
+      "total": "{{count}} total",
+      "errors": "{{count}} errors",
+      "warnings": "{{count}} warnings",
+      "info": "{{count}} info",
+      "success": "{{count}} success"
+    },
+    "empty": {
+      "title": "No notifications yet",
+      "body": "Errors, warnings and notices from your activity will appear here.",
+      "filteredTitle": "Nothing matches this filter",
+      "searchTitle": "No matches",
+      "searchBody": "No notification matches \"{{query}}\"."
+    }
   },
   "recents": {
     "sectionAria": "Recent locations",

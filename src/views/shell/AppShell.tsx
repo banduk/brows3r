@@ -37,6 +37,7 @@ import { DropZone } from "@/views/browser/DropZone";
 import { Toolbar } from "@/views/browser/Toolbar";
 import { ViewModeDispatcher } from "@/views/browser/ViewModeDispatcher";
 import { InspectorPanel } from "@/views/inspector/InspectorPanel";
+import { NotificationsCenter } from "@/views/notifications/NotificationsCenter";
 import { PreviewPane } from "@/views/preview/PreviewPane";
 import { Sidebar } from "@/views/sidebar/Sidebar";
 import { ActivityCenter } from "@/views/transfers/ActivityCenter";
@@ -66,13 +67,15 @@ interface MainPaneContentProps {
 
 function MainPaneContent({ pane }: MainPaneContentProps) {
   const activityCenterOpen = useUiStore((s) => s.activityCenterOpen);
+  const notificationsCenterOpen = useUiStore((s) => s.notificationsCenterOpen);
 
-  // The Activity Center is a top-level destination: when it's open, it
-  // owns the main pane entirely (preview/inspector still visible if the
-  // user has them up, but the file browser is hidden so the user has a
-  // calm surface to review transfer history).
+  // Top-level destination views (Activity, Notifications) own the main
+  // pane entirely. The store guarantees they are mutually exclusive.
   if (activityCenterOpen) {
     return <ActivityCenter />;
+  }
+  if (notificationsCenterOpen) {
+    return <NotificationsCenter />;
   }
 
   const location = pane.location;
@@ -123,6 +126,9 @@ export function AppShell() {
     setSidebarPct,
     setPreviewPct,
   } = useUiStore();
+  const activityCenterOpen = useUiStore((s) => s.activityCenterOpen);
+  const notificationsCenterOpen = useUiStore((s) => s.notificationsCenterOpen);
+  const destinationOpen = activityCenterOpen || notificationsCenterOpen;
 
   const inspectorOpen = useInspectorStore((s) => s.open);
 
@@ -193,16 +199,22 @@ export function AppShell() {
             minSize="20%"
             className="flex flex-col"
           >
-            {/* Breadcrumb chrome */}
-            <div className="flex items-center gap-2 border-b px-3 py-1.5">
-              <Breadcrumb
-                paneId={activePane.id}
-                location={activePane.location}
-              />
-            </div>
-
-            {/* Toolbar — Refresh, Up, View mode, Inspect, Search, Sort */}
-            <Toolbar />
+            {/* Breadcrumb + Toolbar chrome — hidden when a full-pane
+                "destination" view (Activity Center, eventually
+                Notifications Center) owns the main area, so the user
+                doesn't confuse the file-browser nav with the
+                destination's own header. */}
+            {!destinationOpen && (
+              <>
+                <div className="flex items-center gap-2 border-b px-3 py-1.5">
+                  <Breadcrumb
+                    paneId={activePane.id}
+                    location={activePane.location}
+                  />
+                </div>
+                <Toolbar />
+              </>
+            )}
 
             {/* Main content area — three-state dispatcher (no profile /
                 profile-only / profile + bucket). DropZone wrapping is owned
@@ -222,8 +234,11 @@ export function AppShell() {
             </main>
           </Panel>
 
-          {/* Preview pane — hidden when collapsed */}
-          {!previewCollapsed && (
+          {/* Preview pane — hidden when collapsed OR when a full-pane
+              destination view (Activity / Notifications Center) is
+              open and the preview's selection-driven content is
+              meaningless. */}
+          {!previewCollapsed && !destinationOpen && (
             <>
               <Separator
                 className="group relative flex w-1.5 cursor-col-resize items-center justify-center bg-border transition-colors hover:bg-ring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[resize-handle-state=drag]:bg-ring"

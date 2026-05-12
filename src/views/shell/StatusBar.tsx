@@ -18,6 +18,7 @@ import { useQuery } from "@tanstack/react-query";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import {
   ActivityIcon,
+  BellIcon,
   ExternalLinkIcon,
   KeyboardIcon,
   SettingsIcon,
@@ -28,6 +29,7 @@ import { profileGet } from "@/api/profiles";
 import { formatBytes } from "@/lib/format";
 import { useObjectHead } from "@/query/hooks/useObjectHead";
 import { useProfilesList } from "@/query/hooks/useValidatedProfile";
+import { useNotificationsStore } from "@/store/notifications";
 import type { Pane } from "@/store/panes";
 import { useTransfersStore } from "@/store/transfers";
 import { useUiStore } from "@/store/ui";
@@ -53,6 +55,7 @@ const SHORTCUT_HINTS = [
   ["⌘B", "Toggle sidebar"],
   ["⌘J", "Toggle preview"],
   ["⌘⇧A", "Open Activity Center"],
+  ["⌘⇧N", "Open Notifications Center"],
   ["⌘⇧J", "Toggle transfer popup"],
   ["⌘1‒7", "Switch view mode"],
   ["⌘,", "Open Settings"],
@@ -246,6 +249,7 @@ export function StatusBar({ pane }: StatusBarProps) {
         )}
         <div className="ml-auto flex items-center gap-3">
           <ActivityChip />
+          <NotificationsChip />
           <ShortcutHints />
           <SettingsButton />
           <span className="truncate" title={profileLabel}>
@@ -339,15 +343,27 @@ function ActivityChip() {
   const { t } = useTranslation();
   const transfers = useTransfersStore((s) => s.transfers);
   const toggleActivityCenter = useUiStore((s) => s.toggleActivityCenter);
+  const lastSeenAt = useUiStore((s) => s.activityLastSeenAt);
 
   let activeCount = 0;
   let totalBytes = 0;
   let doneBytes = 0;
+  let unseenCompleted = 0;
   for (const tr of transfers.values()) {
     if (tr.state === "queued" || tr.state === "running") {
       activeCount += 1;
       totalBytes += tr.totalBytes ?? 0;
       doneBytes += tr.transferredBytes;
+      continue;
+    }
+    // A terminal-state transfer finished AFTER the user last opened the
+    // Activity Center counts as "unseen" and lights the dot.
+    if (
+      tr.finishedAt !== undefined &&
+      tr.finishedAt > lastSeenAt &&
+      (tr.state === "done" || tr.state === "failed" || tr.state === "canceled")
+    ) {
+      unseenCompleted += 1;
     }
   }
   const overallPct =
@@ -356,12 +372,14 @@ function ActivityChip() {
       : 0;
 
   const isActive = activeCount > 0;
-  const completedCount = transfers.size - activeCount;
+  const hasUnseen = unseenCompleted > 0;
   const title = isActive
     ? t("activity.titleActive", { count: activeCount, pct: overallPct })
-    : completedCount > 0
-      ? t("activity.titleCompleted", { count: completedCount })
-      : t("activity.titleIdle");
+    : hasUnseen
+      ? t("activity.titleUnseen", { count: unseenCompleted })
+      : transfers.size > 0
+        ? t("activity.titleCompleted", { count: transfers.size })
+        : t("activity.titleIdle");
 
   return (
     <button
@@ -369,10 +387,12 @@ function ActivityChip() {
       title={title}
       aria-label={title}
       onClick={() => toggleActivityCenter()}
-      className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors ${
+      className={`relative inline-flex items-center gap-1 rounded px-1.5 py-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors ${
         isActive
           ? "bg-green-500/15 text-green-700 dark:text-green-400 hover:bg-green-500/25"
-          : "hover:bg-accent hover:text-accent-foreground"
+          : hasUnseen
+            ? "bg-blue-500/15 text-blue-700 dark:text-blue-400 hover:bg-blue-500/25"
+            : "hover:bg-accent hover:text-accent-foreground"
       }`}
       data-testid="activity-chip"
     >
@@ -388,6 +408,87 @@ function ActivityChip() {
         <span className="text-[10px] uppercase tracking-wide">
           {t("activity.label")}
         </span>
+      )}
+      {/* New-activity dot — flashes when there's an unseen completion
+          and the chip itself isn't already glowing for active work. */}
+      {hasUnseen && !isActive && (
+        <span
+          aria-hidden="true"
+          className="absolute -right-0.5 -top-0.5 size-1.5 rounded-full bg-blue-500"
+        />
+      )}
+    </button>
+  );
+}
+
+/**
+ * NotificationsChip — companion to the Activity chip, dedicated to
+ * notifications/errors. Pulses red when there are unseen errors;
+ * shows a count when any notification exists. Click toggles the
+ * Notifications Center.
+ */
+function NotificationsChip() {
+  const { t } = useTranslation();
+  const entries = useNotificationsStore((s) => s.entries);
+  const toggle = useUiStore((s) => s.toggleNotificationsCenter);
+  const lastSeenAt = useUiStore((s) => s.notificationsLastSeenAt);
+
+  let total = 0;
+  let unseenErrors = 0;
+  let unseenAny = 0;
+  for (const n of entries) {
+    total += 1;
+    if (n.timestamp > lastSeenAt) {
+      unseenAny += 1;
+      if (n.severity === "error") unseenErrors += 1;
+    }
+  }
+  const hasUnseen = unseenAny > 0;
+  const hasUnseenError = unseenErrors > 0;
+
+  const title = hasUnseenError
+    ? t("notificationsChip.titleErrors", { count: unseenErrors })
+    : hasUnseen
+      ? t("notificationsChip.titleUnseen", { count: unseenAny })
+      : total > 0
+        ? t("notificationsChip.titleTotal", { count: total })
+        : t("notificationsChip.titleIdle");
+
+  return (
+    <button
+      type="button"
+      title={title}
+      aria-label={title}
+      onClick={() => toggle()}
+      className={`relative inline-flex items-center gap-1 rounded px-1.5 py-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors ${
+        hasUnseenError
+          ? "bg-red-500/15 text-red-700 dark:text-red-400 hover:bg-red-500/25"
+          : hasUnseen
+            ? "bg-blue-500/15 text-blue-700 dark:text-blue-400 hover:bg-blue-500/25"
+            : "hover:bg-accent hover:text-accent-foreground"
+      }`}
+      data-testid="notifications-chip"
+    >
+      <BellIcon
+        className={`size-3 ${hasUnseenError ? "animate-pulse" : ""}`}
+        aria-hidden="true"
+      />
+      {total > 0 ? (
+        <span className="text-[10px] uppercase tracking-wide font-medium">
+          {total}
+        </span>
+      ) : (
+        <span className="text-[10px] uppercase tracking-wide">
+          {t("notificationsChip.label")}
+        </span>
+      )}
+      {hasUnseen && (
+        <span
+          aria-hidden="true"
+          className={`absolute -right-0.5 -top-0.5 size-1.5 rounded-full ${
+            hasUnseenError ? "bg-red-500" : "bg-blue-500"
+          }`}
+        />
       )}
     </button>
   );
