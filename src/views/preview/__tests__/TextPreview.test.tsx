@@ -3,48 +3,46 @@
  *
  * Coverage:
  * 1. Shows loading skeleton synchronously.
- * 2. Renders highlighted HTML when Shiki returns HTML.
- * 3. Renders plain <pre> when no language is matched.
+ * 2. Renders Monaco editor (read-only) with the body once loaded.
+ * 3. Detects language from the key extension.
  * 4. Shows error slot when objectGetText rejects.
- * 5. Validation gate: profile not validated → placeholder (tested via
- *    PreviewPane routing; TextPreview itself does not have a gate — the
- *    gate lives in PreviewPane / useObjectHead, so we test the component
- *    directly here with a mocked invoke).
- * 6. Truncation banner when payload.truncated = true.
- * 7. axe-core a11y on loading state.
- * 8. axe-core a11y on rendered highlighted state.
+ * 5. Truncation banner when payload.truncated = true.
+ * 6. axe-core a11y on loading state.
+ * 7. axe-core a11y on rendered state.
  */
 
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
-import {
-  afterEach,
-  beforeEach,
-  describe,
-  expect,
-  it,
-  type Mock,
-  vi,
-} from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { axe } from "vitest-axe";
 import { mockInvoke } from "@/test/mocks/tauri";
-import { TextPreview } from "../TextPreview";
+import { TextPreviewCoreImpl as TextPreview } from "../TextPreview";
 
 // ---------------------------------------------------------------------------
-// Mock shiki lazy loader
+// Mock @monaco-editor/react — the real Monaco can't run in jsdom and pulling
+// it in would blow up the test bundle. The mock surfaces every prop we assert
+// on (`value`, `language`, `options.readOnly`, `options.wordWrap`) via
+// data-attributes so we can verify wiring without launching Monaco.
 // ---------------------------------------------------------------------------
 
-vi.mock("@/lib/shiki", () => ({
-  extensionToLanguage: (ext: string): string | null => {
-    const map: Record<string, string> = {
-      ".ts": "typescript",
-      ".py": "python",
-      ".json": "json",
-    };
-    return map[ext.toLowerCase()] ?? null;
-  },
-  highlight: vi.fn(),
-  loadLanguage: vi.fn().mockResolvedValue(undefined),
-  getHighlighter: vi.fn(),
+vi.mock("@monaco-editor/react", () => ({
+  default: ({
+    value,
+    language,
+    options,
+  }: {
+    value?: string;
+    language?: string;
+    options?: { readOnly?: boolean; wordWrap?: string };
+  }) => (
+    <div
+      data-testid="monaco-editor-mock"
+      data-language={language}
+      data-readonly={options?.readOnly ? "true" : "false"}
+      data-word-wrap={options?.wordWrap}
+    >
+      {value}
+    </div>
+  ),
 }));
 
 // ---------------------------------------------------------------------------
@@ -69,12 +67,7 @@ const TRUNCATED_PAYLOAD = {
 // Setup
 // ---------------------------------------------------------------------------
 
-let mockHighlight: Mock;
-
-beforeEach(async () => {
-  const shikiMod = await import("@/lib/shiki");
-  mockHighlight = shikiMod.highlight as Mock;
-  mockHighlight.mockResolvedValue("<span>highlighted</span>");
+beforeEach(() => {
   mockInvoke("object_get_text", TEXT_PAYLOAD);
 });
 
@@ -99,101 +92,72 @@ describe("TextPreview — loading skeleton", () => {
 });
 
 // ---------------------------------------------------------------------------
-// 2. Highlighted HTML
+// 2. Renders body
 // ---------------------------------------------------------------------------
 
-describe("TextPreview — highlighted rendering", () => {
-  it("renders highlighted HTML for a known extension", async () => {
+describe("TextPreview — rendering", () => {
+  it("renders Monaco in read-only mode with the body once loaded", async () => {
     render(
       <TextPreview profileId="p1" bucket="my-bucket" objectKey="index.ts" />,
     );
 
     await waitFor(() => {
-      expect(
-        screen.getByTestId("text-preview-highlighted"),
-      ).toBeInTheDocument();
+      expect(screen.getByTestId("monaco-editor-mock")).toBeInTheDocument();
     });
-    expect(screen.getByTestId("text-preview-highlighted").innerHTML).toContain(
-      "highlighted",
-    );
+
+    const editor = screen.getByTestId("monaco-editor-mock");
+    expect(editor.textContent).toContain(TEXT_PAYLOAD.body);
+    expect(editor).toHaveAttribute("data-readonly", "true");
   });
 
-  it("calls highlight with the correct language for .ts", async () => {
+  it("detects typescript language from .ts extension", async () => {
     render(
       <TextPreview profileId="p1" bucket="my-bucket" objectKey="app/main.ts" />,
     );
 
     await waitFor(() => {
-      expect(
-        screen.getByTestId("text-preview-highlighted"),
-      ).toBeInTheDocument();
+      expect(screen.getByTestId("monaco-editor-mock")).toBeInTheDocument();
     });
 
-    expect(mockHighlight).toHaveBeenCalledWith(
-      TEXT_PAYLOAD.body,
+    expect(screen.getByTestId("monaco-editor-mock")).toHaveAttribute(
+      "data-language",
       "typescript",
-      expect.any(String),
     );
   });
 
-  it("calls highlight with python for .py", async () => {
+  it("detects python language from .py extension", async () => {
     render(
       <TextPreview profileId="p1" bucket="my-bucket" objectKey="script.py" />,
     );
 
     await waitFor(() => {
-      expect(
-        screen.getByTestId("text-preview-highlighted"),
-      ).toBeInTheDocument();
+      expect(screen.getByTestId("monaco-editor-mock")).toBeInTheDocument();
     });
 
-    expect(mockHighlight).toHaveBeenCalledWith(
-      TEXT_PAYLOAD.body,
+    expect(screen.getByTestId("monaco-editor-mock")).toHaveAttribute(
+      "data-language",
       "python",
-      expect.any(String),
     );
   });
 
-  it("calls highlight with json for .json", async () => {
-    render(
-      <TextPreview profileId="p1" bucket="my-bucket" objectKey="data.json" />,
-    );
-
-    await waitFor(() => {
-      expect(
-        screen.getByTestId("text-preview-highlighted"),
-      ).toBeInTheDocument();
-    });
-
-    expect(mockHighlight).toHaveBeenCalledWith(
-      TEXT_PAYLOAD.body,
-      "json",
-      expect.any(String),
-    );
-  });
-});
-
-// ---------------------------------------------------------------------------
-// 3. Plain pre fallback for unknown extension
-// ---------------------------------------------------------------------------
-
-describe("TextPreview — plain text fallback", () => {
-  it("renders plain <pre> when extension has no grammar", async () => {
+  it("falls back to plaintext for unknown extensions", async () => {
     render(
       <TextPreview profileId="p1" bucket="my-bucket" objectKey="archive.tar" />,
     );
 
     await waitFor(() => {
-      expect(screen.getByTestId("text-preview-plain")).toBeInTheDocument();
+      expect(screen.getByTestId("monaco-editor-mock")).toBeInTheDocument();
     });
-    expect(screen.getByTestId("text-preview-plain").textContent).toBe(
-      TEXT_PAYLOAD.body,
+
+    expect(screen.getByTestId("monaco-editor-mock")).toHaveAttribute(
+      "data-language",
+      "plaintext",
     );
   });
 });
 
 // ---------------------------------------------------------------------------
-// 4. Error slot
+// 3. Error slot
 // ---------------------------------------------------------------------------
 
 describe("TextPreview — error slot", () => {
@@ -207,13 +171,12 @@ describe("TextPreview — error slot", () => {
     await waitFor(() => {
       expect(screen.getByTestId("text-preview-error")).toBeInTheDocument();
     });
-    // The error role is present; exact text depends on IPC normalization.
     expect(screen.getByRole("alert")).toBeInTheDocument();
   });
 });
 
 // ---------------------------------------------------------------------------
-// 6. Truncation banner
+// 4. Truncation banner
 // ---------------------------------------------------------------------------
 
 describe("TextPreview — truncation banner", () => {
@@ -235,7 +198,6 @@ describe("TextPreview — truncation banner", () => {
     );
 
     await waitFor(() => {
-      // Wait for load to finish
       expect(screen.getByTestId("text-preview")).toBeInTheDocument();
     });
 
@@ -246,7 +208,7 @@ describe("TextPreview — truncation banner", () => {
 });
 
 // ---------------------------------------------------------------------------
-// 7. Axe-core a11y — loading state
+// 5. Axe-core a11y — loading state
 // ---------------------------------------------------------------------------
 
 describe("TextPreview — a11y (loading state)", () => {
@@ -262,19 +224,17 @@ describe("TextPreview — a11y (loading state)", () => {
 });
 
 // ---------------------------------------------------------------------------
-// 8. Axe-core a11y — highlighted state
+// 6. Axe-core a11y — rendered state
 // ---------------------------------------------------------------------------
 
-describe("TextPreview — a11y (highlighted state)", () => {
-  it("has no axe violations when highlighted content is rendered", async () => {
+describe("TextPreview — a11y (rendered state)", () => {
+  it("has no axe violations when content is rendered", async () => {
     const { container } = render(
       <TextPreview profileId="p1" bucket="my-bucket" objectKey="index.ts" />,
     );
 
     await waitFor(() => {
-      expect(
-        screen.getByTestId("text-preview-highlighted"),
-      ).toBeInTheDocument();
+      expect(screen.getByTestId("monaco-editor-mock")).toBeInTheDocument();
     });
 
     const results = await axe(container);

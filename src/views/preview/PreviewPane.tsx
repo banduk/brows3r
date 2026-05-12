@@ -635,10 +635,10 @@ export function PreviewPane(): React.ReactElement {
   // ---------------------------------------------------------------------------
 
   const mime = head?.contentType ?? null;
-  const isTextFile = isTextMime(mime, firstKey);
+  const editable = isEditable(mime, firstKey);
 
-  // When in edit mode for a text file, render the Monaco editor.
-  if (editMode && isTextFile) {
+  // When in edit mode for any editable (non-binary) file, render Monaco.
+  if (editMode && editable) {
     return (
       <section
         aria-label="Preview"
@@ -672,7 +672,7 @@ export function PreviewPane(): React.ReactElement {
       className="flex h-full flex-col"
       data-testid="preview-pane"
     >
-      {isTextFile && (
+      {editable && (
         <div className="flex items-center justify-end border-b px-2 py-1">
           <button
             type="button"
@@ -687,6 +687,38 @@ export function PreviewPane(): React.ReactElement {
       {renderContent(profileId, bucket, firstKey, mime)}
     </section>
   );
+}
+
+// ---------------------------------------------------------------------------
+// Editable detection
+// ---------------------------------------------------------------------------
+
+/**
+ * Returns true when a file is "text-derived" — anything we can safely round-trip
+ * through Monaco as UTF-8 (text, HTML, Markdown, JSON arrays, CSV, NDJSON…).
+ * The "Edit in Monaco" button is gated on this so users can edit HTML,
+ * Markdown, JSON, etc., not just files routed to TextPreview.
+ *
+ * Excludes: images, video, audio, PDF, archives, known-binary extensions.
+ */
+function isEditable(mime: string | null | undefined, key: string): boolean {
+  if (isImageMime(mime, key)) return false;
+  if (isVideoMime(mime, key)) return false;
+  if (isAudioMime(mime, key)) return false;
+  if (isPdfMime(mime, key)) return false;
+  if (isArchiveMime(mime, key)) return false;
+  if (isHexMime(mime, key)) return false;
+
+  // Text-derived: plain text, code, HTML, Markdown, JSON, CSV, NDJSON.
+  if (isTextMime(mime, key)) return true;
+  if (isHtmlMime(mime, key)) return true;
+  if (isMarkdownMime(mime, key)) return true;
+  if (tabularMode(mime, key) !== null) return true;
+  if (mime) {
+    const normalized = mime.toLowerCase().split(";")[0]?.trim() ?? "";
+    if (normalized === "application/json") return true;
+  }
+  return false;
 }
 
 // ---------------------------------------------------------------------------
