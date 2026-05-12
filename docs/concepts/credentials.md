@@ -67,6 +67,46 @@ with no detail — the SDK error message is logged on the Rust side, but
 never propagated. This avoids leaking whether the credentials are wrong,
 expired, or just lack a particular permission.
 
+### Lazy validation + auto-retry
+
+brows3r doesn't bulk-validate every profile at startup — validation is
+**lazy**: the first query that targets a profile triggers
+`profile_validate` if `validated_at` is missing or stale. The frontend
+hook `useValidatedProfile` performs the gating and de-duplicates
+concurrent calls with a ref.
+
+On top of that, the TanStack Query cache has a global `onError` handler
+that intercepts `Auth` / `AccessDenied` failures, transparently calls
+`profile_validate` again (forcing a fresh SDK probe), and retries the
+failed query once. This handles short-lived SSO sessions and rotated
+keys without surfacing a modal to the user.
+
+For profiles backed by an SSO session, users can opt into a periodic
+background refresh in Settings → General. The interval is configurable
+(default 30 minutes) and the timer is stored per-profile in
+`useValidationStore`.
+
+## Keychain access
+
+brows3r uses the [`keyring`](https://docs.rs/keyring) crate to talk to
+the OS-native secret store (macOS Keychain, Windows Credential Manager,
+freedesktop Secret Service on Linux). On startup, the keychain backend
+is **probed read-only** with `Entry::get_password()` — a missing entry
+counts as success because the goal is to verify that *the store
+responds*, not that any specific secret exists.
+
+If the probe fails (e.g. the user denied Keychain access, the daemon is
+unavailable, or the platform doesn't expose one), brows3r logs the real
+probe error to stderr and falls back to an encrypted-file backend. The
+fallback decision is persisted in
+`useProfilesStore.hasUnlockedKeychainFallback`, so subsequent launches
+don't re-prompt for credentials.
+
+For diagnostics, the env var **`BROWS3R_FORCE_OS_KEYCHAIN=1`** forces
+the OS keychain path even when the probe would have failed — useful
+when investigating "why did brows3r fall back?" without flipping
+keychain settings system-wide.
+
 ## Presigned URLs
 
 Presigned URLs are an exception: the user explicitly asks for them, and the
