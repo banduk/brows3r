@@ -63,9 +63,22 @@ hosted backend, no telemetry-by-default, no account to sign up for.
   <kbd>Cmd</kbd>+<kbd>F</kbd> recursive search, <kbd>/</kbd> fuzzy
   filter, <kbd>Cmd</kbd>+<kbd>L</kbd> breadcrumb edit, full keyboard
   navigation in every view.
-- **Bulk operations** — drag-and-drop upload, recursive download, copy
-  / cut / paste / rename / move / delete / create folder / presigned
-  URL. Optimistic UI with transactional rollback.
+- **Bulk operations** — drag-and-drop upload, recursive download with a
+  pre-enumeration confirm dialog, copy / cut / paste / rename / move /
+  delete / create folder / presigned URL. Optimistic UI with
+  transactional rollback. Folder downloads preserve the source folder
+  name at the destination.
+- **Activity Center** — full-pane download manager (<kbd>Cmd</kbd>+<kbd>Shift</kbd>+<kbd>A</kbd>)
+  with filter tabs, fuzzy search, sort, session stats, batch grouping,
+  per-row and "Open folder" actions. Replaces the floating transfer
+  popup.
+- **Notifications Center** — sister destination (<kbd>Cmd</kbd>+<kbd>Shift</kbd>+<kbd>N</kbd>)
+  for errors, warnings, and info — transfer events live in the Activity
+  Center, not in the bell.
+- **Internationalisation** — UI shipped in 6 languages (English,
+  Português-BR, Español, Français, Deutsch, 简体中文) with a language
+  switcher in Settings → General. See
+  [`docs/contributing/i18n.md`](docs/contributing/i18n.md) to add more.
 - **Bookmarks** at any level (bucket / folder / object) with
   auto-pruning when a profile is deleted. Auto-tracked Recents.
 - **Inspector** — bucket metadata (versioning, encryption, lifecycle,
@@ -73,6 +86,10 @@ hosted backend, no telemetry-by-default, no account to sign up for.
   storage class transitions).
 - **Multipart cleanup** — Settings panel that scans for orphaned
   multipart uploads and aborts them.
+- **Resilient auth** — profiles validate lazily on first use, auto-retry
+  once on transient auth errors, and offer an opt-in periodic refresh.
+  Keychain access is probed read-only; a `BROWS3R_FORCE_OS_KEYCHAIN`
+  escape hatch is available for diagnosing fallback behavior.
 - **Performance** — virtualized rows, infinite scroll, off-thread fuzzy
   filter via Web Worker, capability cache that mutes unsupported
   operations instead of failing them noisily.
