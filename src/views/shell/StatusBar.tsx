@@ -16,7 +16,12 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { openUrl } from "@tauri-apps/plugin-opener";
-import { ActivityIcon, ExternalLinkIcon, KeyboardIcon } from "lucide-react";
+import {
+  ActivityIcon,
+  ExternalLinkIcon,
+  KeyboardIcon,
+  SettingsIcon,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { profileGet } from "@/api/profiles";
 import { formatBytes } from "@/lib/format";
@@ -47,6 +52,7 @@ const SHORTCUT_HINTS = [
   ["⌘J", "Toggle preview"],
   ["⌘⇧J", "Toggle transfer manager"],
   ["⌘1‒7", "Switch view mode"],
+  ["⌘,", "Open Settings"],
 ] as const;
 
 interface StatusBarProps {
@@ -237,6 +243,7 @@ export function StatusBar({ pane }: StatusBarProps) {
         <div className="ml-auto flex items-center gap-3">
           <ActivityChip />
           <ShortcutHints />
+          <SettingsButton />
           <span className="truncate" title={profileLabel}>
             {profileLabel}
           </span>
@@ -369,6 +376,28 @@ function ActivityChip() {
       ) : (
         <span className="text-[10px] uppercase tracking-wide">Activity</span>
       )}
+    </button>
+  );
+}
+
+/**
+ * SettingsButton — visible gear icon in the status bar that opens the
+ * Settings screen. The Cmd+, shortcut also opens it; the icon exists so
+ * the feature is discoverable for users who don't know the shortcut.
+ */
+function SettingsButton() {
+  return (
+    <button
+      type="button"
+      aria-label="Open Settings (⌘,)"
+      title="Open Settings (⌘,)"
+      onClick={() => {
+        window.dispatchEvent(new CustomEvent("settings:open"));
+      }}
+      className="inline-flex items-center rounded p-0.5 hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      data-testid="open-settings"
+    >
+      <SettingsIcon className="size-3.5" />
     </button>
   );
 }
