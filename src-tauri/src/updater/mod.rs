@@ -98,14 +98,12 @@ pub async fn check_for_update(app: &AppHandle) -> Result<UpdateStatus, AppError>
 // install_update
 // ---------------------------------------------------------------------------
 
-/// Download and stage the pending update, then request an app restart.
+/// Download and stage the pending update, emitting `Downloading { progress }`
+/// events along the way so the UI's progress bar can advance.
 ///
 /// Must only be called after `check_for_update` has returned
 /// `UpdateStatus::Available`.  Calling this when no update is pending returns
 /// `AppError::Validation`.
-///
-/// Progress events are emitted by the command layer (`updater_cmd`), which
-/// wraps this function and emits `updater:status` transitions at each phase.
 pub async fn install_update(app: &AppHandle) -> Result<(), AppError> {
     let updater = app.updater().map_err(|e| AppError::Internal {
         trace_id: format!("updater_init: {e}"),
@@ -122,14 +120,61 @@ pub async fn install_update(app: &AppHandle) -> Result<(), AppError> {
             hint: "No pending update available".to_string(),
         })?;
 
+    // tauri-plugin-updater hands us byte counters on every chunk and a
+    // total size at the start. Translate those into the
+    // `UpdateStatus::Downloading { progress }` events the UI subscribes
+    // to. Without this, `UpdaterPrompt` shows a 40%-width indeterminate
+    // bar that never moves.
+    use std::cell::Cell;
+    let downloaded = Cell::new(0u64);
+    let total = Cell::new(None::<u64>);
+    let app_for_progress = app.clone();
+
     update
-        .download_and_install(|_chunk, _total| {}, || {})
+        .download_and_install(
+            move |chunk_len, content_length| {
+                if total.get().is_none() {
+                    total.set(content_length);
+                }
+                let acc = downloaded.get() + chunk_len as u64;
+                downloaded.set(acc);
+                let progress = total.get().and_then(|t| {
+                    if t == 0 {
+                        None
+                    } else {
+                        // Clamp to [0,1] in case the plugin briefly
+                        // reports more bytes than the announced total.
+                        let pct = (acc as f32 / t as f32).clamp(0.0, 1.0);
+                        Some(pct)
+                    }
+                });
+                let _ = crate::events::emit(
+                    &app_for_progress,
+                    crate::events::EventKind::UpdaterStatus,
+                    &UpdateStatus::Downloading { progress },
+                );
+            },
+            || {},
+        )
         .await
         .map_err(|e| AppError::Network {
             source: format!("updater install: {e}"),
         })?;
 
     Ok(())
+}
+
+// ---------------------------------------------------------------------------
+// restart
+// ---------------------------------------------------------------------------
+
+/// Restart the application process. Used by `UpdaterPrompt` after the
+/// `Ready` state — `window.location.reload()` only reloaded the WebView
+/// in the SAME binary so the freshly-installed update never took
+/// effect. `AppHandle::restart()` exits and re-execs the staged binary.
+pub fn restart(app: &AppHandle) {
+    // `AppHandle::restart()` is `-> !` and terminates the process.
+    app.restart();
 }
 
 // ---------------------------------------------------------------------------

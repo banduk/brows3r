@@ -153,7 +153,9 @@ function FlatRow({
           className="shrink-0 text-muted-foreground"
           size={14}
         />
-        <span className="truncate font-mono text-xs">{entry.key}</span>
+        <span className="truncate font-mono text-xs" title={entry.key}>
+          {entry.key}
+        </span>
       </div>
       {/* Size */}
       <span

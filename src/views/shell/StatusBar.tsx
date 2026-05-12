@@ -19,6 +19,7 @@ import { openUrl } from "@tauri-apps/plugin-opener";
 import { ExternalLinkIcon, KeyboardIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { profileGet } from "@/api/profiles";
+import { formatBytes } from "@/lib/format";
 import { useObjectHead } from "@/query/hooks/useObjectHead";
 import { useProfilesList } from "@/query/hooks/useValidatedProfile";
 import type { Pane } from "@/store/panes";
@@ -72,14 +73,30 @@ export function StatusBar({ pane }: StatusBarProps) {
 
   // Single selected key (the "focused object" in the pane). Drives the
   // "fetched Xs ago" indicator so the user can tell when the HEAD data
-  // they see may have drifted from the live object in S3.
-  const focusedKey = [...pane.selection][0] ?? null;
-  const { dataUpdatedAt } = useObjectHead(
+  // they see may have drifted from the live object in S3, AND feeds the
+  // selection chip that displays the *full* filename (file lists
+  // truncate them, the status bar is the lossless surface).
+  const selectionList = Array.from(pane.selection);
+  const selectionCount = selectionList.length;
+  const focusedKey = selectionList[0] ?? null;
+  const { data: focusedHead, dataUpdatedAt } = useObjectHead(
     location?.profileId,
     location?.bucket,
     focusedKey,
   );
   const fetchedLabel = useFetchedAgo(dataUpdatedAt);
+
+  const selectionLabel = (() => {
+    if (selectionCount === 0) return null;
+    if (selectionCount > 1) {
+      return `${selectionCount.toString()} items selected`;
+    }
+    if (!focusedKey) return null;
+    // Strip the prefix portion: the bucket-level path is already shown
+    // in the location chip; the user wants to see the *file name*.
+    const name = focusedKey.split("/").filter(Boolean).pop() ?? focusedKey;
+    return name;
+  })();
 
   /**
    * URL that the "open in browser" affordance points at, plus a label
@@ -176,6 +193,28 @@ export function StatusBar({ pane }: StatusBarProps) {
             </button>
           )}
         </div>
+        {selectionLabel && (
+          <span
+            className="min-w-0 max-w-[40%] shrink truncate text-foreground/80"
+            data-testid="status-selection-name"
+            title={
+              selectionCount > 1
+                ? selectionList.join("\n")
+                : (focusedKey ?? selectionLabel)
+            }
+          >
+            {selectionCount === 1 && focusedHead?.contentLength != null ? (
+              <>
+                {selectionLabel}
+                <span className="ml-1.5 text-[10px] uppercase tracking-wide opacity-70">
+                  {formatBytes(focusedHead.contentLength)}
+                </span>
+              </>
+            ) : (
+              selectionLabel
+            )}
+          </span>
+        )}
         {fetchedLabel && (
           <span
             className="shrink-0 text-[10px] uppercase tracking-wide opacity-75"

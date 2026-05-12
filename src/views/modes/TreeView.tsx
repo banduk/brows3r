@@ -181,7 +181,9 @@ function TreeRow({
         className="shrink-0 text-muted-foreground"
         size={14}
       />
-      <span className="ml-1 truncate">{name}</span>
+      <span className="ml-1 truncate" title={name}>
+        {name}
+      </span>
     </div>
   );
 }

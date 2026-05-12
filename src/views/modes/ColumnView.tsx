@@ -115,7 +115,9 @@ function ColumnEntry({
         className="shrink-0 text-muted-foreground"
         size={14}
       />
-      <span className="flex-1 truncate">{name}</span>
+      <span className="flex-1 truncate" title={name}>
+        {name}
+      </span>
       {entry.isPrefix && (
         <span className="shrink-0 text-[10px] text-muted-foreground">▶</span>
       )}

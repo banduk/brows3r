@@ -22,6 +22,21 @@ use crate::{
 };
 
 // ---------------------------------------------------------------------------
+// updater_restart
+// ---------------------------------------------------------------------------
+
+/// Restart the application after a successful `updater_install`.
+///
+/// The frontend's "Restart now" button used to call
+/// `window.location.reload()` which only reloaded the WebView inside the
+/// still-running old binary — the staged update never took effect.
+/// `app.restart()` exits and re-execs into the freshly-installed binary.
+#[tauri::command]
+pub fn updater_restart(app: AppHandle) {
+    updater::restart(&app);
+}
+
+// ---------------------------------------------------------------------------
 // updater_check
 // ---------------------------------------------------------------------------
 
