@@ -14,13 +14,19 @@
  * the relevant hooks.
  */
 
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
-import { useMemo } from "react";
+import {
+  useInfiniteQuery,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
+import { useEffect, useMemo, useRef } from "react";
 import { type BucketSummary, bucketsList } from "@/api/buckets";
 import { objectsList } from "@/api/objects";
 import type { ProfileSummary } from "@/api/profiles";
-import { profilesList } from "@/api/profiles";
+import { profilesList, profileValidate } from "@/api/profiles";
+import { isAppError } from "@/lib/errors";
 import { keys } from "@/query/keys";
+import { useValidationStore } from "@/store/validation";
 
 // ---------------------------------------------------------------------------
 // Small wrapper around the profiles list query
@@ -56,6 +62,15 @@ interface UseValidatedProfileResult {
 /**
  * Look up a profile and return whether it has been validated this session.
  *
+ * As a side-effect, fires a lazy `profile_validate` once per session for
+ * any profile that has not yet been validated (and is not already being
+ * validated). Subsequent renders see `validatedAt` populated and skip
+ * the gate without the user ever clicking a "Validate" button.
+ *
+ * The validation status (idle / validating / ok / error) lives in
+ * `useValidationStore` so the sidebar dot + any future "needs auth" UI
+ * can render a unified state.
+ *
  * Returns `isValidated = false` and `profile = null` when:
  * - `profileId` is null / undefined
  * - the profiles list is still loading
@@ -66,14 +81,80 @@ export function useValidatedProfile(
   profileId: ProfileId | null | undefined,
 ): UseValidatedProfileResult {
   const { profiles, isLoading } = useProfilesList();
+  const queryClient = useQueryClient();
+  const startValidating = useValidationStore((s) => s.startValidating);
+  const markOk = useValidationStore((s) => s.markOk);
+  const markError = useValidationStore((s) => s.markError);
+  // Per-render ref: which profile ids THIS hook instance already kicked off.
+  // Combined with the store-level status check this prevents duplicates
+  // from a single mount and from cross-component races.
+  const firedFor = useRef<Set<string>>(new Set());
+
+  const profile = profileId
+    ? (profiles.find((p) => p.id === profileId) ?? null)
+    : null;
+  const validatedAt = profile?.validatedAt ?? null;
+
+  // Lazy auto-validate: when a real profile shows up that hasn't been
+  // validated this session, fire validation in the background.
+  useEffect(() => {
+    if (!profileId || !profile) return;
+    if (validatedAt != null) return;
+    if (firedFor.current.has(profileId)) return;
+    const status =
+      useValidationStore.getState().statuses.get(profileId) ?? "idle";
+    if (status === "validating" || status === "error") return;
+
+    firedFor.current.add(profileId);
+    startValidating(profileId);
+    void profileValidate(profileId)
+      .then(async (report) => {
+        // Refresh the profiles list so `validatedAt` propagates. The
+        // backend already set the session-scoped flag inside the report.
+        await queryClient.invalidateQueries({ queryKey: keys.profiles() });
+        if (report.ok) {
+          markOk(profileId);
+        } else if (report.error) {
+          markError(profileId, report.error);
+        } else {
+          // Backend returned ok=false with no error — treat as a generic
+          // failure so the UI surfaces something clickable.
+          markError(profileId, {
+            kind: "Internal",
+            message: "Validation failed",
+            retryable: false,
+            details: { traceId: "validation_no_error" },
+          });
+        }
+      })
+      .catch((err: unknown) => {
+        markError(
+          profileId,
+          isAppError(err)
+            ? err
+            : {
+                kind: "Internal",
+                message: err instanceof Error ? err.message : String(err),
+                retryable: false,
+                details: { traceId: "validation_throw" },
+              },
+        );
+      });
+  }, [
+    profileId,
+    validatedAt,
+    profile,
+    startValidating,
+    markOk,
+    markError,
+    queryClient,
+  ]);
 
   if (!profileId || isLoading) {
     return { isValidated: false, profile: null, isLoading };
   }
 
-  const profile = profiles.find((p) => p.id === profileId) ?? null;
-  const isValidated = profile?.validatedAt != null;
-
+  const isValidated = validatedAt != null;
   return { isValidated, profile, isLoading: false };
 }
 

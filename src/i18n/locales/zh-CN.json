@@ -50,9 +50,11 @@
     "validate": "验证",
     "delete": "删除",
     "deleteConfirm": "删除配置文件 \"{{name}}\"?此操作无法撤销。",
-    "validatedRecently": "最近已验证",
+    "validatedRecently": "已验证",
     "validationStale": "验证已过期",
-    "notValidated": "未验证"
+    "notValidated": "未验证",
+    "validating": "正在验证…",
+    "errorWithReason": "验证失败:{{reason}}"
   },
   "bookmarks": {
     "loading": "正在加载书签…",

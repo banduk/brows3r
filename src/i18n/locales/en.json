@@ -50,9 +50,11 @@
     "validate": "Validate",
     "delete": "Delete",
     "deleteConfirm": "Delete profile \"{{name}}\"? This cannot be undone.",
-    "validatedRecently": "Validated recently",
+    "validatedRecently": "Validated",
     "validationStale": "Validation is stale",
-    "notValidated": "Not validated"
+    "notValidated": "Not validated",
+    "validating": "Validating…",
+    "errorWithReason": "Validation failed: {{reason}}"
   },
   "bookmarks": {
     "loading": "Loading bookmarks…",

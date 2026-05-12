@@ -50,9 +50,11 @@
     "validate": "Validar",
     "delete": "Excluir",
     "deleteConfirm": "Excluir o perfil \"{{name}}\"? Isso não pode ser desfeito.",
-    "validatedRecently": "Validado recentemente",
+    "validatedRecently": "Validado",
     "validationStale": "Validação desatualizada",
-    "notValidated": "Não validado"
+    "notValidated": "Não validado",
+    "validating": "Validando…",
+    "errorWithReason": "Falha na validação: {{reason}}"
   },
   "bookmarks": {
     "loading": "Carregando favoritos…",

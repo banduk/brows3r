@@ -50,9 +50,11 @@
     "validate": "Validar",
     "delete": "Eliminar",
     "deleteConfirm": "¿Eliminar el perfil \"{{name}}\"? Esta acción no se puede deshacer.",
-    "validatedRecently": "Validado recientemente",
+    "validatedRecently": "Validado",
     "validationStale": "Validación desactualizada",
-    "notValidated": "No validado"
+    "notValidated": "No validado",
+    "validating": "Validando…",
+    "errorWithReason": "Validación fallida: {{reason}}"
   },
   "bookmarks": {
     "loading": "Cargando marcadores…",

@@ -13,7 +13,7 @@
  */
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { MoreHorizontalIcon, PlusIcon } from "lucide-react";
+import { Loader2Icon, MoreHorizontalIcon, PlusIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -29,6 +29,7 @@ import { surfaceError, surfaceUnknownError } from "@/lib/errors";
 import { cn } from "@/lib/utils";
 import { keys } from "@/query/keys";
 import { usePanesStore } from "@/store/panes";
+import { selectStatus, useValidationStore } from "@/store/validation";
 import { ProfileEditor } from "@/views/settings/ProfileEditor";
 
 // ---------------------------------------------------------------------------
@@ -66,43 +67,63 @@ const SOURCE_BADGE: Record<
 // ValidationDot
 // ---------------------------------------------------------------------------
 
-/** Threshold below which a validation is considered "stale" (10 min). */
-const STALE_THRESHOLD_MS = 10 * 60 * 1_000;
-
-type ValidationStatus = "valid" | "stale" | "unvalidated";
-
-function getValidationStatus(validatedAt?: number): ValidationStatus {
-  if (validatedAt === undefined) return "unvalidated";
-  const age = Date.now() - validatedAt;
-  return age <= STALE_THRESHOLD_MS ? "valid" : "stale";
-}
-
+/**
+ * Validation indicator — replaces the previous "stale = red" semantics
+ * which gave a false sense of urgency. New behaviour:
+ *
+ * - Validating now → small spinner
+ * - Validated (any age, until the backend says otherwise) → discreet
+ *   green dot (subtle, no panic colour)
+ * - Validation error (this session) → red dot with the error message
+ * - Never validated, no in-flight attempt → neutral grey dot
+ *
+ * Age-based "staleness" no longer turns the dot red; the backend's
+ * session-scoped guard plus the lazy auto-validate keep things fresh,
+ * and a real auth failure surfaces as an error, not as a 10-minute
+ * timeout.
+ */
 interface ValidationDotProps {
+  profileId: string;
   validatedAt?: number;
 }
 
-function ValidationDot({ validatedAt }: ValidationDotProps) {
-  const status = getValidationStatus(validatedAt);
+function ValidationDot({ profileId, validatedAt }: ValidationDotProps) {
   const { t } = useTranslation();
-  const dotClass =
-    status === "valid"
-      ? "bg-green-500"
-      : status === "stale"
-        ? "bg-gray-400"
-        : "bg-red-400";
-  const label =
-    status === "valid"
-      ? t("profiles.validatedRecently")
-      : status === "stale"
-        ? t("profiles.validationStale")
-        : t("profiles.notValidated");
+  const status = useValidationStore((s) => selectStatus(s, profileId));
+  const error = useValidationStore((s) => s.errors.get(profileId));
 
+  if (status === "validating") {
+    return (
+      <Loader2Icon
+        aria-label={t("profiles.validating")}
+        className="size-3 shrink-0 animate-spin text-muted-foreground"
+      />
+    );
+  }
+
+  if (status === "error" && error) {
+    return (
+      <span
+        role="img"
+        aria-label={t("profiles.errorWithReason", { reason: error.message })}
+        title={t("profiles.errorWithReason", { reason: error.message })}
+        className="inline-block size-2 shrink-0 rounded-full bg-red-500"
+      />
+    );
+  }
+
+  const isValid = validatedAt != null;
+  const label = isValid
+    ? t("profiles.validatedRecently")
+    : t("profiles.notValidated");
   return (
     <span
       role="img"
       aria-label={label}
       title={label}
-      className={`inline-block size-2 shrink-0 rounded-full ${dotClass}`}
+      className={`inline-block size-2 shrink-0 rounded-full ${
+        isValid ? "bg-green-500" : "bg-muted-foreground/40"
+      }`}
     />
   );
 }
@@ -312,7 +333,10 @@ export function Profiles() {
                   onClick={() => handleNavigate(profile)}
                   className="flex min-w-0 flex-1 cursor-pointer items-center gap-2 px-3 py-2 text-left"
                 >
-                  <ValidationDot validatedAt={profile.validatedAt} />
+                  <ValidationDot
+                    profileId={profile.id}
+                    validatedAt={profile.validatedAt}
+                  />
 
                   <span className="min-w-0 flex-1 truncate text-sm font-medium">
                     {profile.displayName}

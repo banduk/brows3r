@@ -50,9 +50,11 @@
     "validate": "Valider",
     "delete": "Supprimer",
     "deleteConfirm": "Supprimer le profil \"{{name}}\" ? Cette action est irréversible.",
-    "validatedRecently": "Validé récemment",
+    "validatedRecently": "Validé",
     "validationStale": "Validation obsolète",
-    "notValidated": "Non validé"
+    "notValidated": "Non validé",
+    "validating": "Validation…",
+    "errorWithReason": "Échec de la validation : {{reason}}"
   },
   "bookmarks": {
     "loading": "Chargement des favoris…",

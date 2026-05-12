@@ -50,9 +50,11 @@
     "validate": "Validieren",
     "delete": "Löschen",
     "deleteConfirm": "Profil \"{{name}}\" löschen? Dies kann nicht rückgängig gemacht werden.",
-    "validatedRecently": "Kürzlich validiert",
+    "validatedRecently": "Validiert",
     "validationStale": "Validierung veraltet",
-    "notValidated": "Nicht validiert"
+    "notValidated": "Nicht validiert",
+    "validating": "Wird validiert…",
+    "errorWithReason": "Validierung fehlgeschlagen: {{reason}}"
   },
   "bookmarks": {
     "loading": "Lesezeichen werden geladen…",
