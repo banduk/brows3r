@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.5](https://github.com/banduk/brows3r/compare/v0.2.4...v0.2.5) (2026-05-12)
+
+
+### Bug Fixes
+
+* **errors:** surface Auth/AccessDenied user-initiated errors as toast ([#34](https://github.com/banduk/brows3r/issues/34)) ([90b2f11](https://github.com/banduk/brows3r/commit/90b2f11dc3587883d7cd154bac9943b84a520a4c))
+* rename menu events past Tauri's stricter validator + retry macOS bundle ([#33](https://github.com/banduk/brows3r/issues/33)) ([05b10bc](https://github.com/banduk/brows3r/commit/05b10bc78682a827cd7bf560007fb3eff15d5e81))
+
 ## [0.2.4](https://github.com/banduk/brows3r/compare/v0.2.3...v0.2.4) (2026-05-12)
 
 
