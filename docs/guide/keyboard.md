@@ -13,12 +13,25 @@ all times.
 | <kbd>Cmd</kbd>+<kbd>K</kbd> | Open the command palette |
 | <kbd>Cmd</kbd>+<kbd>F</kbd> | Recursive search (current bucket + prefix) |
 | <kbd>/</kbd> | Filter the current view (fuzzy) |
+| <kbd>Cmd</kbd>+<kbd>/</kbd> | Toggle preview pane |
 | <kbd>Cmd</kbd>+<kbd>L</kbd> | Edit breadcrumb path |
 | <kbd>Cmd</kbd>+<kbd>I</kbd> | Inspector for the selection |
 | <kbd>Cmd</kbd>+<kbd>,</kbd> | Open settings |
 | <kbd>Cmd</kbd>+<kbd>[</kbd> | Back |
 | <kbd>Cmd</kbd>+<kbd>]</kbd> | Forward |
 | <kbd>Cmd</kbd>+<kbd>↑</kbd> | Up one level |
+
+## Activity & notifications
+
+| Shortcut | Action |
+|---|---|
+| <kbd>Cmd</kbd>+<kbd>Shift</kbd>+<kbd>A</kbd> | Toggle the Activity Center (downloads / uploads) |
+| <kbd>Cmd</kbd>+<kbd>Shift</kbd>+<kbd>N</kbd> | Toggle the Notifications Center (errors / warnings / info) |
+| <kbd>Cmd</kbd>+<kbd>Shift</kbd>+<kbd>J</kbd> | Toggle the compact transfer popup |
+
+The two Centers are mutually exclusive destinations — opening one
+collapses the other. Transfer events appear only in the Activity
+Center, never in the Notifications bell.
 
 ## View modes
 

@@ -53,3 +53,13 @@ few hundred transitive crates. Subsequent runs are incremental.
 
 Once the app opens, follow [First profile](/guide/first-profile) to point it
 at an S3 bucket.
+
+## Language
+
+brows3r ships in six languages: English, Português (Brasil), Español,
+Français, Deutsch, and 简体中文. The interface auto-detects the OS locale
+on first launch; you can change it any time from **Settings → General →
+Language**. The preference is persisted.
+
+Adding a new language is a 3-step PR — see
+[`docs/contributing/i18n.md`](https://github.com/banduk/brows3r/blob/main/docs/contributing/i18n.md).
