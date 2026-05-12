@@ -208,10 +208,25 @@ pub fn run() {
             app.manage(ProfileStoreHandle::new(store));
 
             // Keychain: select best available backend at runtime.
-            // Passphrase comes from task 18 (Credential Manager UI); for now
-            // we use a placeholder empty string.
-            let backend = profiles::keychain::select_backend(keychain_dir, "");
+            // When the OS keychain is unavailable, select_backend falls back
+            // to the encrypted-file backend with a placeholder passphrase.
+            // The user-facing follow-up is the KeychainFallbackPrompt which
+            // collects a real passphrase via `keychain_fallback_unlock`.
+            let (backend, used_fallback) = profiles::keychain::select_backend(keychain_dir, "");
             app.manage(KeychainHandle::from_box(backend));
+
+            if used_fallback {
+                // Emit on a short delay so the frontend's KeychainFallbackPrompt
+                // listener has time to mount before the event is published.
+                // Without the delay the event fires before App.tsx attaches its
+                // `listen("keychain:fallback-required", …)` handler and is lost.
+                let app_for_emit = app.app_handle().clone();
+                tauri::async_runtime::spawn(async move {
+                    tokio::time::sleep(std::time::Duration::from_secs(2)).await;
+                    let _ =
+                        app_for_emit.emit(events::EventKind::KeychainFallbackRequired.as_str(), ());
+                });
+            }
 
             // S3 client pool: shared across all commands; uses system proxy by default.
             let pool = ClientPool::new(ProxyConfig::System);

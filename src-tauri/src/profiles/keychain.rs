@@ -560,23 +560,34 @@ impl KeychainBackend for StubBackend {
 pub fn select_backend(
     fallback_dir: impl Into<std::path::PathBuf>,
     fallback_passphrase: &str,
-) -> Box<dyn KeychainBackend + Send + Sync> {
+) -> (Box<dyn KeychainBackend + Send + Sync>, bool) {
     let probe_ok = keyring::Entry::new("brows3r", "probe")
         .and_then(|e| e.set_password("test"))
         .and_then(|_| keyring::Entry::new("brows3r", "probe").and_then(|e| e.delete_credential()))
         .is_ok();
 
     if probe_ok {
-        Box::new(KeyringBackend::new())
+        (Box::new(KeyringBackend::new()), false)
     } else {
         // OS keychain unavailable — use encrypted file fallback.
         // Per design.md §Cross-Platform Considerations: "off by default,
-        // surfaced via notification when used". The notification is emitted
-        // by the caller (task 18 Credential Manager UI).
-        Box::new(FileBackendWithPassphrase::new(
-            fallback_dir,
-            fallback_passphrase,
-        ))
+        // surfaced via notification when used". The boolean returned alongside
+        // the backend lets the caller emit `KeychainFallbackRequired` so the
+        // KeychainFallbackPrompt opens and the user can supply a real
+        // passphrase. Without that follow-up `secrets.enc` is encrypted with
+        // the placeholder passphrase that lib.rs passes here.
+        eprintln!(
+            "[brows3r] OS keychain unavailable — falling back to encrypted file backend. \
+             Until the user supplies a passphrase via the Credential Manager prompt, \
+             secrets.enc is encrypted with the empty placeholder passphrase."
+        );
+        (
+            Box::new(FileBackendWithPassphrase::new(
+                fallback_dir,
+                fallback_passphrase,
+            )),
+            true,
+        )
     }
 }
 
