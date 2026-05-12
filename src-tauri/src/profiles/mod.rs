@@ -238,6 +238,17 @@ impl ProfileStore {
     // Construction / loading
     // ------------------------------------------------------------------
 
+    /// Construct an empty `ProfileStore` backed by `path`, without touching
+    /// disk. Used as the last-resort fallback when both the primary and
+    /// temp-dir `profiles.json` paths are unreadable — the user starts the
+    /// session with no manual profiles but the app at least opens.
+    pub fn empty(path: PathBuf) -> Self {
+        Self {
+            path,
+            manual: Vec::new(),
+        }
+    }
+
     /// Create a new `ProfileStore` backed by `path`.
     ///
     /// Loads existing manual profiles from disk if the file exists; starts
