@@ -17,11 +17,11 @@
  */
 
 import { create } from "zustand";
-import type { Transfer, TransferState } from "@/api/transfers";
+import type { Transfer, TransferKind, TransferState } from "@/api/transfers";
 import type { AppError } from "@/lib/errors";
 
 // Re-export Transfer so consumers can import from one place.
-export type { Transfer, TransferState };
+export type { Transfer, TransferKind, TransferState };
 
 // ---------------------------------------------------------------------------
 // MB/s + ETA helpers — pure functions, easy to swap
@@ -192,6 +192,51 @@ export const useTransfersStore = createTransfersStore();
 // ---------------------------------------------------------------------------
 // Event bridge helpers — called from src/query/client.ts
 // ---------------------------------------------------------------------------
+
+/**
+ * Seed the store with full Transfer records the moment the backend returns
+ * request IDs from `transfer_download_many` / `transfer_upload_many`. Without
+ * this, the only data the store ever sees comes from `transfer:progress` —
+ * which carries no key / profileId / bucket — so TransferRow renders blank
+ * filenames and a "/" badge.
+ *
+ * Call right after the backend returns IDs and before any progress event
+ * has a chance to fire.
+ */
+export function seedTransfers(
+  ids: string[],
+  specs: Array<{
+    profileId: string;
+    bucket: string;
+    key: string;
+    destPath?: string;
+    sourcePath?: string;
+  }>,
+  kind: TransferKind,
+): void {
+  if (ids.length === 0) return;
+  const store = useTransfersStore.getState();
+  const now = Date.now();
+  for (let i = 0; i < ids.length; i++) {
+    const id = ids[i];
+    const spec = specs[i];
+    if (!id || !spec) continue;
+    store.upsert({
+      id,
+      kind,
+      profileId: spec.profileId,
+      bucket: spec.bucket,
+      key: spec.key,
+      destPath: spec.destPath,
+      sourcePath: spec.sourcePath,
+      transferredBytes: 0,
+      partsDone: 0,
+      partsTotal: 0,
+      state: "queued",
+      startedAt: now,
+    });
+  }
+}
 
 /**
  * Apply a `transfer:progress` event to the store.

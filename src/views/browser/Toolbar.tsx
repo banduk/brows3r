@@ -434,7 +434,9 @@ export function Toolbar() {
     });
     if (specs.length === 0) return;
     try {
-      await transferUploadMany(specs);
+      const ids = await transferUploadMany(specs);
+      const { seedTransfers } = await import("@/store/transfers");
+      seedTransfers(ids, specs, "upload");
     } catch (err) {
       await surfaceUnknownError(err, {
         operation: "transfer_upload_many",
@@ -522,10 +524,16 @@ export function Toolbar() {
       const basename = onlyKey.split("/").pop() ?? onlyKey;
       const dest = await saveDialog({ defaultPath: basename });
       if (!dest) return;
+      const singleSpec = {
+        profileId,
+        bucket,
+        key: onlyKey,
+        destPath: dest,
+      };
       try {
-        await transferDownloadMany([
-          { profileId, bucket, key: onlyKey, destPath: dest },
-        ]);
+        const ids = await transferDownloadMany([singleSpec]);
+        const { seedTransfers } = await import("@/store/transfers");
+        seedTransfers(ids, [singleSpec], "download");
       } catch (err) {
         await surfaceUnknownError(err, {
           operation: "transfer_download_many",
@@ -601,7 +609,9 @@ export function Toolbar() {
       };
     });
     try {
-      await transferDownloadMany(specs);
+      const ids = await transferDownloadMany(specs);
+      const { seedTransfers } = await import("@/store/transfers");
+      seedTransfers(ids, specs, "download");
     } catch (err) {
       await surfaceUnknownError(err, {
         operation: "transfer_download_many",

@@ -68,6 +68,20 @@ function getQueryClient(ctx: Record<string, unknown>): QueryClient | undefined {
     : undefined;
 }
 
+/** Local thin wrapper around the store's seedTransfers helper. */
+async function seedTransfersFromSpecs(
+  ids: string[],
+  specs: Array<{
+    profileId: string;
+    bucket: string;
+    key: string;
+    destPath: string;
+  }>,
+): Promise<void> {
+  const { seedTransfers } = await import("@/store/transfers");
+  seedTransfers(ids, specs, "download");
+}
+
 // ---------------------------------------------------------------------------
 // file.open
 // ---------------------------------------------------------------------------
@@ -500,9 +514,14 @@ registry.register({
         const dest = await saveDialog({ defaultPath: basename });
         console.log("[file.download] single-file dest", { dest });
         if (!dest) return;
-        await transferDownloadMany([
-          { profileId: pid, bucket: bkt, key: onlyKey, destPath: dest },
-        ]);
+        const singleSpec = {
+          profileId: pid,
+          bucket: bkt,
+          key: onlyKey,
+          destPath: dest,
+        };
+        const ids = await transferDownloadMany([singleSpec]);
+        await seedTransfersFromSpecs(ids, [singleSpec]);
         return;
       }
 
@@ -647,6 +666,11 @@ registry.register({
         idsLen: ids.length,
         firstId: ids[0],
       });
+      // Seed the transfers store with the full records so TransferRow can
+      // render key/profileId/bucket immediately. Without this, only the
+      // empty placeholder created by applyProgressEvent gets shown, and
+      // the user sees blank filenames + "/" badges in the panel.
+      await seedTransfersFromSpecs(ids, specs);
       // Surface the transfer manager so the user can monitor + cancel.
       const { useTransfersStore } = await import("@/store/transfers");
       useTransfersStore.getState().openPanel();
