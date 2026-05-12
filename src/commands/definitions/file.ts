@@ -466,7 +466,16 @@ registry.register({
     const pid = profileId(ctx);
     const bkt = bucket(ctx);
     const ks = selectedKeys(ctx);
-    if (!pid || !bkt || ks.length === 0) return;
+    // TEMP DIAGNOSTIC — remove once folder-download bug is resolved.
+    console.log("[file.download] start", { pid, bkt, ks });
+    if (!pid || !bkt || ks.length === 0) {
+      console.warn("[file.download] aborting: missing ctx", {
+        pid,
+        bkt,
+        ksLen: ks.length,
+      });
+      return;
+    }
 
     // Resolve Tauri dialog + transfers API lazily so commandPalette
     // tests do not need to mock the entire Tauri bridge to import
@@ -483,11 +492,13 @@ registry.register({
 
     const onlyKey = ks.length === 1 ? ks[0] : undefined;
     const isSingleObject = onlyKey !== undefined && !onlyKey.endsWith("/");
+    console.log("[file.download] mode", { isSingleObject, onlyKey });
 
     try {
       if (isSingleObject && onlyKey) {
         const basename = onlyKey.split("/").pop() ?? onlyKey;
         const dest = await saveDialog({ defaultPath: basename });
+        console.log("[file.download] single-file dest", { dest });
         if (!dest) return;
         await transferDownloadMany([
           { profileId: pid, bucket: bkt, key: onlyKey, destPath: dest },
@@ -501,7 +512,11 @@ registry.register({
       // we report a non-null estimate, so there is no race between
       // listing and the user clicking Start.
       const root = await openDialog({ directory: true, multiple: false });
-      if (!root || Array.isArray(root)) return;
+      console.log("[file.download] picked root", { root });
+      if (!root || Array.isArray(root)) {
+        console.warn("[file.download] aborting: no directory chosen");
+        return;
+      }
 
       const specs: Array<{
         profileId: string;
@@ -541,14 +556,23 @@ registry.register({
       let bytes = 0;
       try {
         for (const k of ks) {
+          console.log("[file.download] processing key", { k });
           if (k.endsWith("/")) {
             // Preserve the folder name in the destination.
             const folderRoot = joinPath(root, folderBasename(k));
+            console.log("[file.download] folder branch", { k, folderRoot });
             let cursor: string | undefined;
+            let pageIdx = 0;
             do {
               const page = await listFlat(pid as string, bkt as string, k, {
                 continuationToken: cursor,
               });
+              console.log("[file.download] page", {
+                pageIdx,
+                entries: page.entries.length,
+                truncated: page.isTruncated,
+              });
+              pageIdx += 1;
               for (const entry of page.entries) {
                 if (entry.isPrefix) continue;
                 const rel = entry.key.startsWith(k)
@@ -576,8 +600,15 @@ registry.register({
             files += 1;
           }
         }
+        console.log("[file.download] enumeration done", {
+          files,
+          bytes,
+          specsLen: specs.length,
+          firstSpec: specs[0],
+        });
         dialog.update({ estimate: { files, bytes }, error: null });
       } catch (err) {
+        console.error("[file.download] enumeration failed", err);
         const msg =
           err instanceof Error
             ? err.message
@@ -587,10 +618,16 @@ registry.register({
         dialog.update({ estimate: { files, bytes }, error: msg });
       }
 
+      console.log("[file.download] awaiting user decision");
       const confirmed = await dialog.decision;
+      console.log("[file.download] decision", {
+        confirmed,
+        specsLen: specs.length,
+      });
       if (!confirmed) return;
 
       if (specs.length === 0) {
+        console.warn("[file.download] specs empty after confirm");
         const { notify } = await import("@/lib/errors");
         const { default: i18n } = await import("@/i18n");
         notify({
@@ -602,11 +639,19 @@ registry.register({
         return;
       }
 
-      await transferDownloadMany(specs);
+      console.log("[file.download] calling transferDownloadMany", {
+        count: specs.length,
+      });
+      const ids = await transferDownloadMany(specs);
+      console.log("[file.download] transferDownloadMany returned", {
+        idsLen: ids.length,
+        firstId: ids[0],
+      });
       // Surface the transfer manager so the user can monitor + cancel.
       const { useTransfersStore } = await import("@/store/transfers");
       useTransfersStore.getState().openPanel();
     } catch (err) {
+      console.error("[file.download] outer catch", err);
       await surfaceUnknownError(err, {
         operation: "file.download",
         resource: ks.length === 1 ? (ks[0] ?? null) : `${ks.length} items`,
