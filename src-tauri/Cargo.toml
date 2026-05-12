@@ -30,9 +30,31 @@ serde_json = "1"
 uuid = { version = "1", features = ["v4", "serde"] }
 
 # AWS SDK — pin to the 1.x line; all three crates must share the same BOM.
-aws-config = { version = "1", features = ["behavior-version-latest"] }
-aws-sdk-s3 = "1"
-aws-sdk-sts = "1"
+#
+# `default-features = false` drops the SDK's bundled HTTPS client feature
+# (`default-https-client` → `aws-smithy-runtime/default-https-client`), which
+# transitively pulls in the legacy `hyper-rustls 0.24` + `rustls 0.21` stack
+# containing the vulnerable `rustls-webpki 0.101.7`
+# (RUSTSEC-2026-{0098,0099,0104}). We never use that stack at runtime: every
+# SDK client is built with an explicit `aws_smithy_http_client::Builder`
+# configured with `rustls-ring` (see `src/profiles/validation.rs`,
+# `src/s3/client.rs`). Re-enable the same set the SDK ships in `default`
+# *minus* the legacy HTTPS plumbing.
+aws-config = { version = "1", default-features = false, features = [
+    "behavior-version-latest",
+    "credentials-process",
+    "rt-tokio",
+    "sso",
+] }
+aws-sdk-s3 = { version = "1", default-features = false, features = [
+    "sigv4a",
+    "http-1x",
+    "rt-tokio",
+] }
+aws-sdk-sts = { version = "1", default-features = false, features = [
+    "sigv4a",
+    "rt-tokio",
+] }
 aws-credential-types = { version = "1", features = ["hardcoded-credentials"] }
 
 # Smithy HTTP client with hyper-based proxy + rustls-ring TLS.
