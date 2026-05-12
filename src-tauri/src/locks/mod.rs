@@ -143,9 +143,7 @@ impl LockScope {
         // Neither side carries a specific key. Compare prefixes.
         match (&self.prefix, &other.prefix) {
             (None, _) | (_, None) => true,
-            (Some(a), Some(b)) => {
-                a.starts_with(b.as_str()) || b.starts_with(a.as_str())
-            }
+            (Some(a), Some(b)) => a.starts_with(b.as_str()) || b.starts_with(a.as_str()),
         }
     }
 }
