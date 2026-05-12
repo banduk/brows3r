@@ -527,6 +527,8 @@ export function DetailsView({
           setCursor(prev);
           break;
         }
+        case " ":
+
         case "Enter": {
           e.preventDefault();
           const entry = entries[cursor];

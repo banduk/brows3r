@@ -401,6 +401,8 @@ export function ColumnView({
           return;
         }
         case "ArrowRight":
+        case " ":
+
         case "Enter": {
           const entry = colEntries[cursor];
           if (!entry) return;

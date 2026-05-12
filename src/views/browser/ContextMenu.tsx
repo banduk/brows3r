@@ -152,30 +152,16 @@ export function FileContextMenu({ ctx, children }: FileContextMenuProps) {
 
         {!ctx.isBlankArea && <ContextMenuSeparator />}
 
-        {/* Copy / Cut / Paste */}
-        <ContextMenuLabel>Clipboard</ContextMenuLabel>
+        {/* Download — single object: native save dialog, multi/folder:
+            destination picker + bulk transfer. Implemented by the
+            `file.download` command. */}
         <LockAwareItem
-          commandId="file.copy"
-          label="Copy"
+          commandId="file.download"
+          label="Download"
           blockedActions={blockedActions}
           locks={locks}
-          onSelect={() => runCmd("file.copy")}
+          onSelect={() => runCmd("file.download")}
           forceDisabled={noSelection}
-        />
-        <LockAwareItem
-          commandId="file.cut"
-          label="Cut"
-          blockedActions={blockedActions}
-          locks={locks}
-          onSelect={() => runCmd("file.cut")}
-          forceDisabled={noSelection}
-        />
-        <LockAwareItem
-          commandId="file.paste"
-          label="Paste"
-          blockedActions={blockedActions}
-          locks={locks}
-          onSelect={() => runCmd("file.paste")}
         />
 
         {/* Copy Presigned URL — closes round-3 finding #1 */}
@@ -187,6 +173,14 @@ export function FileContextMenu({ ctx, children }: FileContextMenuProps) {
           onSelect={() => runCmd("file.copy_presigned_url")}
           forceDisabled={noSelection || multiSelection}
         />
+
+        {/* Copy / Cut / Paste removed for v0.2.6 — the underlying
+            registry commands dispatch `clipboard:copy/cut/paste`
+            events that nothing in the app listens for, so the items
+            looked active but were no-ops. They stay registered (so
+            the palette + tests are unaffected) but are intentionally
+            absent from the right-click surface until a clipboard
+            store + paste handler land. */}
 
         {/* Bookmark — adds the current target (selected item, or the
             current prefix when nothing is selected) to the sidebar. The
@@ -208,43 +202,12 @@ export function FileContextMenu({ ctx, children }: FileContextMenuProps) {
 
         {/* File ops */}
         <ContextMenuLabel>Actions</ContextMenuLabel>
-        {!multiSelection && !ctx.isBlankArea && (
-          <LockAwareItem
-            commandId="file.rename"
-            label="Rename"
-            blockedActions={blockedActions}
-            locks={locks}
-            onSelect={() => {
-              // Open the rename dialog via DOM event; dialog provides destKey.
-              window.dispatchEvent(
-                new CustomEvent("file:open-rename", {
-                  detail: {
-                    profileId: ctx.profileId,
-                    bucket: ctx.bucket,
-                    key: ctx.keys[0],
-                  },
-                }),
-              );
-            }}
-            forceDisabled={noSelection}
-          />
-        )}
-        <LockAwareItem
-          commandId="file.move_to"
-          label="Move To…"
-          blockedActions={blockedActions}
-          locks={locks}
-          onSelect={() => runCmd("file.move_to")}
-          forceDisabled={noSelection}
-        />
-        <LockAwareItem
-          commandId="file.copy_to"
-          label="Copy To…"
-          blockedActions={blockedActions}
-          locks={locks}
-          onSelect={() => runCmd("file.copy_to")}
-          forceDisabled={noSelection}
-        />
+        {/* Rename / Move To / Copy To / Storage Class are also removed
+            for v0.2.6: their event listeners (file:open-rename,
+            file:move-to, file:copy-to, storage-class:open-picker) are
+            not implemented anywhere. They remain in the registry
+            (palette + tests rely on them) but are hidden from the
+            right-click menu until the corresponding modal flows ship. */}
         <LockAwareItem
           commandId="file.delete"
           label="Delete"
@@ -277,7 +240,10 @@ export function FileContextMenu({ ctx, children }: FileContextMenuProps) {
 
         <ContextMenuSeparator />
 
-        {/* Inspector + storage class */}
+        {/* Inspector — opens the properties panel for the selected
+            item (or the bucket when nothing is selected on a blank
+            area). `file.properties` now calls
+            `useInspectorStore.openInspector(...)` directly. */}
         <LockAwareItem
           commandId="file.properties"
           label="Properties"
@@ -285,14 +251,6 @@ export function FileContextMenu({ ctx, children }: FileContextMenuProps) {
           locks={locks}
           onSelect={() => runCmd("file.properties")}
           forceDisabled={noSelection && !ctx.isBlankArea}
-        />
-        <LockAwareItem
-          commandId="storage_class.change"
-          label="Storage Class…"
-          blockedActions={blockedActions}
-          locks={locks}
-          onSelect={() => runCmd("storage_class.change")}
-          forceDisabled={noSelection}
         />
 
         <ContextMenuSeparator />

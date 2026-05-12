@@ -428,6 +428,8 @@ export function TreeView({
           }
           break;
         }
+        case " ":
+
         case "Enter": {
           e.preventDefault();
           const node = flatNodes[cursor];

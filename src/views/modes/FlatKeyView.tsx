@@ -325,6 +325,8 @@ export function FlatKeyView({
           setCursor(prev);
           break;
         }
+        case " ":
+
         case "Enter": {
           e.preventDefault();
           const entry = items[cursor];

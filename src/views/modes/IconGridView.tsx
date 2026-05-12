@@ -274,6 +274,8 @@ export function IconGridView({
           setCursor(Math.max(cursor - cols, 0));
           break;
         }
+        case " ":
+
         case "Enter": {
           e.preventDefault();
           const entry = items[cursor];
