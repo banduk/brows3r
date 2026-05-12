@@ -30,15 +30,15 @@ pub fn build_menu<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<Menu<R>> {
 
     let new_folder = MenuItem::with_id(
         app,
-        "menu:file.new-folder",
+        "menu:file/new-folder",
         "New Folder",
         true,
         Some("CmdOrCtrl+Shift+N"),
     )?;
 
-    let open_item = MenuItem::with_id(app, "menu:file.open", "Open", true, Some("Return"))?;
+    let open_item = MenuItem::with_id(app, "menu:file/open", "Open", true, Some("Return"))?;
 
-    let save_item = MenuItem::with_id(app, "menu:file.save", "Save", true, Some("CmdOrCtrl+S"))?;
+    let save_item = MenuItem::with_id(app, "menu:file/save", "Save", true, Some("CmdOrCtrl+S"))?;
 
     let sep_file = PredefinedMenuItem::separator(app)?;
 
@@ -66,7 +66,7 @@ pub fn build_menu<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<Menu<R>> {
     let select_all_item = PredefinedMenuItem::select_all(app, Some("Select All"))?;
     let sep_edit3 = PredefinedMenuItem::separator(app)?;
 
-    let find_item = MenuItem::with_id(app, "menu:edit.find", "Find", true, Some("CmdOrCtrl+F"))?;
+    let find_item = MenuItem::with_id(app, "menu:edit/find", "Find", true, Some("CmdOrCtrl+F"))?;
 
     let edit_menu = Submenu::with_id_and_items(
         app,
@@ -93,49 +93,49 @@ pub fn build_menu<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<Menu<R>> {
 
     let view_details = MenuItem::with_id(
         app,
-        "menu:view.mode.details",
+        "menu:view/mode/details",
         "Details",
         true,
         Some("CmdOrCtrl+1"),
     )?;
     let view_icon_grid = MenuItem::with_id(
         app,
-        "menu:view.mode.icon-grid",
+        "menu:view/mode/icon-grid",
         "Icon Grid",
         true,
         Some("CmdOrCtrl+2"),
     )?;
     let view_gallery = MenuItem::with_id(
         app,
-        "menu:view.mode.gallery",
+        "menu:view/mode/gallery",
         "Gallery",
         true,
         Some("CmdOrCtrl+3"),
     )?;
     let view_column = MenuItem::with_id(
         app,
-        "menu:view.mode.column",
+        "menu:view/mode/column",
         "Column",
         true,
         Some("CmdOrCtrl+4"),
     )?;
     let view_tree = MenuItem::with_id(
         app,
-        "menu:view.mode.tree",
+        "menu:view/mode/tree",
         "Tree",
         true,
         Some("CmdOrCtrl+5"),
     )?;
     let view_flat_key = MenuItem::with_id(
         app,
-        "menu:view.mode.flat-key",
+        "menu:view/mode/flat-key",
         "Flat Key",
         true,
         Some("CmdOrCtrl+6"),
     )?;
     let view_dual_pane = MenuItem::with_id(
         app,
-        "menu:view.mode.dual-pane",
+        "menu:view/mode/dual-pane",
         "Dual Pane",
         true,
         Some("CmdOrCtrl+7"),
@@ -145,7 +145,7 @@ pub fn build_menu<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<Menu<R>> {
 
     let refresh_item = MenuItem::with_id(
         app,
-        "menu:view.refresh",
+        "menu:view/refresh",
         "Refresh",
         true,
         Some("CmdOrCtrl+R"),
@@ -155,7 +155,7 @@ pub fn build_menu<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<Menu<R>> {
 
     let toggle_sidebar = MenuItem::with_id(
         app,
-        "menu:view.toggle-sidebar",
+        "menu:view/toggle-sidebar",
         "Toggle Sidebar",
         true,
         None::<&str>,
@@ -163,7 +163,7 @@ pub fn build_menu<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<Menu<R>> {
 
     let toggle_preview = MenuItem::with_id(
         app,
-        "menu:view.toggle-preview",
+        "menu:view/toggle-preview",
         "Toggle Preview",
         true,
         None::<&str>,
@@ -194,17 +194,17 @@ pub fn build_menu<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<Menu<R>> {
     // Go menu
     // ------------------------------------------------------------------
 
-    let back_item = MenuItem::with_id(app, "menu:go.back", "Back", true, Some("CmdOrCtrl+["))?;
+    let back_item = MenuItem::with_id(app, "menu:go/back", "Back", true, Some("CmdOrCtrl+["))?;
 
     let forward_item =
-        MenuItem::with_id(app, "menu:go.forward", "Forward", true, Some("CmdOrCtrl+]"))?;
+        MenuItem::with_id(app, "menu:go/forward", "Forward", true, Some("CmdOrCtrl+]"))?;
 
-    let up_item = MenuItem::with_id(app, "menu:go.up", "Up", true, Some("CmdOrCtrl+Up"))?;
+    let up_item = MenuItem::with_id(app, "menu:go/up", "Up", true, Some("CmdOrCtrl+Up"))?;
 
     let sep_go = PredefinedMenuItem::separator(app)?;
 
     let bookmarks_item =
-        MenuItem::with_id(app, "menu:go.bookmarks", "Bookmarks", true, None::<&str>)?;
+        MenuItem::with_id(app, "menu:go/bookmarks", "Bookmarks", true, None::<&str>)?;
 
     let go_menu = Submenu::with_id_and_items(
         app,
@@ -229,11 +229,11 @@ pub fn build_menu<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<Menu<R>> {
 
     let sep_help = PredefinedMenuItem::separator(app)?;
 
-    let docs_item = MenuItem::with_id(app, "menu:help.docs", "Documentation", true, None::<&str>)?;
+    let docs_item = MenuItem::with_id(app, "menu:help/docs", "Documentation", true, None::<&str>)?;
 
     let report_bug_item = MenuItem::with_id(
         app,
-        "menu:help.report-bug",
+        "menu:help/report-bug",
         "Report a Bug",
         true,
         None::<&str>,

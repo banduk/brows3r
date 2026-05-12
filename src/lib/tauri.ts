@@ -83,26 +83,26 @@ export interface TauriEventMap {
   "keychain:fallback-required": Record<string, never>;
   // Menu events — emitted by the Rust on_menu_event handler.
   // Each entry corresponds to a menu item id defined in menus.rs.
-  "menu:file.new-folder": Record<string, never>;
-  "menu:file.open": Record<string, never>;
-  "menu:file.save": Record<string, never>;
-  "menu:edit.find": Record<string, never>;
-  "menu:view.refresh": Record<string, never>;
-  "menu:view.toggle-sidebar": Record<string, never>;
-  "menu:view.toggle-preview": Record<string, never>;
-  "menu:view.mode.details": Record<string, never>;
-  "menu:view.mode.icon-grid": Record<string, never>;
-  "menu:view.mode.gallery": Record<string, never>;
-  "menu:view.mode.column": Record<string, never>;
-  "menu:view.mode.tree": Record<string, never>;
-  "menu:view.mode.flat-key": Record<string, never>;
-  "menu:view.mode.dual-pane": Record<string, never>;
-  "menu:go.back": Record<string, never>;
-  "menu:go.forward": Record<string, never>;
-  "menu:go.up": Record<string, never>;
-  "menu:go.bookmarks": Record<string, never>;
-  "menu:help.docs": Record<string, never>;
-  "menu:help.report-bug": Record<string, never>;
+  "menu:file/new-folder": Record<string, never>;
+  "menu:file/open": Record<string, never>;
+  "menu:file/save": Record<string, never>;
+  "menu:edit/find": Record<string, never>;
+  "menu:view/refresh": Record<string, never>;
+  "menu:view/toggle-sidebar": Record<string, never>;
+  "menu:view/toggle-preview": Record<string, never>;
+  "menu:view/mode/details": Record<string, never>;
+  "menu:view/mode/icon-grid": Record<string, never>;
+  "menu:view/mode/gallery": Record<string, never>;
+  "menu:view/mode/column": Record<string, never>;
+  "menu:view/mode/tree": Record<string, never>;
+  "menu:view/mode/flat-key": Record<string, never>;
+  "menu:view/mode/dual-pane": Record<string, never>;
+  "menu:go/back": Record<string, never>;
+  "menu:go/forward": Record<string, never>;
+  "menu:go/up": Record<string, never>;
+  "menu:go/bookmarks": Record<string, never>;
+  "menu:help/docs": Record<string, never>;
+  "menu:help/report-bug": Record<string, never>;
 }
 
 // ---------------------------------------------------------------------------

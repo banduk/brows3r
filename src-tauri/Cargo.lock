@@ -915,7 +915,7 @@ dependencies = [
 
 [[package]]
 name = "brows3r"
-version = "0.2.2"
+version = "0.2.4"
 dependencies = [
  "aes-gcm",
  "argon2",
