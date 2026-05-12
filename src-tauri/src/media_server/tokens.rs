@@ -21,7 +21,9 @@ use std::{
 };
 
 use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine as _};
-use rand::RngCore;
+// rand 0.10 moved `RngCore` to the `rand_core` crate; importing `Rng` brings
+// the `fill_bytes` extension method into scope without an extra dependency.
+use rand::Rng;
 
 use crate::ids::{BucketId, ProfileId};
 
