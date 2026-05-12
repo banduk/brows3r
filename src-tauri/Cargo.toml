@@ -77,7 +77,7 @@ tower = { version = "0.5", features = ["util"] }
 tokio-util = { version = "0.7", features = ["io"] }
 
 # CSPRNG for token minting — rand is already an indirect dep via many crates.
-rand = "0.9"
+rand = "0.10"
 
 # Base64 URL-safe encoding for token strings (task 47).
 base64 = "0.22"
