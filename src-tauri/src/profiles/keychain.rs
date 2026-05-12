@@ -569,23 +569,25 @@ pub fn select_backend(
         return (Box::new(KeyringBackend::new()), false);
     }
 
-    // Probe the OS keychain with a temporary entry. Capture the actual error
-    // so we can surface it in the fallback warning — silent fallback was
-    // confusing in dev mode where the macOS Security framework prompts the
-    // user per binary signature and a missed prompt looks identical to a
-    // "keychain unavailable" failure.
-    let probe_err: Option<String> = (|| {
-        let entry = keyring::Entry::new("brows3r", "probe").map_err(|e| format!("new: {e}"))?;
-        entry
-            .set_password("test")
-            .map_err(|e| format!("set: {e}"))?;
-        let entry2 = keyring::Entry::new("brows3r", "probe").map_err(|e| format!("new2: {e}"))?;
-        entry2
-            .delete_credential()
-            .map_err(|e| format!("delete: {e}"))?;
-        Ok::<(), String>(())
-    })()
-    .err();
+    // Probe the OS keychain with a read-only lookup. Using a write+delete
+    // pair (the previous approach) was unreliable: on macOS the keyring
+    // crate's `set_password` and `delete_credential` use different lookup
+    // categories, so a freshly-written entry frequently could not be
+    // deleted via its own service/account pair — every dev launch fell
+    // back even though the keychain was perfectly healthy.
+    //
+    // A read for a probe entry that does not exist returns
+    // `keyring::Error::NoEntry`. We treat that — and any successful read
+    // — as "keychain works". Only other error variants (DBus refused,
+    // Security framework denied, init failed, …) trigger the fallback.
+    let probe_err: Option<String> = match keyring::Entry::new("brows3r", "__probe__") {
+        Ok(entry) => match entry.get_password() {
+            Ok(_) => None,
+            Err(keyring::Error::NoEntry) => None,
+            Err(e) => Some(format!("get: {e}")),
+        },
+        Err(e) => Some(format!("new: {e}")),
+    };
 
     if probe_err.is_none() {
         (Box::new(KeyringBackend::new()), false)
