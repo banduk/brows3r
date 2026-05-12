@@ -73,7 +73,12 @@ describe("present()", () => {
     expect(policy.severity).toBe("error");
   });
 
-  it("Auth in user-initiated context → panel+inline error", () => {
+  it("Auth in user-initiated context → panel+toast error", () => {
+    // Toast (not inline) because most user-initiated callers — sidebar
+    // Validate, palette runs, toolbar actions — have no inline-error
+    // slot; the toast is the only surface that grabs attention.
+    // ProfileEditor.tsx manages its own inline state independent of
+    // present(), so the inline drop is non-breaking.
     const err: AppError = {
       kind: "Auth",
       message: "Authentication failed: expired",
@@ -81,7 +86,7 @@ describe("present()", () => {
       details: { reason: "expired" },
     };
     const policy = present(err, "userInitiated" satisfies ErrorContext);
-    expect(policy.placement).toBe("panel+inline");
+    expect(policy.placement).toBe("panel+toast");
     expect(policy.severity).toBe("error");
   });
 
@@ -110,7 +115,9 @@ describe("present()", () => {
     expect(policy.severity).toBe("error");
   });
 
-  it("AccessDenied in user-initiated context → panel+inline error", () => {
+  it("AccessDenied in user-initiated context → panel+toast error", () => {
+    // Same rationale as the Auth case above — user-initiated flows
+    // without an inline slot need a toast to be visible.
     const err: AppError = {
       kind: "AccessDenied",
       message: "Access denied to s3:PutObject",
@@ -118,7 +125,7 @@ describe("present()", () => {
       details: { op: "s3:PutObject", resource: "bucket/key" },
     };
     const policy = present(err, "userInitiated");
-    expect(policy.placement).toBe("panel+inline");
+    expect(policy.placement).toBe("panel+toast");
     expect(policy.severity).toBe("error");
   });
 
