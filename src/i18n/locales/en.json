@@ -33,10 +33,72 @@
     "select_all": "Select all"
   },
   "sidebar": {
+    "label": "Sidebar",
     "profiles": "Profiles",
     "addProfile": "Add profile",
     "bookmarks": "Bookmarks",
     "recents": "Recents"
+  },
+  "profiles": {
+    "loading": "Loading profiles…",
+    "loadError": "Failed to load profiles.",
+    "checkNotifications": "Check the notifications panel for details.",
+    "empty": "No profiles found. Click \"Add profile\" to get started.",
+    "listAria": "Profile list",
+    "rowActionsAria": "Actions for {{name}}",
+    "edit": "Edit",
+    "validate": "Validate",
+    "delete": "Delete",
+    "deleteConfirm": "Delete profile \"{{name}}\"? This cannot be undone.",
+    "validatedRecently": "Validated recently",
+    "validationStale": "Validation is stale",
+    "notValidated": "Not validated"
+  },
+  "bookmarks": {
+    "loading": "Loading bookmarks…",
+    "loadError": "Failed to load bookmarks.",
+    "empty": "No bookmarks yet.",
+    "listAria": "Bookmark list",
+    "rowActionsAria": "Actions for {{name}}",
+    "rename": "Rename…",
+    "remove": "Remove bookmark",
+    "removeConfirm": "Remove bookmark \"{{name}}\"?\n\nThis only removes the sidebar shortcut; the bucket/folder/object in S3 is not touched.",
+    "editAria": "Edit bookmark",
+    "renameTitle": "Rename bookmark",
+    "labelPlaceholder": "Label (leave empty to use prefix)",
+    "validateTooltip": "Validate this profile to use this bookmark",
+    "validateToUse": "Validate to use"
+  },
+  "statusBar": {
+    "label": "Status bar",
+    "noLocation": "No location",
+    "noProfile": "No profile",
+    "validated": "validated",
+    "notValidated": "not validated",
+    "openSettings": "Open Settings (⌘,)",
+    "shortcuts": {
+      "aria": "Keyboard shortcuts",
+      "label": "Keys",
+      "title": "Keyboard shortcuts"
+    }
+  },
+  "activity": {
+    "label": "Activity",
+    "titleActive": "{{count}} active transfers — {{pct}}%",
+    "titleCompleted": "{{count}} completed transfers",
+    "titleIdle": "No transfers"
+  },
+  "recents": {
+    "sectionAria": "Recent locations",
+    "loading": "Loading recents…",
+    "loadError": "Failed to load recents.",
+    "empty": "No recent locations.",
+    "listAria": "Recent locations list",
+    "showAll": "Show all ({{count}})",
+    "showLess": "Show less",
+    "clear": "Clear recents",
+    "validateTooltip": "Validate this profile to use this location",
+    "validateToUse": "Validate to use"
   },
   "settings": {
     "title": "Settings",

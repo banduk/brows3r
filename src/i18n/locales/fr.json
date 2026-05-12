@@ -33,10 +33,72 @@
     "select_all": "Tout sélectionner"
   },
   "sidebar": {
+    "label": "Barre latérale",
     "profiles": "Profils",
     "addProfile": "Ajouter un profil",
     "bookmarks": "Favoris",
     "recents": "Récents"
+  },
+  "profiles": {
+    "loading": "Chargement des profils…",
+    "loadError": "Échec du chargement des profils.",
+    "checkNotifications": "Consultez le panneau de notifications pour plus de détails.",
+    "empty": "Aucun profil trouvé. Cliquez sur \"Ajouter un profil\" pour commencer.",
+    "listAria": "Liste des profils",
+    "rowActionsAria": "Actions pour {{name}}",
+    "edit": "Modifier",
+    "validate": "Valider",
+    "delete": "Supprimer",
+    "deleteConfirm": "Supprimer le profil \"{{name}}\" ? Cette action est irréversible.",
+    "validatedRecently": "Validé récemment",
+    "validationStale": "Validation obsolète",
+    "notValidated": "Non validé"
+  },
+  "bookmarks": {
+    "loading": "Chargement des favoris…",
+    "loadError": "Échec du chargement des favoris.",
+    "empty": "Aucun favori pour le moment.",
+    "listAria": "Liste des favoris",
+    "rowActionsAria": "Actions pour {{name}}",
+    "rename": "Renommer…",
+    "remove": "Retirer le favori",
+    "removeConfirm": "Retirer le favori \"{{name}}\" ?\n\nCela supprime uniquement le raccourci de la barre latérale ; le bucket/dossier/objet S3 n'est pas modifié.",
+    "editAria": "Modifier le favori",
+    "renameTitle": "Renommer le favori",
+    "labelPlaceholder": "Libellé (laisser vide pour utiliser le préfixe)",
+    "validateTooltip": "Validez ce profil pour utiliser ce favori",
+    "validateToUse": "Valider pour utiliser"
+  },
+  "statusBar": {
+    "label": "Barre d'état",
+    "noLocation": "Aucun emplacement",
+    "noProfile": "Aucun profil",
+    "validated": "validé",
+    "notValidated": "non validé",
+    "openSettings": "Ouvrir les Paramètres (⌘,)",
+    "shortcuts": {
+      "aria": "Raccourcis clavier",
+      "label": "Touches",
+      "title": "Raccourcis clavier"
+    }
+  },
+  "activity": {
+    "label": "Activité",
+    "titleActive": "{{count}} transferts actifs — {{pct}}%",
+    "titleCompleted": "{{count}} transferts terminés",
+    "titleIdle": "Aucun transfert"
+  },
+  "recents": {
+    "sectionAria": "Emplacements récents",
+    "loading": "Chargement des récents…",
+    "loadError": "Échec du chargement des récents.",
+    "empty": "Aucun emplacement récent.",
+    "listAria": "Liste des emplacements récents",
+    "showAll": "Tout afficher ({{count}})",
+    "showLess": "Afficher moins",
+    "clear": "Vider les récents",
+    "validateTooltip": "Validez ce profil pour utiliser cet emplacement",
+    "validateToUse": "Valider pour utiliser"
   },
   "settings": {
     "title": "Paramètres",

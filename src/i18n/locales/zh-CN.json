@@ -33,10 +33,72 @@
     "select_all": "全选"
   },
   "sidebar": {
+    "label": "侧边栏",
     "profiles": "配置文件",
     "addProfile": "添加配置文件",
     "bookmarks": "书签",
     "recents": "最近"
+  },
+  "profiles": {
+    "loading": "正在加载配置文件…",
+    "loadError": "加载配置文件失败。",
+    "checkNotifications": "请查看通知面板了解详情。",
+    "empty": "未找到配置文件。点击\"添加配置文件\"开始。",
+    "listAria": "配置文件列表",
+    "rowActionsAria": "{{name}} 的操作",
+    "edit": "编辑",
+    "validate": "验证",
+    "delete": "删除",
+    "deleteConfirm": "删除配置文件 \"{{name}}\"?此操作无法撤销。",
+    "validatedRecently": "最近已验证",
+    "validationStale": "验证已过期",
+    "notValidated": "未验证"
+  },
+  "bookmarks": {
+    "loading": "正在加载书签…",
+    "loadError": "加载书签失败。",
+    "empty": "还没有书签。",
+    "listAria": "书签列表",
+    "rowActionsAria": "{{name}} 的操作",
+    "rename": "重命名…",
+    "remove": "移除书签",
+    "removeConfirm": "移除书签 \"{{name}}\"?\n\n这仅移除侧边栏的快捷方式;S3 中的 bucket/文件夹/对象不会被改动。",
+    "editAria": "编辑书签",
+    "renameTitle": "重命名书签",
+    "labelPlaceholder": "标签(留空使用前缀)",
+    "validateTooltip": "验证此配置文件以使用此书签",
+    "validateToUse": "验证后可用"
+  },
+  "statusBar": {
+    "label": "状态栏",
+    "noLocation": "无位置",
+    "noProfile": "无配置文件",
+    "validated": "已验证",
+    "notValidated": "未验证",
+    "openSettings": "打开设置 (⌘,)",
+    "shortcuts": {
+      "aria": "键盘快捷键",
+      "label": "按键",
+      "title": "键盘快捷键"
+    }
+  },
+  "activity": {
+    "label": "活动",
+    "titleActive": "{{count}} 个活动传输 — {{pct}}%",
+    "titleCompleted": "{{count}} 个已完成的传输",
+    "titleIdle": "无传输"
+  },
+  "recents": {
+    "sectionAria": "最近位置",
+    "loading": "正在加载最近…",
+    "loadError": "加载最近失败。",
+    "empty": "没有最近位置。",
+    "listAria": "最近位置列表",
+    "showAll": "全部显示({{count}})",
+    "showLess": "显示更少",
+    "clear": "清空最近",
+    "validateTooltip": "验证此配置文件以使用此位置",
+    "validateToUse": "验证后可用"
   },
   "settings": {
     "title": "设置",

@@ -15,6 +15,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { MoreHorizontalIcon, PlusIcon } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   type ProfileSource,
   type ProfileSummary,
@@ -82,6 +83,7 @@ interface ValidationDotProps {
 
 function ValidationDot({ validatedAt }: ValidationDotProps) {
   const status = getValidationStatus(validatedAt);
+  const { t } = useTranslation();
   const dotClass =
     status === "valid"
       ? "bg-green-500"
@@ -90,10 +92,10 @@ function ValidationDot({ validatedAt }: ValidationDotProps) {
         : "bg-red-400";
   const label =
     status === "valid"
-      ? "Validated recently"
+      ? t("profiles.validatedRecently")
       : status === "stale"
-        ? "Validation is stale"
-        : "Not validated";
+        ? t("profiles.validationStale")
+        : t("profiles.notValidated");
 
   return (
     <span
@@ -123,15 +125,16 @@ function ProfileRowMenu({
   onDelete,
   onValidate,
 }: ProfileRowMenuProps) {
+  const { t } = useTranslation();
   return (
     <PopoverMenu
-      triggerLabel={`Actions for ${profile.displayName}`}
+      triggerLabel={t("profiles.rowActionsAria", { name: profile.displayName })}
       triggerIcon={<MoreHorizontalIcon />}
       items={[
-        { label: "Edit", onClick: () => onEdit(profile) },
-        { label: "Validate", onClick: () => onValidate(profile) },
+        { label: t("profiles.edit"), onClick: () => onEdit(profile) },
+        { label: t("profiles.validate"), onClick: () => onValidate(profile) },
         {
-          label: "Delete",
+          label: t("profiles.delete"),
           onClick: () => onDelete(profile),
           variant: "danger",
         },
@@ -145,6 +148,7 @@ function ProfileRowMenu({
 // ---------------------------------------------------------------------------
 
 export function Profiles() {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
 
   const activePaneId = usePanesStore((s) => s.activePaneId);
@@ -227,9 +231,7 @@ export function Profiles() {
 
   function handleDelete(profile: ProfileSummary) {
     if (
-      window.confirm(
-        `Delete profile "${profile.displayName}"? This cannot be undone.`,
-      )
+      window.confirm(t("profiles.deleteConfirm", { name: profile.displayName }))
     ) {
       deleteMutation.mutate(profile.id);
     }
@@ -261,7 +263,7 @@ export function Profiles() {
           onClick={() => setEditorMode({ kind: "create" })}
         >
           <PlusIcon className="size-4 shrink-0" />
-          <span className="truncate">Add profile</span>
+          <span className="truncate">{t("sidebar.addProfile")}</span>
         </Button>
       </div>
 
@@ -269,7 +271,7 @@ export function Profiles() {
       <div className="min-h-0 flex-1 overflow-y-auto">
         {isLoading && !profilesError && (
           <p className="px-3 py-4 text-sm text-muted-foreground">
-            Loading profiles…
+            {t("profiles.loading")}
           </p>
         )}
 
@@ -279,20 +281,20 @@ export function Profiles() {
             role="alert"
             data-testid="profiles-load-error"
           >
-            Failed to load profiles.{" "}
+            {t("profiles.loadError")}{" "}
             {profilesError instanceof Error
               ? profilesError.message
-              : "Check the notifications panel for details."}
+              : t("profiles.checkNotifications")}
           </p>
         )}
 
         {!isLoading && !profilesError && profiles.length === 0 && (
           <p className="px-3 py-4 text-sm text-muted-foreground">
-            No profiles found. Click "Add profile" to get started.
+            {t("profiles.empty")}
           </p>
         )}
 
-        <ul aria-label="Profile list">
+        <ul aria-label={t("profiles.listAria")}>
           {profiles.map((profile) => {
             const badge = SOURCE_BADGE[profile.source];
             const isActive = profile.id === activeProfileId;

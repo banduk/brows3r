@@ -33,10 +33,72 @@
     "select_all": "Selecionar tudo"
   },
   "sidebar": {
+    "label": "Barra lateral",
     "profiles": "Perfis",
     "addProfile": "Adicionar perfil",
     "bookmarks": "Favoritos",
     "recents": "Recentes"
+  },
+  "profiles": {
+    "loading": "Carregando perfis…",
+    "loadError": "Falha ao carregar perfis.",
+    "checkNotifications": "Veja o painel de notificações para detalhes.",
+    "empty": "Nenhum perfil encontrado. Clique em \"Adicionar perfil\" para começar.",
+    "listAria": "Lista de perfis",
+    "rowActionsAria": "Ações para {{name}}",
+    "edit": "Editar",
+    "validate": "Validar",
+    "delete": "Excluir",
+    "deleteConfirm": "Excluir o perfil \"{{name}}\"? Isso não pode ser desfeito.",
+    "validatedRecently": "Validado recentemente",
+    "validationStale": "Validação desatualizada",
+    "notValidated": "Não validado"
+  },
+  "bookmarks": {
+    "loading": "Carregando favoritos…",
+    "loadError": "Falha ao carregar favoritos.",
+    "empty": "Nenhum favorito ainda.",
+    "listAria": "Lista de favoritos",
+    "rowActionsAria": "Ações para {{name}}",
+    "rename": "Renomear…",
+    "remove": "Remover favorito",
+    "removeConfirm": "Remover o favorito \"{{name}}\"?\n\nIsso apenas remove o atalho da barra lateral; o bucket/pasta/objeto no S3 não é alterado.",
+    "editAria": "Editar favorito",
+    "renameTitle": "Renomear favorito",
+    "labelPlaceholder": "Rótulo (vazio para usar o prefixo)",
+    "validateTooltip": "Valide este perfil para usar este favorito",
+    "validateToUse": "Validar para usar"
+  },
+  "statusBar": {
+    "label": "Barra de status",
+    "noLocation": "Sem local",
+    "noProfile": "Sem perfil",
+    "validated": "validado",
+    "notValidated": "não validado",
+    "openSettings": "Abrir Configurações (⌘,)",
+    "shortcuts": {
+      "aria": "Atalhos de teclado",
+      "label": "Teclas",
+      "title": "Atalhos de teclado"
+    }
+  },
+  "activity": {
+    "label": "Atividade",
+    "titleActive": "{{count}} transferências ativas — {{pct}}%",
+    "titleCompleted": "{{count}} transferências concluídas",
+    "titleIdle": "Sem transferências"
+  },
+  "recents": {
+    "sectionAria": "Locais recentes",
+    "loading": "Carregando recentes…",
+    "loadError": "Falha ao carregar recentes.",
+    "empty": "Nenhum local recente.",
+    "listAria": "Lista de locais recentes",
+    "showAll": "Mostrar todos ({{count}})",
+    "showLess": "Mostrar menos",
+    "clear": "Limpar recentes",
+    "validateTooltip": "Valide este perfil para usar este local",
+    "validateToUse": "Validar para usar"
   },
   "settings": {
     "title": "Configurações",

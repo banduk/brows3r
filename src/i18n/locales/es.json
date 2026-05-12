@@ -33,10 +33,72 @@
     "select_all": "Seleccionar todo"
   },
   "sidebar": {
+    "label": "Barra lateral",
     "profiles": "Perfiles",
     "addProfile": "Añadir perfil",
     "bookmarks": "Marcadores",
     "recents": "Recientes"
+  },
+  "profiles": {
+    "loading": "Cargando perfiles…",
+    "loadError": "Error al cargar perfiles.",
+    "checkNotifications": "Revisa el panel de notificaciones para más detalles.",
+    "empty": "No hay perfiles. Haz clic en \"Añadir perfil\" para comenzar.",
+    "listAria": "Lista de perfiles",
+    "rowActionsAria": "Acciones para {{name}}",
+    "edit": "Editar",
+    "validate": "Validar",
+    "delete": "Eliminar",
+    "deleteConfirm": "¿Eliminar el perfil \"{{name}}\"? Esta acción no se puede deshacer.",
+    "validatedRecently": "Validado recientemente",
+    "validationStale": "Validación desactualizada",
+    "notValidated": "No validado"
+  },
+  "bookmarks": {
+    "loading": "Cargando marcadores…",
+    "loadError": "Error al cargar marcadores.",
+    "empty": "Aún no hay marcadores.",
+    "listAria": "Lista de marcadores",
+    "rowActionsAria": "Acciones para {{name}}",
+    "rename": "Renombrar…",
+    "remove": "Quitar marcador",
+    "removeConfirm": "¿Quitar el marcador \"{{name}}\"?\n\nEsto solo quita el acceso directo de la barra lateral; el bucket/carpeta/objeto en S3 no se modifica.",
+    "editAria": "Editar marcador",
+    "renameTitle": "Renombrar marcador",
+    "labelPlaceholder": "Etiqueta (vacío para usar el prefijo)",
+    "validateTooltip": "Valida este perfil para usar este marcador",
+    "validateToUse": "Validar para usar"
+  },
+  "statusBar": {
+    "label": "Barra de estado",
+    "noLocation": "Sin ubicación",
+    "noProfile": "Sin perfil",
+    "validated": "validado",
+    "notValidated": "no validado",
+    "openSettings": "Abrir Configuración (⌘,)",
+    "shortcuts": {
+      "aria": "Atajos de teclado",
+      "label": "Teclas",
+      "title": "Atajos de teclado"
+    }
+  },
+  "activity": {
+    "label": "Actividad",
+    "titleActive": "{{count}} transferencias activas — {{pct}}%",
+    "titleCompleted": "{{count}} transferencias completadas",
+    "titleIdle": "Sin transferencias"
+  },
+  "recents": {
+    "sectionAria": "Ubicaciones recientes",
+    "loading": "Cargando recientes…",
+    "loadError": "Error al cargar recientes.",
+    "empty": "No hay ubicaciones recientes.",
+    "listAria": "Lista de ubicaciones recientes",
+    "showAll": "Mostrar todo ({{count}})",
+    "showLess": "Mostrar menos",
+    "clear": "Limpiar recientes",
+    "validateTooltip": "Valida este perfil para usar esta ubicación",
+    "validateToUse": "Validar para usar"
   },
   "settings": {
     "title": "Configuración",

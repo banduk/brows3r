@@ -33,10 +33,72 @@
     "select_all": "Alles auswählen"
   },
   "sidebar": {
+    "label": "Seitenleiste",
     "profiles": "Profile",
     "addProfile": "Profil hinzufügen",
     "bookmarks": "Lesezeichen",
     "recents": "Zuletzt verwendet"
+  },
+  "profiles": {
+    "loading": "Profile werden geladen…",
+    "loadError": "Profile konnten nicht geladen werden.",
+    "checkNotifications": "Details im Benachrichtigungsbereich.",
+    "empty": "Keine Profile gefunden. Klicken Sie auf \"Profil hinzufügen\", um zu beginnen.",
+    "listAria": "Profilliste",
+    "rowActionsAria": "Aktionen für {{name}}",
+    "edit": "Bearbeiten",
+    "validate": "Validieren",
+    "delete": "Löschen",
+    "deleteConfirm": "Profil \"{{name}}\" löschen? Dies kann nicht rückgängig gemacht werden.",
+    "validatedRecently": "Kürzlich validiert",
+    "validationStale": "Validierung veraltet",
+    "notValidated": "Nicht validiert"
+  },
+  "bookmarks": {
+    "loading": "Lesezeichen werden geladen…",
+    "loadError": "Lesezeichen konnten nicht geladen werden.",
+    "empty": "Noch keine Lesezeichen.",
+    "listAria": "Lesezeichenliste",
+    "rowActionsAria": "Aktionen für {{name}}",
+    "rename": "Umbenennen…",
+    "remove": "Lesezeichen entfernen",
+    "removeConfirm": "Lesezeichen \"{{name}}\" entfernen?\n\nDies entfernt nur die Verknüpfung in der Seitenleiste; der Bucket/Ordner/das Objekt in S3 bleibt unverändert.",
+    "editAria": "Lesezeichen bearbeiten",
+    "renameTitle": "Lesezeichen umbenennen",
+    "labelPlaceholder": "Bezeichnung (leer lassen, um Präfix zu verwenden)",
+    "validateTooltip": "Validieren Sie dieses Profil, um dieses Lesezeichen zu nutzen",
+    "validateToUse": "Zum Verwenden validieren"
+  },
+  "statusBar": {
+    "label": "Statusleiste",
+    "noLocation": "Kein Ort",
+    "noProfile": "Kein Profil",
+    "validated": "validiert",
+    "notValidated": "nicht validiert",
+    "openSettings": "Einstellungen öffnen (⌘,)",
+    "shortcuts": {
+      "aria": "Tastenkürzel",
+      "label": "Tasten",
+      "title": "Tastenkürzel"
+    }
+  },
+  "activity": {
+    "label": "Aktivität",
+    "titleActive": "{{count}} aktive Übertragungen — {{pct}}%",
+    "titleCompleted": "{{count}} abgeschlossene Übertragungen",
+    "titleIdle": "Keine Übertragungen"
+  },
+  "recents": {
+    "sectionAria": "Zuletzt verwendete Orte",
+    "loading": "Wird geladen…",
+    "loadError": "Letzte konnten nicht geladen werden.",
+    "empty": "Keine zuletzt verwendeten Orte.",
+    "listAria": "Liste der zuletzt verwendeten Orte",
+    "showAll": "Alle anzeigen ({{count}})",
+    "showLess": "Weniger anzeigen",
+    "clear": "Letzte löschen",
+    "validateTooltip": "Validieren Sie dieses Profil, um diesen Ort zu nutzen",
+    "validateToUse": "Zum Verwenden validieren"
   },
   "settings": {
     "title": "Einstellungen",

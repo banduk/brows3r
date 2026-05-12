@@ -30,6 +30,7 @@
  */
 
 import { BookmarkIcon, ClockIcon, UserCircleIcon } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Bookmarks } from "./Bookmarks";
 import { Profiles } from "./Profiles";
 import { Recents } from "./Recents";
@@ -43,9 +44,10 @@ interface SidebarProps {
 }
 
 export function Sidebar({ className = "" }: SidebarProps) {
+  const { t } = useTranslation();
   return (
     <nav
-      aria-label="Sidebar"
+      aria-label={t("sidebar.label")}
       className={`flex h-full min-h-0 flex-col overflow-hidden ${className}`}
     >
       {/* Profiles section — flex-1 so it owns the bulk of vertical space.
@@ -55,7 +57,7 @@ export function Sidebar({ className = "" }: SidebarProps) {
         className="flex min-h-0 flex-1 flex-col"
       >
         <SectionHeading id="profiles-heading" icon={<UserCircleIcon />}>
-          Profiles
+          {t("sidebar.profiles")}
         </SectionHeading>
         {/* The Profiles component renders its own Add button + scrollable list. */}
         <div className="flex min-h-0 flex-1 flex-col">
@@ -65,7 +67,7 @@ export function Sidebar({ className = "" }: SidebarProps) {
 
       {/* Bookmarks — collapsible to save space when unused. */}
       <CollapsibleSection
-        title="Bookmarks"
+        title={t("sidebar.bookmarks")}
         icon={<BookmarkIcon />}
         headingId="bookmarks-heading"
       >
@@ -74,7 +76,7 @@ export function Sidebar({ className = "" }: SidebarProps) {
 
       {/* Recents — collapsible. */}
       <CollapsibleSection
-        title="Recents"
+        title={t("sidebar.recents")}
         icon={<ClockIcon />}
         headingId="recents-heading"
       >

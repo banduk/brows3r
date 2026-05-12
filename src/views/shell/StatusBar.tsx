@@ -23,6 +23,7 @@ import {
   SettingsIcon,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { profileGet } from "@/api/profiles";
 import { formatBytes } from "@/lib/format";
 import { useObjectHead } from "@/query/hooks/useObjectHead";
@@ -60,6 +61,7 @@ interface StatusBarProps {
 }
 
 export function StatusBar({ pane }: StatusBarProps) {
+  const { t } = useTranslation();
   const location = pane.location;
   const { profiles } = useProfilesList();
   const activeProfile = location
@@ -174,15 +176,15 @@ export function StatusBar({ pane }: StatusBarProps) {
 
   const profileLabel = activeProfile
     ? activeProfile.validatedAt
-      ? `${activeProfile.displayName} • validated`
-      : `${activeProfile.displayName} • not validated`
-    : "No profile";
+      ? `${activeProfile.displayName} • ${t("statusBar.validated")}`
+      : `${activeProfile.displayName} • ${t("statusBar.notValidated")}`
+    : t("statusBar.noProfile");
 
   return (
     <footer className="border-t bg-muted/40 px-3 py-1 text-xs text-muted-foreground">
       <div
         role="status"
-        aria-label="Status bar"
+        aria-label={t("statusBar.label")}
         className="flex items-center gap-3"
       >
         {/* Path + adjacent "open in browser" icon. Grouped tight so the
@@ -191,7 +193,7 @@ export function StatusBar({ pane }: StatusBarProps) {
           <span className="truncate">
             {location?.bucket
               ? `s3://${location.bucket}/${location.prefix ?? ""}`
-              : "No location"}
+              : t("statusBar.noLocation")}
           </span>
           {target && (
             <button
@@ -290,22 +292,25 @@ function useFetchedAgo(dataUpdatedAt: number): string | null {
  * content area.
  */
 function ShortcutHints() {
+  const { t } = useTranslation();
   return (
     <div className="group relative">
       <button
         type="button"
-        aria-label="Keyboard shortcuts"
-        title="Keyboard shortcuts"
+        aria-label={t("statusBar.shortcuts.aria")}
+        title={t("statusBar.shortcuts.aria")}
         className="inline-flex items-center gap-1 rounded px-1 py-0.5 hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         <KeyboardIcon className="size-3" />
-        <span className="text-[10px] uppercase tracking-wide">Keys</span>
+        <span className="text-[10px] uppercase tracking-wide">
+          {t("statusBar.shortcuts.label")}
+        </span>
       </button>
       <div
         role="tooltip"
         className="pointer-events-none invisible absolute bottom-full right-0 z-50 mb-1 w-72 rounded-md border border-border bg-popover p-2 text-[11px] text-popover-foreground opacity-0 shadow-md transition-opacity group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100"
       >
-        <p className="mb-1 font-medium">Keyboard shortcuts</p>
+        <p className="mb-1 font-medium">{t("statusBar.shortcuts.title")}</p>
         <table className="w-full">
           <tbody>
             {SHORTCUT_HINTS.map(([keys, action]) => (
@@ -329,6 +334,7 @@ function ShortcutHints() {
  * aggregate progress while any transfer is queued or running.
  */
 function ActivityChip() {
+  const { t } = useTranslation();
   const transfers = useTransfersStore((s) => s.transfers);
   const openPanel = useTransfersStore((s) => s.openPanel);
   const togglePanel = useTransfersStore((s) => s.togglePanel);
@@ -337,11 +343,11 @@ function ActivityChip() {
   let activeCount = 0;
   let totalBytes = 0;
   let doneBytes = 0;
-  for (const t of transfers.values()) {
-    if (t.state === "queued" || t.state === "running") {
+  for (const tr of transfers.values()) {
+    if (tr.state === "queued" || tr.state === "running") {
       activeCount += 1;
-      totalBytes += t.totalBytes ?? 0;
-      doneBytes += t.transferredBytes;
+      totalBytes += tr.totalBytes ?? 0;
+      doneBytes += tr.transferredBytes;
     }
   }
   const overallPct =
@@ -352,10 +358,10 @@ function ActivityChip() {
   const isActive = activeCount > 0;
   const completedCount = transfers.size - activeCount;
   const title = isActive
-    ? `${activeCount} active transfer${activeCount === 1 ? "" : "s"} — ${overallPct}%`
+    ? t("activity.titleActive", { count: activeCount, pct: overallPct })
     : completedCount > 0
-      ? `${completedCount} completed transfer${completedCount === 1 ? "" : "s"}`
-      : "No transfers";
+      ? t("activity.titleCompleted", { count: completedCount })
+      : t("activity.titleIdle");
 
   return (
     <button
@@ -374,7 +380,9 @@ function ActivityChip() {
           {activeCount} • {overallPct}%
         </span>
       ) : (
-        <span className="text-[10px] uppercase tracking-wide">Activity</span>
+        <span className="text-[10px] uppercase tracking-wide">
+          {t("activity.label")}
+        </span>
       )}
     </button>
   );
@@ -386,11 +394,13 @@ function ActivityChip() {
  * the feature is discoverable for users who don't know the shortcut.
  */
 function SettingsButton() {
+  const { t } = useTranslation();
+  const label = t("statusBar.openSettings");
   return (
     <button
       type="button"
-      aria-label="Open Settings (⌘,)"
-      title="Open Settings (⌘,)"
+      aria-label={label}
+      title={label}
       onClick={() => {
         window.dispatchEvent(new CustomEvent("settings:open"));
       }}

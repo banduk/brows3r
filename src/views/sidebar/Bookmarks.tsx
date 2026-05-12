@@ -15,6 +15,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { BookmarkIcon, FileIcon, MoreHorizontalIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 // `useEffect` is also used below to surface the bookmarks-list fetch error.
 import type { Bookmark } from "@/api/bookmarks";
 import {
@@ -82,17 +83,18 @@ interface BookmarkRowMenuProps {
 }
 
 function BookmarkRowMenu({ bookmark, onEdit, onDelete }: BookmarkRowMenuProps) {
+  const { t } = useTranslation();
   const label = bookmark.label ?? bookmark.prefix;
   return (
     <PopoverMenu
-      triggerLabel={`Actions for ${label}`}
+      triggerLabel={t("bookmarks.rowActionsAria", { name: label })}
       triggerIcon={<MoreHorizontalIcon />}
       items={[
-        { label: "Rename…", onClick: () => onEdit(bookmark) },
+        { label: t("bookmarks.rename"), onClick: () => onEdit(bookmark) },
         // "Remove" — not "Delete" — because removing a bookmark only drops
         // the sidebar pointer; the underlying bucket/folder/object in S3
         // is never touched. "Delete" would imply destruction.
-        { label: "Remove bookmark", onClick: () => onDelete(bookmark) },
+        { label: t("bookmarks.remove"), onClick: () => onDelete(bookmark) },
       ]}
     />
   );
@@ -204,17 +206,20 @@ interface EditLabelDialogProps {
 }
 
 function EditLabelDialog({ bookmark, onClose, onSave }: EditLabelDialogProps) {
+  const { t } = useTranslation();
   const [value, setValue] = useState(bookmark.label ?? "");
 
   return (
     <div
       role="dialog"
       aria-modal="true"
-      aria-label="Edit bookmark"
+      aria-label={t("bookmarks.editAria")}
       className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm"
     >
       <div className="w-80 rounded-lg border border-border bg-popover p-4 shadow-lg">
-        <h3 className="mb-3 text-sm font-semibold">Rename bookmark</h3>
+        <h3 className="mb-3 text-sm font-semibold">
+          {t("bookmarks.renameTitle")}
+        </h3>
         <input
           autoComplete="off"
           autoCorrect="off"
@@ -224,7 +229,7 @@ function EditLabelDialog({ bookmark, onClose, onSave }: EditLabelDialogProps) {
           value={value}
           onChange={(e) => setValue(e.target.value)}
           className="mb-3 w-full rounded border border-input bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
-          placeholder="Label (leave empty to use prefix)"
+          placeholder={t("bookmarks.labelPlaceholder")}
           // biome-ignore lint/a11y/noAutofocus: dialog must focus its input on open
           autoFocus
           onKeyDown={(e) => {
@@ -234,10 +239,10 @@ function EditLabelDialog({ bookmark, onClose, onSave }: EditLabelDialogProps) {
         />
         <div className="flex justify-end gap-2">
           <Button variant="ghost" size="sm" onClick={onClose}>
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button size="sm" onClick={() => onSave(value)}>
-            Save
+            {t("common.save")}
           </Button>
         </div>
       </div>
@@ -250,6 +255,7 @@ function EditLabelDialog({ bookmark, onClose, onSave }: EditLabelDialogProps) {
 // ---------------------------------------------------------------------------
 
 export function Bookmarks() {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const activePaneId = usePanesStore((s) => s.activePaneId);
   const setLocation = usePanesStore((s) => s.setLocation);
@@ -399,7 +405,7 @@ export function Bookmarks() {
   function handleDelete(bm: Bookmark) {
     if (
       window.confirm(
-        `Remove bookmark "${bm.label ?? bm.prefix}"?\n\nThis only removes the sidebar shortcut; the bucket/folder/object in S3 is not touched.`,
+        t("bookmarks.removeConfirm", { name: bm.label ?? bm.prefix }),
       )
     ) {
       removeMutation.mutate(bm.id);
@@ -407,10 +413,10 @@ export function Bookmarks() {
   }
 
   return (
-    <section aria-label="Bookmarks">
+    <section aria-label={t("sidebar.bookmarks")}>
       {isLoading && !bookmarksError && (
         <p className="px-3 py-2 text-xs text-muted-foreground">
-          Loading bookmarks…
+          {t("bookmarks.loading")}
         </p>
       )}
 
@@ -420,20 +426,20 @@ export function Bookmarks() {
           role="alert"
           data-testid="bookmarks-load-error"
         >
-          Failed to load bookmarks.{" "}
+          {t("bookmarks.loadError")}{" "}
           {bookmarksError instanceof Error
             ? bookmarksError.message
-            : "Check the notifications panel for details."}
+            : t("profiles.checkNotifications")}
         </p>
       )}
 
       {!isLoading && !bookmarksError && bookmarks.length === 0 && (
         <p className="px-3 py-2 text-xs text-muted-foreground">
-          No bookmarks yet.
+          {t("bookmarks.empty")}
         </p>
       )}
 
-      <ul aria-label="Bookmark list">
+      <ul aria-label={t("bookmarks.listAria")}>
         {bookmarks.map((bm) => (
           <BookmarkRow
             key={bm.id}

@@ -19,6 +19,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ClockIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 // `useEffect` is also used to surface the recents-list fetch error.
 import type { RecentLocation } from "@/api/bookmarks";
 import { recentsClear, recentsList, recentTrack } from "@/api/bookmarks";
@@ -42,6 +43,7 @@ interface RecentRowProps {
 }
 
 function RecentRow({ entry, isActive, onNavigate }: RecentRowProps) {
+  const { t } = useTranslation();
   const { isValidated } = useValidatedProfile(entry.profileId);
 
   const displayLabel = entry.prefix || entry.bucket;
@@ -50,7 +52,7 @@ function RecentRow({ entry, isActive, onNavigate }: RecentRowProps) {
     return (
       <li
         className="flex cursor-not-allowed items-center gap-2 px-3 py-2 opacity-50"
-        title="Validate this profile to use this location"
+        title={t("recents.validateTooltip")}
         aria-disabled="true"
       >
         <ClockIcon
@@ -61,7 +63,7 @@ function RecentRow({ entry, isActive, onNavigate }: RecentRowProps) {
           {displayLabel}
         </span>
         <span className="shrink-0 text-xs text-muted-foreground">
-          Validate to use
+          {t("recents.validateToUse")}
         </span>
       </li>
     );
@@ -100,6 +102,7 @@ function RecentRow({ entry, isActive, onNavigate }: RecentRowProps) {
 // ---------------------------------------------------------------------------
 
 export function Recents() {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const activePaneId = usePanesStore((s) => s.activePaneId);
   const setLocation = usePanesStore((s) => s.setLocation);
@@ -153,10 +156,10 @@ export function Recents() {
   const hasMore = recents.length > DEFAULT_VISIBLE;
 
   return (
-    <section aria-label="Recent locations">
+    <section aria-label={t("recents.sectionAria")}>
       {isLoading && !recentsError && (
         <p className="px-3 py-2 text-xs text-muted-foreground">
-          Loading recents…
+          {t("recents.loading")}
         </p>
       )}
 
@@ -166,20 +169,20 @@ export function Recents() {
           role="alert"
           data-testid="recents-load-error"
         >
-          Failed to load recents.{" "}
+          {t("recents.loadError")}{" "}
           {recentsError instanceof Error
             ? recentsError.message
-            : "Check the notifications panel for details."}
+            : t("profiles.checkNotifications")}
         </p>
       )}
 
       {!isLoading && !recentsError && recents.length === 0 && (
         <p className="px-3 py-2 text-xs text-muted-foreground">
-          No recent locations.
+          {t("recents.empty")}
         </p>
       )}
 
-      <ul aria-label="Recent locations list">
+      <ul aria-label={t("recents.listAria")}>
         {visible.map((entry) => (
           <RecentRow
             key={`${entry.profileId}/${entry.bucket}/${entry.prefix}`}
@@ -200,7 +203,7 @@ export function Recents() {
           className="w-full px-3 py-1 text-left text-xs text-muted-foreground hover:text-foreground"
           onClick={() => setShowAll(true)}
         >
-          Show all ({recents.length})
+          {t("recents.showAll", { count: recents.length })}
         </button>
       )}
 
@@ -210,7 +213,7 @@ export function Recents() {
           className="w-full px-3 py-1 text-left text-xs text-muted-foreground hover:text-foreground"
           onClick={() => setShowAll(false)}
         >
-          Show less
+          {t("recents.showLess")}
         </button>
       )}
 
@@ -222,7 +225,7 @@ export function Recents() {
             className="h-auto py-0.5 text-xs text-muted-foreground hover:text-destructive"
             onClick={() => clearMutation.mutate()}
           >
-            Clear recents
+            {t("recents.clear")}
           </Button>
         </div>
       )}
