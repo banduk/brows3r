@@ -9,6 +9,12 @@ on:
 env:
   CARGO_TERM_COLOR: always
   RUST_BACKTRACE: 1
+  # Opt in to Node.js 24 for all JavaScript-based actions (checkout, setup-node,
+  # pnpm/action-setup, …). GitHub forces this default on 2026-06-02 and removes
+  # Node 20 on 2026-09-16; enabling it now flushes any latent incompatibilities
+  # ahead of the deadline. Per the official deprecation notice:
+  # https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Job 1: unit — runs on all three platforms

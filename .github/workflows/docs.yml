@@ -44,6 +44,10 @@ concurrency:
   group: "pages"
   cancel-in-progress: false
 
+env:
+  # See ci.yml for the rationale on opting into Node 24 early.
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
 jobs:
   build:
     name: build
