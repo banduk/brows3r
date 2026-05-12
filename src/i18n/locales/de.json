@@ -75,5 +75,14 @@
   "errors": {
     "loadFileFailed": "Datei konnte nicht geladen werden",
     "saveFailed": "Speichern fehlgeschlagen"
+  },
+  "transfers": {
+    "downloadComplete": {
+      "title": "Download abgeschlossen",
+      "messageOne": "{{name}} wurde gespeichert.",
+      "messageMany": "{{count}} Dateien wurden gespeichert.",
+      "openFolder": "Ordner öffnen",
+      "revealFailed": "Der Zielordner konnte nicht geöffnet werden."
+    }
   }
 }

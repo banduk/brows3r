@@ -139,6 +139,18 @@ function ToastItem({ toast, onDismiss }: ToastItemProps) {
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium">{toast.title}</p>
         <p className="text-xs text-muted-foreground mt-0.5">{toast.message}</p>
+        {toast.action && (
+          <button
+            type="button"
+            onClick={() => {
+              toast.action?.onClick();
+              onDismiss(toast.key);
+            }}
+            className="mt-1.5 text-xs font-medium text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
+          >
+            {toast.action.label}
+          </button>
+        )}
       </div>
 
       {/* Dismiss */}

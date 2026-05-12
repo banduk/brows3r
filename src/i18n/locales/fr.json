@@ -75,5 +75,14 @@
   "errors": {
     "loadFileFailed": "Échec du chargement du fichier",
     "saveFailed": "Échec de l'enregistrement"
+  },
+  "transfers": {
+    "downloadComplete": {
+      "title": "Téléchargement terminé",
+      "messageOne": "{{name}} a été enregistré.",
+      "messageMany": "{{count}} fichiers ont été enregistrés.",
+      "openFolder": "Ouvrir le dossier",
+      "revealFailed": "Impossible d'ouvrir le dossier de destination."
+    }
   }
 }

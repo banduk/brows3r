@@ -75,5 +75,14 @@
   "errors": {
     "loadFileFailed": "Falha ao carregar arquivo",
     "saveFailed": "Falha ao salvar"
+  },
+  "transfers": {
+    "downloadComplete": {
+      "title": "Download concluído",
+      "messageOne": "{{name}} foi salvo.",
+      "messageMany": "{{count}} arquivos foram salvos.",
+      "openFolder": "Abrir pasta",
+      "revealFailed": "Não foi possível abrir a pasta de destino."
+    }
   }
 }

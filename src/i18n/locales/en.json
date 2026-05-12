@@ -75,5 +75,14 @@
   "errors": {
     "loadFileFailed": "Failed to load file",
     "saveFailed": "Save failed"
+  },
+  "transfers": {
+    "downloadComplete": {
+      "title": "Download complete",
+      "messageOne": "{{name}} was saved.",
+      "messageMany": "{{count}} files were saved.",
+      "openFolder": "Open folder",
+      "revealFailed": "Could not open the destination folder."
+    }
   }
 }

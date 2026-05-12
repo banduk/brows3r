@@ -75,5 +75,14 @@
   "errors": {
     "loadFileFailed": "Error al cargar el archivo",
     "saveFailed": "Error al guardar"
+  },
+  "transfers": {
+    "downloadComplete": {
+      "title": "Descarga completada",
+      "messageOne": "{{name}} se guardó.",
+      "messageMany": "Se guardaron {{count}} archivos.",
+      "openFolder": "Abrir carpeta",
+      "revealFailed": "No se pudo abrir la carpeta de destino."
+    }
   }
 }

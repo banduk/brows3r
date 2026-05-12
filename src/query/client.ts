@@ -101,6 +101,17 @@ export async function installEventBridge(
       import("@/store/transfers").then(({ applyStateEvent }) => {
         applyStateEvent(payload);
       });
+      // Side-effect: surface a "Download complete" toast with a clickable
+      // "Open folder" action when a download finishes successfully. Kept
+      // inline (rather than inside applyStateEvent) so the store stays a
+      // pure reducer.
+      if (payload.state === "done") {
+        import("./notifyDownloadComplete").then(
+          ({ notifyDownloadComplete }) => {
+            notifyDownloadComplete(payload.requestId);
+          },
+        );
+      }
     }),
 
     // Lock events → push into the Zustand locks store so context menus and

@@ -75,5 +75,14 @@
   "errors": {
     "loadFileFailed": "加载文件失败",
     "saveFailed": "保存失败"
+  },
+  "transfers": {
+    "downloadComplete": {
+      "title": "下载完成",
+      "messageOne": "{{name}} 已保存。",
+      "messageMany": "已保存 {{count}} 个文件。",
+      "openFolder": "打开文件夹",
+      "revealFailed": "无法打开目标文件夹。"
+    }
   }
 }
