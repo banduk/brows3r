@@ -86,7 +86,7 @@ base64 = "0.22"
 regex = "1"
 
 # ZIP archive writer — used by the diagnostics bundle module (task 60).
-zip = "4"
+zip = "8"
 
 [dev-dependencies]
 # Temporary directory helper — used by FileBackend round-trip tests and redb
