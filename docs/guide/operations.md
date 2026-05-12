@@ -17,9 +17,11 @@ This page walks through the non-obvious behaviour of each operation.
 - **Drag-and-drop**: drop files (or a folder) onto a pane. brows3r enqueues
   one transfer per file; folder structure is preserved via key prefixes.
 - **Toolbar button**: opens the native file picker.
-- **Progress** is reported via the Transfer Manager (sliding panel from the
-  bottom of the window). Each transfer shows bytes/sec, ETA, and a cancel
-  button.
+- **Progress** is reported in the Activity Center (full-pane destination,
+  <kbd>Cmd</kbd>+<kbd>Shift</kbd>+<kbd>A</kbd>) and on the Downloads chip
+  in the status bar. Each transfer shows bytes/sec, ETA, and a cancel
+  button. A compact transfer popup (<kbd>Cmd</kbd>+<kbd>Shift</kbd>+<kbd>J</kbd>)
+  is also available.
 
 Files larger than 5 MB use multipart upload by default (configurable in
 Settings → Transfers). On cancel mid-upload, the backend issues a
@@ -30,11 +32,17 @@ Settings → Transfers). On cancel mid-upload, the backend issues a
 
 - **Single file**: button or context menu → native Save dialog → range-read
   in the background.
-- **Recursive folder / bucket**: button explicitly warns that S3 has no
-  native "download folder" — the operation lists all keys under the prefix
-  and writes them to a chosen directory. Compressed `.zip` of the
-  selection is a planned enhancement.
-- The Transfer Manager surfaces the rolled-up progress.
+- **Recursive folder / bucket**: brows3r pre-enumerates the prefix and
+  shows a confirm dialog with the file count and total bytes before the
+  transfer starts. The source folder name is preserved at the
+  destination — picking `~/Downloads` for a folder `reports/2026/` writes
+  to `~/Downloads/2026/...`.
+- **Activity Center** surfaces rolled-up progress and groups transfers
+  from the same click as a collapsible batch. Each completed transfer
+  exposes an "Open folder" action (via `revealItemInDir`), and batches
+  expose a "Cancel all".
+- New downloads pulse the Downloads chip in the status bar instead of
+  raising a per-file toast.
 
 ## Copy / Cut / Paste
 
