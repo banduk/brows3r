@@ -53,7 +53,7 @@ rust-ini = "0.21"
 # NOTE: Pinned to 3.x. keyring 4.x split this crate into a CLI binary and a
 # separate `keyring-core` library; migrating is a non-trivial refactor and
 # is tracked separately.
-keyring = "3"
+keyring = "4"
 
 # Memory-safe credential zeroing — ensures secret bytes are scrubbed when
 # dropped. The `derive` feature adds ZeroizeOnDrop derive macro.
