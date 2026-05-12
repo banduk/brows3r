@@ -108,6 +108,41 @@ struct InMemoryEntry {
 }
 
 // ---------------------------------------------------------------------------
+// open_or_recreate_redb — wipe + retry on stale-schema files
+// ---------------------------------------------------------------------------
+
+/// Open a `redb` `Database` at `path`, recreating the file when it has a
+/// stale on-disk schema.
+///
+/// redb's file format changes between major versions (we recently bumped
+/// 2.x → 4.x). Opening a file written by the previous major returns
+/// `DatabaseError::UpgradeRequired(_)` and there is no automatic in-place
+/// migration. Every redb file the app maintains is derivative state —
+/// the SWR cache and the multipart-upload bookkeeping table — that can be
+/// safely wiped and rebuilt at runtime; the alternative (panicking and
+/// refusing to launch) is far worse for the user than losing a cache and
+/// orphaning a handful of multipart uploads (which the MultipartPanel can
+/// still clean up by scanning S3 directly).
+///
+/// Retry strategy:
+///   1. `Database::create(path)` (opens existing or creates new).
+///   2. If `UpgradeRequired` → remove the file and call `create` again.
+///   3. Any other error propagates unchanged.
+pub fn open_or_recreate_redb(path: &std::path::Path) -> Result<Database, redb::DatabaseError> {
+    use redb::DatabaseError;
+    match Database::create(path) {
+        Ok(db) => Ok(db),
+        Err(DatabaseError::UpgradeRequired(_)) => {
+            // Best-effort: ignore the remove error so a missing/locked file
+            // still falls through to the retry path with a meaningful error.
+            let _ = std::fs::remove_file(path);
+            Database::create(path)
+        }
+        Err(e) => Err(e),
+    }
+}
+
+// ---------------------------------------------------------------------------
 // CacheStore
 // ---------------------------------------------------------------------------
 
@@ -132,7 +167,7 @@ pub struct CacheStore {
 impl CacheStore {
     /// Open a `redb` database at `path` and return a shared `CacheHandle`.
     pub fn open(path: &std::path::Path, config: CacheConfig) -> Result<CacheHandle, AppError> {
-        let db = Database::create(path).map_err(|e| AppError::Internal {
+        let db = open_or_recreate_redb(path).map_err(|e| AppError::Internal {
             trace_id: format!("redb open failed: {e}"),
         })?;
         // Ensure the table exists.
