@@ -22,3 +22,15 @@ updates:
       # src-tauri/Cargo.toml.
       - dependency-name: keyring
         update-types: ["version-update:semver-major"]
+
+  # GitHub Actions — Dependabot rewrites tags to immutable SHAs when bumping,
+  # which mitigates the tag-mutation supply-chain attack pattern (e.g. the
+  # tj-actions/changed-files incident, Mar 2025).
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      actions:
+        patterns: ["*"]

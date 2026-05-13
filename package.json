@@ -93,6 +93,12 @@
       "dompurify": "^3.3.2",
       "vitepress>vite": "^6.4.2",
       "esbuild": "^0.25.0"
-    }
+    },
+    "onlyBuiltDependencies": [
+      "@biomejs/biome",
+      "@tailwindcss/oxide",
+      "esbuild",
+      "lefthook"
+    ]
   }
 }
