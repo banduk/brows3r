@@ -21,12 +21,28 @@
 
 <p align="center">
   <strong>
+    <a href="https://banduk.github.io/brows3r/#download">Download</a> ·
     <a href="https://banduk.github.io/brows3r/">Documentation</a> ·
     <a href="https://banduk.github.io/brows3r/guide/getting-started">Get started</a> ·
     <a href="https://banduk.github.io/brows3r/concepts/architecture">Architecture</a> ·
     <a href="https://github.com/banduk/brows3r/releases">Releases</a> ·
     <a href="CONTRIBUTING.md">Contribute</a>
   </strong>
+</p>
+
+<p align="center">
+  <a href="https://github.com/banduk/brows3r/releases/latest"><img alt="Download for macOS" src="https://img.shields.io/badge/Download-macOS-000?style=for-the-badge&logo=apple&logoColor=white" /></a>
+  <a href="https://github.com/banduk/brows3r/releases/latest"><img alt="Download for Windows" src="https://img.shields.io/badge/Download-Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white" /></a>
+  <a href="https://github.com/banduk/brows3r/releases/latest"><img alt="Download for Linux" src="https://img.shields.io/badge/Download-Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black" /></a>
+</p>
+
+<p align="center">
+  <sub>
+    Always-current binaries on the
+    <a href="https://github.com/banduk/brows3r/releases/latest"><strong>latest release</strong></a>
+    page · or pick a platform on the
+    <a href="https://banduk.github.io/brows3r/#download">docs site downloads section</a>.
+  </sub>
 </p>
 
 ---
@@ -140,7 +156,19 @@ Full architecture deep-dive:
 ### From a release
 
 Signed binaries for macOS, Linux, and Windows are attached to every tagged
-release on the [Releases page](https://github.com/banduk/brows3r/releases).
+release. Grab the latest:
+
+- **macOS** — `.dmg` (universal — Apple Silicon + Intel)
+- **Windows** — `.exe` setup installer (x64)
+- **Linux** — `.AppImage` (portable) or `.deb` (Debian/Ubuntu)
+
+> **[Download the latest release →](https://github.com/banduk/brows3r/releases/latest)**
+> &nbsp; · &nbsp; [All releases](https://github.com/banduk/brows3r/releases)
+> &nbsp; · &nbsp; [Pick a platform on the docs site](https://banduk.github.io/brows3r/#download)
+
+The docs homepage auto-detects your OS and surfaces the right asset for the
+latest release; the GitHub Releases page lists every platform with checksums
+and changelog.
 
 ### From source
 

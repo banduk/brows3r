@@ -40,6 +40,7 @@ export default defineConfig({
     logo: "/brows3r-icon.png",
 
     nav: [
+      { text: "Download", link: "/#download" },
       { text: "Guide", link: "/guide/getting-started" },
       { text: "Concepts", link: "/concepts/architecture" },
       { text: "Contributing", link: "/contributing/" },

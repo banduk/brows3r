@@ -10,6 +10,9 @@ hero:
     alt: brows3r icon
   actions:
     - theme: brand
+      text: Download
+      link: '#download'
+    - theme: alt
       text: Get started
       link: /guide/getting-started
     - theme: alt
@@ -46,7 +49,7 @@ features:
 ## At a glance
 
 ```sh
-# 1. Clone, install, run.
+# 1. Or build from source.
 git clone https://github.com/banduk/brows3r
 cd brows3r
 pnpm install
