@@ -46,17 +46,17 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       # ── pnpm ─────────────────────────────────────────────────────────────
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
         with:
           run_install: false
 
       # ── Node.js LTS ───────────────────────────────────────────────────────
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: lts/*
           cache: pnpm
@@ -158,7 +158,7 @@ jobs:
 
       # ── Upload artifact to workflow run ───────────────────────────────────
       - name: Upload .dmg artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: brows3r-macos-universal
           path: ${{ env.DMG_PATH }}
@@ -175,7 +175,7 @@ jobs:
       # Tauri generates a .sig sidecar alongside the .dmg; include it so the
       # updater feed can reference the Ed25519 signature.
       - name: Upload updater signature sidecar
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: brows3r-macos-universal-sig
           path: ${{ env.DMG_PATH }}.sig
@@ -212,17 +212,17 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       # ── pnpm ─────────────────────────────────────────────────────────────
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
         with:
           run_install: false
 
       # ── Node.js LTS ───────────────────────────────────────────────────────
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: lts/*
           cache: pnpm
@@ -308,7 +308,7 @@ jobs:
 
       # ── Upload artifact to workflow run ───────────────────────────────────
       - name: Upload .exe artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: brows3r-windows-x64
           path: ${{ env.WINDOWS_EXE_PATH }}
@@ -324,7 +324,7 @@ jobs:
 
       # ── Upload Tauri updater signature sidecar ────────────────────────────
       - name: Upload updater signature sidecar
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: brows3r-windows-x64-sig
           path: ${{ env.WINDOWS_EXE_PATH }}.sig
@@ -366,17 +366,17 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       # ── pnpm ─────────────────────────────────────────────────────────────
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
         with:
           run_install: false
 
       # ── Node.js LTS ───────────────────────────────────────────────────────
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: lts/*
           cache: pnpm
@@ -447,14 +447,14 @@ jobs:
 
       # ── Upload artifacts to workflow run ──────────────────────────────────
       - name: Upload AppImage artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: brows3r-linux-x86_64-appimage
           path: ${{ env.APPIMAGE_PATH }}
           if-no-files-found: error
 
       - name: Upload deb artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: brows3r-linux-x86_64-deb
           path: ${{ env.DEB_PATH }}
@@ -477,7 +477,7 @@ jobs:
       # Tauri generates a .sig sidecar alongside each bundle; include them so
       # the updater feed can reference the Ed25519 signatures.
       - name: Upload AppImage updater signature sidecar
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: brows3r-linux-x86_64-appimage-sig
           path: ${{ env.APPIMAGE_PATH }}.sig
